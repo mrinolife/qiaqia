@@ -15,7 +15,7 @@ function loadState() {
 }
 function blankState() {
   return { doneLessons: {}, srs: {}, xp: 0, streak: { last: "", count: 0 }, tripDate: DEFAULT_TRIP,
-           stats: { quiz: 0, correct: 0, spoken: 0, written: 0 } };
+           stats: { quiz: 0, correct: 0, spoken: 0, written: 0 }, snacks: {}, metFriends: {} };
 }
 const S = loadState();
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(S)); }
@@ -27,7 +27,7 @@ function bumpStreak() {
   S.streak.count = (S.streak.last === y) ? S.streak.count + 1 : 1;
   S.streak.last = t; save(); renderStreak();
 }
-function addXP(n) { S.xp += n; save(); }
+function addXP(n) { S.xp += n; save(); checkUnlocks(); }
 
 /* ================= data ================= */
 const D = window.QIAQIA_DATA || { vocab: [], phrases: [], dialogues: [], tones: [] };
@@ -112,7 +112,66 @@ function sample(a, n, notIdx) { const pool = a.filter((_, i) => i !== notIdx); r
 
 /* the trio — fan-art SVG renditions of Chiikawa, Hachiware and Usagi
    (personal, non-commercial app; characters © Nagano) */
-const MASCOT_NAMES = { chiikawa: "ちいかわ Chiikawa", hachiware: "ハチワレ Hachiware", usagi: "うさぎ Usagi" };
+const MASCOT_NAMES = { chiikawa: "ちいかわ Chiikawa", hachiware: "ハチワレ Hachiware", usagi: "うさぎ Usagi",
+                       momonga: "モモンガ Momonga", kurimanju: "くりまんじゅう Kurimanju",
+                       rakko: "ラッコ Rakko", shisa: "シーサー Shisa",
+                       kani: "カニちゃん Kani-chan", yoroi: "ヨロイさん Yoroi-san", chimera: "あの子 Chimera" };
+/* cast roster: 3 friends from the start, the rest unlock as she earns XP */
+const CAST = [
+  { id: "chiikawa",  unlock: 0,    blurb: "small, brave, tries so hard 🥺", lines: ["今天也加油! (jiāyóu — you got this!)", "小小的努力也是努力! tiny effort still counts!", "呜呜…我们一起学吧 — let's learn together!"] },
+  { id: "hachiware", unlock: 0,    blurb: "the optimist — 'we can do it!'", lines: ["太好了! ready for a tiny lesson?", "没关系, 慢慢来~ no rush, we'll get there!", "能学会的! we can totally do this!"] },
+  { id: "usagi",     unlock: 0,    blurb: "pure chaos. pure joy. 呀哈!!", lines: ["呀哈——!! LESSON TIME!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈! quiz? QUIZ!!"] },
+  { id: "momonga",   unlock: 100,  blurb: "wants ALL the praise", lines: ["夸我!! praise me!! …and yourself too!", "看我看我! now look at your streak!!"] },
+  { id: "kani",      unlock: 220,  blurb: "snip snip! your cheeriest senpai", lines: ["加油加油! ✂️ snip those flashcards!", "好耶! another lesson down!"] },
+  { id: "kurimanju", unlock: 360,  blurb: "sleepy gourmet elder. 哈~", lines: ["哈~ 学完喝一杯奶茶吧 (milk tea after this)", "慢慢学, 慢慢吃~ learn slow, eat slow"] },
+  { id: "chimera",   unlock: 520,  blurb: "mysterious lil winged friend", lines: ["一起玩吧~ let's play a round!", "嘿嘿, 你进步好快! you're getting fast!"] },
+  { id: "rakko",     unlock: 700,  blurb: "the cool 討伐 pro senpai", lines: ["不错。 keep training.", "台湾之前, 每天一课。 one lesson a day."] },
+  { id: "yoroi",     unlock: 900,  blurb: "kindest knight, biggest fan of effort", lines: ["你很努力, 真棒! so diligent!", "劳动辛苦了! good work today!"] },
+  { id: "shisa",     unlock: 1100, blurb: "guardian of the trip! 一路平安", lines: ["嘿嘿! 今天也练习吧!", "台湾见! see you in Taiwan!"] },
+];
+function unlockedCast() { return CAST.filter(c => S.xp >= c.unlock); }
+
+/* snack shelf: foods from the show + taiwan treats — each teaches its Chinese name */
+const SNACKS = [
+  { id: "ramen",    emoji: "🍜", name: "Ron-style ramen",   hanzi: "拉面",     pinyin: "lāmiàn",        en: "ramen" },
+  { id: "hamburg",  emoji: "🍖", name: "reward hamburg steak", hanzi: "汉堡排", pinyin: "hànbǎopái",    en: "hamburg steak" },
+  { id: "parfait",  emoji: "🍨", name: "celebration parfait", hanzi: "圣代",   pinyin: "shèngdài",      en: "parfait / sundae" },
+  { id: "onigiri",  emoji: "🍙", name: "onigiri",           hanzi: "饭团",     pinyin: "fàntuán",       en: "rice ball" },
+  { id: "pancake",  emoji: "🥞", name: "fluffy pancakes",   hanzi: "松饼",     pinyin: "sōngbǐng",      en: "pancakes" },
+  { id: "beer",     emoji: "🍺", name: "kurimanju's usual", hanzi: "啤酒",     pinyin: "píjiǔ",         en: "beer" },
+  { id: "edamame",  emoji: "🫛", name: "beer snack edamame", hanzi: "毛豆",    pinyin: "máodòu",        en: "edamame" },
+  { id: "boba",     emoji: "🧋", name: "Taiwan boba",       hanzi: "珍珠奶茶", pinyin: "zhēnzhū nǎichá", en: "bubble milk tea" },
+  { id: "xlb",      emoji: "🥟", name: "soup dumplings",    hanzi: "小笼包",   pinyin: "xiǎolóngbāo",   en: "soup dumplings" },
+  { id: "jipai",    emoji: "🍗", name: "night-market chicken", hanzi: "鸡排",  pinyin: "jīpái",         en: "fried chicken cutlet" },
+  { id: "mangoice", emoji: "🥭", name: "mango shaved ice",  hanzi: "芒果冰",   pinyin: "mángguǒbīng",   en: "mango ice" },
+  { id: "sweetpotato", emoji: "🍠", name: "roasted sweet potato", hanzi: "烤地瓜", pinyin: "kǎo dìguā",  en: "roast sweet potato" },
+];
+function awardSnack() {
+  S.snacks = S.snacks || {};
+  const snack = shuffle(SNACKS)[0];
+  S.snacks[snack.id] = (S.snacks[snack.id] || 0) + 1;
+  save();
+  setTimeout(() => { toast(`${snack.emoji} got a snack: ${snack.hanzi} ${snack.pinyin}!`); speak(snack.hanzi); }, 1200);
+}
+function checkUnlocks() {
+  S.metFriends = S.metFriends || {};
+  const fresh = unlockedCast().filter(c => !S.metFriends[c.id] && c.unlock > 0);
+  fresh.forEach(c => S.metFriends[c.id] = true);
+  save();
+  if (fresh.length) {
+    const c = fresh[0];
+    confetti();
+    const ov = el(`<div class="unlock-pop"><div class="card pink bigcard">
+        <div class="wobble">${mascotSVG(c.id, 110)}</div>
+        <h3>新朋友! new friend!</h3>
+        <div><b>${esc(MASCOT_NAMES[c.id])}</b></div>
+        <div class="muted">${esc(c.blurb)}</div>
+        <button class="btn yellow" style="margin-top:10px">哇!!</button></div></div>`);
+    ov.querySelector("button").onclick = () => ov.remove();
+    document.body.appendChild(ov);
+  }
+}
+
 function mascotSVG(kind, size) {
   const s = size || 96;
   const ink = "#4a3b30";
@@ -147,7 +206,7 @@ function mascotSVG(kind, size) {
       <circle cx="23" cy="32" r="2.5" fill="${ink}"/><circle cx="41" cy="32" r="2.5" fill="${ink}"/>
       ${blush}
       <path d="M26 38 q6 6.5 12 0 z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>`;
-  } else { // usagi
+  } else if (kind === "usagi") {
     // pale-yellow rabbit: very long upright ears, round wide eyes, big open ヤハ mouth
     body = `
       <ellipse cx="23" cy="8" rx="4.6" ry="13" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
@@ -161,6 +220,104 @@ function mascotSVG(kind, size) {
       <circle cx="24" cy="30" r="1" fill="#fff"/><circle cx="42" cy="30" r="1" fill="#fff"/>
       ${blush}
       <ellipse cx="32" cy="40" rx="4.5" ry="5" fill="#e0526e" stroke="${ink}" stroke-width="1.8"/>`;
+  } else if (kind === "momonga") {
+    // little white flying squirrel: giant sparkly eyes, big grey tail curling up behind
+    body = `
+      <path d="M44 54 q16 -2 12 -26 q-3 -10 -10 -12 q6 12 2 24 q-2 8 -4 14z" fill="#cfd6de" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="18" cy="15" r="5.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="46" cy="15" r="5.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="18" cy="15" r="2.4" fill="#ffe3ec"/><circle cx="46" cy="15" r="2.4" fill="#ffe3ec"/>
+      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
+      <ellipse cx="32" cy="56" rx="11" ry="6.5" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="14" cy="49" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="50" cy="49" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="23" cy="31" r="4.6" fill="${ink}"/><circle cx="41" cy="31" r="4.6" fill="${ink}"/>
+      <circle cx="24.6" cy="29.3" r="1.7" fill="#fff"/><circle cx="42.6" cy="29.3" r="1.7" fill="#fff"/>
+      <circle cx="21.8" cy="32.8" r=".9" fill="#fff"/><circle cx="39.8" cy="32.8" r=".9" fill="#fff"/>
+      ${blush}
+      <path d="M29.5 39 q2.5 2.6 5 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  } else if (kind === "kurimanju") {
+    // the chestnut-bun elder: brown dome on cream bun, sleepy half-lidded eyes
+    body = `
+      <path d="M10 34 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#fdf3dd" stroke="${ink}" stroke-width="2.4"/>
+      <path d="M11.5 29 Q14 12.5 32 12 Q50 12.5 52.5 29 Q47 33.5 32 33.5 Q17 33.5 11.5 29 Z" fill="#a9724b" stroke="${ink}" stroke-width="1.6"/>
+      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fdf3dd" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="14" cy="50" r="4" fill="#fdf3dd" stroke="${ink}" stroke-width="2"/>
+      <circle cx="50" cy="50" r="4" fill="#fdf3dd" stroke="${ink}" stroke-width="2"/>
+      <path d="M20.5 38 q2.5 1.6 5 0" stroke="${ink}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M38.5 38 q2.5 1.6 5 0" stroke="${ink}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      ${blush.replace(/cy="38"/g, 'cy="43"')}
+      <path d="M30 44.5 q2 1.6 4 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  } else if (kind === "rakko") {
+    // sea-otter senpai: brown coat, pale face, small round ears, cool calm eyes
+    body = `
+      <circle cx="15" cy="16" r="5" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
+      <circle cx="49" cy="16" r="5" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
+      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#8b6748" stroke="${ink}" stroke-width="2.4"/>
+      <path d="M15 30 Q17 17.5 32 17 Q47 17.5 49 30 Q49 44 32 45 Q15 44 15 30 Z" fill="#f3e6cf" stroke="none"/>
+      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#8b6748" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="14" cy="50" r="4" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
+      <circle cx="50" cy="50" r="4" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
+      <circle cx="24" cy="30" r="2.4" fill="${ink}"/><circle cx="40" cy="30" r="2.4" fill="${ink}"/>
+      <path d="M22 25.5 l4.5 -1" stroke="${ink}" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M42 25.5 l-4.5 -1" stroke="${ink}" stroke-width="1.6" stroke-linecap="round"/>
+      ${blush}
+      <ellipse cx="32" cy="36.5" rx="2" ry="1.4" fill="${ink}"/>
+      <path d="M32 38 q0 2 0 2 M32 40 q-2.5 2 -5 .6 M32 40 q2.5 2 5 .6" stroke="${ink}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+  } else if (kind === "kani") {
+    // kani-chan: cheery red crab, big claws up, eyes on top
+    body = `
+      <circle cx="20" cy="13" r="3.4" fill="#ef7d67" stroke="${ink}" stroke-width="1.8"/>
+      <circle cx="44" cy="13" r="3.4" fill="#ef7d67" stroke="${ink}" stroke-width="1.8"/>
+      <path d="M20 16 l0 6 M44 16 l0 6" stroke="${ink}" stroke-width="1.8"/>
+      <path d="M6 30 q-4 -10 6 -12 q9 -2 8 8 q-1 6 -6 7 Z" fill="#ef7d67" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M58 30 q4 -10 -6 -12 q-9 -2 -8 8 q1 6 6 7 Z" fill="#ef7d67" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M12 38 a20 17 0 1 0 40 0 a20 17 0 1 0 -40 0" fill="#ef7d67" stroke="${ink}" stroke-width="2.4"/>
+      <path d="M18 55 l-3 5 M26 57 l-1 5 M38 57 l1 5 M46 55 l3 5" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="25" cy="35" r="2.4" fill="${ink}"/><circle cx="39" cy="35" r="2.4" fill="${ink}"/>
+      <circle cx="20" cy="41" r="3.4" fill="#ffc4d0" opacity=".9"/><circle cx="44" cy="41" r="3.4" fill="#ffc4d0" opacity=".9"/>
+      <path d="M28.5 41.5 q3.5 3.4 7 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  } else if (kind === "yoroi") {
+    // yoroi-san: kind knight in grey armor, gentle eyes in the visor slit
+    body = `
+      <path d="M13 30 q0 -20 19 -20 q19 0 19 20 l0 8 q0 6 -6 6 l-26 0 q-6 0 -6 -6 Z" fill="#b9c0c9" stroke="${ink}" stroke-width="2.4"/>
+      <path d="M28 4 l8 0 l-1.5 7 l-5 0 Z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M17 27 l30 0 l0 9 q-15 4 -30 0 Z" fill="#4e5560" stroke="${ink}" stroke-width="2"/>
+      <circle cx="25" cy="31.5" r="2.2" fill="#fff"/><circle cx="39" cy="31.5" r="2.2" fill="#fff"/>
+      <path d="M13 33 q-6 1 -5 8 M51 33 q6 1 5 8" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="32" cy="55" rx="13" ry="7" fill="#b9c0c9" stroke="${ink}" stroke-width="2.2"/>
+      <path d="M22 50 l20 0" stroke="${ink}" stroke-width="1.6"/>`;
+  } else if (kind === "chimera") {
+    // the winged one: white cat-ish with tiny horn and little wings
+    body = `
+      <path d="M8 30 q-7 -6 -2 -12 q6 -5 10 2 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M56 30 q7 -6 2 -12 q-6 -5 -10 2 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M15 21 L18 9 L27 16 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M49 21 L46 9 L37 16 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M30 8 q2 -6 5 -1 l-2 5 Z" fill="#ffe9a8" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
+      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="14" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="50" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="23" cy="31" r="2.7" fill="${ink}"/><circle cx="41" cy="31" r="2.7" fill="${ink}"/>
+      <circle cx="24" cy="30" r="1" fill="#fff"/><circle cx="42" cy="30" r="1" fill="#fff"/>
+      ${blush}
+      <path d="M26 38 q6 5 12 0 z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>`;
+  } else { // shisa
+    // the little lion-dog: tan coat, curly mane bumps, pointy ears, happy fangy grin
+    body = `
+      <path d="M14 22 L15 8 L26 15 Z" fill="#e8a75f" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M50 22 L49 8 L38 15 Z" fill="#e8a75f" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#e8a75f" stroke="${ink}" stroke-width="2.4"/>
+      <path d="M17 17 q3 -4 6 0 q3 -4 6 0 q3 -4 6 0 q3 -4 6 0 q3 -4 6 0 l-2 6 q-13 -4 -26 0 Z" fill="#c77f3d" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/>
+      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#e8a75f" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="14" cy="50" r="4" fill="#e8a75f" stroke="${ink}" stroke-width="2"/>
+      <circle cx="50" cy="50" r="4" fill="#e8a75f" stroke="${ink}" stroke-width="2"/>
+      <circle cx="23" cy="31" r="2.6" fill="${ink}"/><circle cx="41" cy="31" r="2.6" fill="${ink}"/>
+      ${blush}
+      <path d="M25 38 q7 6 14 0 z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M27.5 38.6 l1.6 2.6 l1.6 -2.4 Z" fill="#fff" stroke="${ink}" stroke-width="1"/>
+      <path d="M33.3 38.8 l1.6 2.4 l1.6 -2.6 Z" fill="#fff" stroke="${ink}" stroke-width="1"/>`;
   }
   return `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true">${body}</svg>`;
 }
@@ -175,6 +332,22 @@ function go(tab) {
   ({ home: renderHome, learn: renderLearn, cards: renderCards, quiz: renderPractice,
      phrases: renderTravel, talk: renderTalk }[tab] || renderHome)();
   window.scrollTo(0, 0);
+  maybePeek();
+}
+/* a friend occasionally peeks in to cheer */
+function maybePeek() {
+  if (Math.random() > 0.22 || document.querySelector(".peek")) return;
+  const c = shuffle(unlockedCast())[0];
+  const line = c.lines[Math.floor(Math.random() * c.lines.length)];
+  const pk = el(`<button class="peek">${mascotSVG(c.id, 64)}</button>`);
+  pk.onclick = () => {
+    toast(line);
+    const zh = (line.match(/[一-鿿]+/g) || []).join("，");
+    if (zh) speak(zh);
+    pk.remove();
+  };
+  document.body.appendChild(pk);
+  setTimeout(() => pk.remove(), 6000);
 }
 function renderStreak() { document.getElementById("streakN").textContent = S.streak.count; }
 
@@ -184,18 +357,14 @@ function renderHome() {
   const learned = learnedWords().length;
   const due = dueCards().length;
   const next = LESSONS.find(l => !S.doneLessons[l.id]);
-  const cast = {
-    chiikawa: ["今天也加油! (jiāyóu — you got this!)", "小小的努力也是努力! tiny effort still counts!", "呜呜…学中文我们一起吧 — let's learn together!"],
-    hachiware: ["太好了! ready for a tiny lesson?", "没关系, 慢慢来~ no rush, we'll get there!", "能学会的! we can totally do this!"],
-    usagi: ["呀哈——!! LESSON TIME!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈! quiz? QUIZ!!"],
-  };
-  const who = shuffle(Object.keys(cast))[0];
-  const lines = cast[who];
+  const who = shuffle(unlockedCast())[0];
+  const friendsN = unlockedCast().length;
   view.innerHTML = "";
   view.append(
+    el(`<div class="scene">${sceneSVG("meadow")}</div>`),
     el(`<div class="card pink hero">
-          <div class="mascot wobble">${mascotSVG(who)}<div class="muted center" style="font-size:.68rem">${esc(MASCOT_NAMES[who])}</div></div>
-          <div class="speech">${esc(lines[Math.floor(Math.random() * lines.length)])}</div>
+          <div class="mascot wobble">${mascotSVG(who.id)}<div class="muted center" style="font-size:.68rem">${esc(MASCOT_NAMES[who.id])}</div></div>
+          <div class="speech">${esc(who.lines[Math.floor(Math.random() * who.lines.length)])}</div>
         </div>`),
     el(`<div class="card yellow center">
           <div class="muted">✈️ Taiwan trip in</div>
@@ -216,6 +385,12 @@ function renderHome() {
             <button class="btn blue" id="goReview">Review cards${due ? " (" + due + ")" : ""}</button>
           </div>
         </div>`),
+    el(`<div class="card blue" id="friendsCard" style="cursor:pointer">
+          <h3>Friends & snacks 🧺 <span class="muted">${friendsN}/${CAST.length} met</span></h3>
+          <div class="friendrow">${unlockedCast().map(c => mascotSVG(c.id, 40)).join("")}
+            ${CAST.length > friendsN ? `<span class="lockball">+${CAST.length - friendsN}?</span>` : ""}</div>
+          <div class="muted" style="margin-top:4px">earn ✨xp to meet everyone — tap to visit</div>
+        </div>`),
     el(`<div class="card mint">
           <h3>Skills 🎯</h3>
           <div class="cardrow" style="justify-content:flex-start">
@@ -232,6 +407,7 @@ function renderHome() {
     <div class="muted" style="margin-top:6px">${Math.round(learned / Math.max(1, D.vocab.length) * 100)}% of HSK 1 words learned</div></div>`);
   view.append(progress);
   document.getElementById("tripDate").onchange = e => { S.tripDate = e.target.value; save(); renderHome(); };
+  document.getElementById("friendsCard").onclick = renderFriends;
   const gn = document.getElementById("goNext"); if (gn) gn.onclick = () => runLesson(next);
   document.getElementById("goReview").onclick = () => go("cards");
   view.querySelectorAll("[data-go]").forEach(b => b.onclick = () => {
@@ -240,10 +416,122 @@ function renderHome() {
   });
 }
 
+/* ================= friends & snacks ================= */
+function renderFriends() {
+  view.innerHTML = "";
+  view.append(
+    el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">Friends 🧺 <span class="muted">${unlockedCast().length}/${CAST.length}</span></h3></div>`),
+    el(`<div class="muted" style="margin:0 4px 8px">everyone from the meadow — keep learning to meet them all!</div>`)
+  );
+  const grid = el(`<div class="friendgrid"></div>`);
+  CAST.forEach(c => {
+    const got = S.xp >= c.unlock;
+    const cell = el(`<button class="card friendcell ${got ? "" : "locked"}">
+        <span class="${got ? "" : "locked-mascot"}">${mascotSVG(c.id, 74)}</span>
+        <div class="fname">${got ? esc(MASCOT_NAMES[c.id]) : "???"}</div>
+        <div class="muted" style="font-size:.72rem">${got ? esc(c.blurb) : "unlocks at " + c.unlock + " ✨xp"}</div>
+      </button>`);
+    cell.onclick = () => {
+      if (!got) { toast(`${c.unlock - S.xp} more ✨xp to meet this friend!`); return; }
+      const line = c.lines[Math.floor(Math.random() * c.lines.length)];
+      toast(line);
+      const zh = (line.match(/[一-鿿~！!?？，。]+/g) || []).join("，");
+      if (zh) speak(zh);
+    };
+    grid.appendChild(cell);
+  });
+  view.append(grid);
+  view.append(el(`<h3 style="margin:16px 4px 4px">Snack shelf 🍱 <span class="muted">${Object.keys(S.snacks || {}).length}/${SNACKS.length}</span></h3>`),
+    el(`<div class="muted" style="margin:0 4px 8px">win snacks from quizzes & reviews — tap one to learn its Chinese name!</div>`));
+  const shelf = el(`<div class="friendgrid snacks"></div>`);
+  SNACKS.forEach(sn => {
+    const n = (S.snacks || {})[sn.id] || 0;
+    const cell = el(`<button class="card friendcell ${n ? "" : "locked"}">
+        <span style="font-size:2.2rem">${n ? sn.emoji : "❓"}</span>
+        <div class="fname">${n ? esc(sn.hanzi) : "???"}</div>
+        <div class="muted" style="font-size:.72rem">${n ? esc(sn.pinyin) + (n > 1 ? " ×" + n : "") : esc(sn.name)}</div>
+      </button>`);
+    cell.onclick = () => {
+      if (!n) { toast("win it from a quiz or review! 加油!"); return; }
+      toast(`${sn.emoji} ${sn.hanzi} ${sn.pinyin} — ${sn.en}`);
+      speak(sn.hanzi);
+    };
+    shelf.appendChild(cell);
+  });
+  view.append(shelf);
+  document.getElementById("bk").onclick = renderHome;
+}
+
+/* scene backdrops from the meadow world */
+function sceneSVG(name) {
+  const sky = `<rect width="200" height="60" fill="#dff0fb"/>
+    <ellipse cx="35" cy="14" rx="14" ry="6" fill="#fff"/><ellipse cx="150" cy="10" rx="18" ry="7" fill="#fff"/>`;
+  const grass = `<path d="M0 38 Q50 28 100 36 Q150 42 200 34 L200 60 L0 60 Z" fill="#cfe8c2"/>
+    <path d="M14 40 l2 -6 l2 6 M30 42 l2 -6 l2 6 M172 40 l2 -6 l2 6" stroke="#8fbf7d" stroke-width="1.6" fill="none"/>
+    <circle cx="60" cy="44" r="2" fill="#ffb7c9"/><circle cx="130" cy="47" r="2" fill="#ffd76e"/><circle cx="90" cy="50" r="2" fill="#fff"/>`;
+  if (name === "meadow") return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">${sky}${grass}
+    <path d="M78 36 q0 -12 11 -12 q11 0 11 12 Z" fill="#f7e6b6" stroke="#4a3b30" stroke-width="1.4"/>
+    <rect x="85" y="28" width="8" height="9" rx="2" fill="#a9724b" stroke="#4a3b30" stroke-width="1.2"/>
+    <circle cx="89" cy="20" r="1.5" fill="#4a3b30"/></svg>`;
+  if (name === "questboard") return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">${sky}${grass}
+    <rect x="60" y="10" width="80" height="34" rx="4" fill="#c99e6a" stroke="#4a3b30" stroke-width="1.6"/>
+    <rect x="66" y="16" width="20" height="14" fill="#fff" transform="rotate(-3 76 23)"/>
+    <rect x="90" y="15" width="20" height="16" fill="#ffe9a8"/>
+    <rect x="114" y="16" width="20" height="14" fill="#ffd9e3" transform="rotate(2 124 23)"/>
+    <rect x="72" y="44" width="5" height="10" fill="#8a6742"/><rect x="123" y="44" width="5" height="10" fill="#8a6742"/>
+    <text x="100" y="40" font-size="7" text-anchor="middle" fill="#4a3b30">草むしり · 讨伐 · 检定</text></svg>`;
+  if (name === "room") return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">
+    <rect width="200" height="60" fill="#fdf3dd"/>
+    <rect x="20" y="8" width="34" height="26" rx="3" fill="#dff0fb" stroke="#4a3b30" stroke-width="1.6"/>
+    <path d="M20 21 h34 M37 8 v26" stroke="#4a3b30" stroke-width="1.2"/>
+    <rect x="130" y="30" width="52" height="18" rx="6" fill="#ffd9e3" stroke="#4a3b30" stroke-width="1.6"/>
+    <rect x="136" y="24" width="14" height="10" rx="4" fill="#fff" stroke="#4a3b30" stroke-width="1.4"/>
+    <rect x="70" y="36" width="40" height="14" rx="3" fill="#c99e6a" stroke="#4a3b30" stroke-width="1.4"/>
+    <rect x="76" y="30" width="12" height="6" rx="1" fill="#8fd0f4" stroke="#4a3b30" stroke-width="1"/></svg>`;
+  if (name === "arena") return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">${sky}
+    <path d="M0 40 Q60 30 120 38 Q170 44 200 36 L200 60 L0 60 Z" fill="#d9d2b8"/>
+    <ellipse cx="40" cy="46" rx="10" ry="4" fill="#b9c0a2"/><ellipse cx="160" cy="48" rx="12" ry="4" fill="#b9c0a2"/>
+    <path d="M95 30 l6 -12 l6 12 Z" fill="#9aa387" stroke="#4a3b30" stroke-width="1.2"/>
+    <text x="101" y="52" font-size="8" text-anchor="middle" fill="#4a3b30">讨伐!!</text></svg>`;
+  if (name === "ramen") return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">
+    <rect width="200" height="60" fill="#f6e7d3"/>
+    <rect x="40" y="6" width="120" height="16" rx="3" fill="#c0392b" stroke="#4a3b30" stroke-width="1.6"/>
+    <text x="100" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">郎 · 夜市小吃</text>
+    <path d="M50 22 h100 v14 q-25 6 -50 6 q-25 0 -50 -6 Z" fill="#fff" opacity=".85"/>
+    <circle cx="36" cy="34" r="7" fill="#e0526e" stroke="#4a3b30" stroke-width="1.4"/>
+    <circle cx="164" cy="34" r="7" fill="#e0526e" stroke="#4a3b30" stroke-width="1.4"/>
+    <path d="M80 48 a12 8 0 0 0 40 0 Z" fill="#fff" stroke="#4a3b30" stroke-width="1.6"/>
+    <path d="M86 44 q4 -8 6 0 M96 42 q4 -8 6 0 M106 44 q4 -8 6 0" stroke="#f7c948" stroke-width="2" fill="none"/></svg>`;
+  return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">
+    <rect width="200" height="60" fill="#e8f4ff"/>
+    <rect x="24" y="14" width="44" height="32" rx="4" fill="#fff" stroke="#4a3b30" stroke-width="1.6"/>
+    <path d="M24 30 h44" stroke="#4a3b30" stroke-width="1.2"/>
+    <path d="M120 40 a10 7 0 0 0 20 0 Z" fill="#fff" stroke="#4a3b30" stroke-width="1.6"/>
+    <path d="M140 40 q6 -1 4 5" stroke="#4a3b30" stroke-width="1.6" fill="none"/>
+    <path d="M126 34 q1 -4 3 0 M132 33 q1 -4 3 0" stroke="#b9c0c9" stroke-width="1.4" fill="none"/>
+    <circle cx="160" cy="26" r="8" fill="#cfe8c2" stroke="#4a3b30" stroke-width="1.4"/>
+    <rect x="157" y="34" width="6" height="10" fill="#c99e6a" stroke="#4a3b30" stroke-width="1.2"/></svg>`;
+}
+
+/* the 討伐 target: a wobbly little monster that shrinks as you answer right */
+function monsterSVG(frac) {
+  const sc = (0.45 + 0.55 * frac).toFixed(2);
+  const mood = frac > 0.6 ? `<path d="M24 40 q4 -3 8 0" stroke="#4a3b30" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    : frac > 0.01 ? `<path d="M24 41 q4 3 8 0" stroke="#4a3b30" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    : `<path d="M22 36 l5 5 m0 -5 l-5 5 M36 36 l5 5 m0 -5 l-5 5" stroke="#4a3b30" stroke-width="2" stroke-linecap="round"/>`;
+  const eyes = frac > 0.01 ? `<circle cx="24" cy="30" r="2.6" fill="#4a3b30"/><circle cx="40" cy="30" r="2.6" fill="#4a3b30"/>` : "";
+  return `<svg viewBox="0 0 64 64" width="92" height="92" style="transform:scale(${sc});transition:transform .3s">
+    <path d="M18 12 q-3 -8 4 -6 l3 4 M46 12 q3 -8 -4 -6 l-3 4" stroke="#4a3b30" stroke-width="2" fill="#b7a6d9" stroke-linejoin="round"/>
+    <path d="M10 36 q-2 -24 22 -24 q24 0 22 24 q1 16 -10 14 q-4 -1 -5 3 q-4 3 -7 -1 q-3 4 -7 1 q-1 -4 -5 -3 q-11 2 -10 -14 Z"
+      fill="#b7a6d9" stroke="#4a3b30" stroke-width="2.4" stroke-linejoin="round"/>
+    ${eyes}${mood}</svg>`;
+}
+
 /* ================= learn path ================= */
 function renderLearn() {
   view.innerHTML = "";
-  view.append(el(`<h2>Lesson path 🌱 <span class="muted">(${doneCount()}/${LESSONS.length})</span></h2>`));
+  view.append(el(`<div class="scene">${sceneSVG("questboard")}</div>`),
+    el(`<h2>Labor board 🌱 <span class="muted">(${doneCount()}/${LESSONS.length} quests)</span></h2>`));
   const path = el(`<div class="path"></div>`);
   const unlocked = doneCount(); // linear unlock: can open anything up to first-not-done
   LESSONS.forEach((l, i) => {
@@ -308,7 +596,8 @@ function vocabCheck(l, qi, score) {
   const qs = Math.min(5, l.words.length);
   if (qi >= qs) {
     view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("usagi", 72)}</div>
+    const hero = shuffle(unlockedCast())[0];
+    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</div>
       <h3>Check done! ${score}/${qs} 🌸</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
     document.getElementById("fin").onclick = () => finishLesson(l);
     return;
@@ -362,7 +651,9 @@ function grammarExercise(l, i, score) {
   const exs = l.grammar.exercises;
   if (i >= exs.length) {
     view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("hachiware", 72)}</div>
+    const hero = shuffle(unlockedCast())[0];
+    if (score === exs.length) awardSnack();
+    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</div>
       <h3>${score}/${exs.length} sentences built! 🎀</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
     document.getElementById("fin").onclick = () => finishLesson(l);
     return;
@@ -442,7 +733,8 @@ function dueCards() {
 function renderCards() {
   const due = shuffle(dueCards());
   view.innerHTML = "";
-  view.append(el(`<h2>Flashcards 🎴 <span class="muted">${Object.keys(S.srs).length} in deck</span></h2>`));
+  view.append(el(`<div class="scene">${sceneSVG("room")}</div>`),
+    el(`<h2>Flashcards 🎴 <span class="muted">${Object.keys(S.srs).length} in deck</span></h2>`));
   if (!Object.keys(S.srs).length) {
     view.append(el(`<div class="card center"><div class="mascot-inline">${mascotSVG("chiikawa", 72)}</div>
       <p>Finish a words lesson first — cards appear here for review!</p>
@@ -460,9 +752,12 @@ function renderCards() {
 function flashCard(due, i) {
   if (i >= due.length) {
     bumpStreak(); confetti();
+    if (due.length >= 5) awardSnack();
+    const hero = shuffle(unlockedCast())[0];
     view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("hachiware", 72)}</div>
-      <h3>Deck cleared! +${due.length * 2} xp ✨</h3></div>`));
+    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</div>
+      <h3>Deck cleared! +${due.length * 2} xp ✨</h3>
+      <div class="muted">${esc(MASCOT_NAMES[hero.id])}: 好棒! see you at the next review~</div></div>`));
     addXP(due.length * 2);
     return;
   }
@@ -497,7 +792,8 @@ function flashCard(due, i) {
 /* ================= practice hub (quiz/listen/speak/write/tones) ================= */
 function renderPractice() {
   view.innerHTML = "";
-  view.append(el(`<h2>Practice ⭐</h2>`));
+  view.append(el(`<div class="scene">${sceneSVG("arena")}</div>`),
+    el(`<h2>Practice ⭐ <span class="muted">討伐 time!</span></h2>`));
   const modes = [
     ["quiz", "⭐ Quiz", "hanzi → meaning & pinyin", "pink"],
     ["listen", "👂 Listening", "hear it, pick the hanzi", "blue"],
@@ -527,9 +823,14 @@ function mcRound(kind) {
   const ask = () => {
     if (i >= qs.length) {
       bumpStreak(); confetti(); addXP(score * 3);
+      const beat = score >= 6;
+      if (beat) awardSnack();
+      const hero = shuffle(unlockedCast())[0];
       view.innerHTML = "";
-      view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("usagi", 72)}</div>
-        <h3>${score}/${qs.length} — ${score >= 6 ? "哇!! amazing!" : "加油! keep going!"}</h3>
+      view.append(el(`<div class="card mint bigcard">
+        <div class="cardrow" style="align-items:center">${monsterSVG(beat ? 0 : 1 - score / qs.length)}<span class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</span></div>
+        <h3>${beat ? "討伐完了!! monster friend-ified! 🎀" : "it got away… 加油!"} ${score}/${qs.length}</h3>
+        <div class="muted">${esc(MASCOT_NAMES[hero.id])} ${beat ? "is so proud of you!" : "says: one more try!"}</div>
         <div class="cardrow"><button class="btn pink" id="ag">again</button><button class="btn ghost" id="bk">back</button></div></div>`));
       document.getElementById("ag").onclick = () => mcRound(kind);
       document.getElementById("bk").onclick = renderPractice;
@@ -540,7 +841,9 @@ function mcRound(kind) {
     const others = sample(pool.filter(v => v.hanzi !== w.hanzi), 3);
     const opts = shuffle([w, ...others]);
     view.innerHTML = "";
-    view.append(el(`<div class="qmeta"><button class="iconbtn" id="bk">←</button><span class="muted">${i + 1}/${qs.length} · ⭐ ${score}</span></div>`));
+    view.append(el(`<div class="qmeta"><button class="iconbtn" id="bk">←</button>
+      <span class="monsterbox">${monsterSVG(1 - score / qs.length)}</span>
+      <span class="muted">${i + 1}/${qs.length} · ⭐ ${score}</span></div>`));
     if (sub === "listen") {
       view.append(el(`<div class="card blue bigcard"><div class="muted">what do you hear?</div>
         <div class="cardrow"><button class="iconbtn" id="sp" style="width:64px;height:64px;font-size:1.6rem">🔊</button>
@@ -699,6 +1002,7 @@ function toneQuiz(i, score) {
   const N = 8;
   if (i >= N) {
     bumpStreak(); addXP(score * 3); confetti();
+    if (score >= 6) awardSnack();
     view.innerHTML = "";
     view.append(el(`<div class="card mint bigcard"><h3>${score}/${N} tones! 🎵</h3>
       <div class="cardrow"><button class="btn pink" id="ag">again</button><button class="btn ghost" id="bk">back</button></div></div>`));
@@ -736,7 +1040,8 @@ function toneQuiz(i, score) {
 /* ================= travel (phrasebook + culture) ================= */
 function renderTravel() {
   view.innerHTML = "";
-  view.append(el(`<h2>Travel survival 🧳 <span class="muted">Taiwan-real</span></h2>`));
+  view.append(el(`<div class="scene">${sceneSVG("ramen")}</div>`),
+    el(`<h2>Travel survival 🧳 <span class="muted">Taiwan-real</span></h2>`));
   const groups = [];
   T.scenarios.forEach(s => groups.push({ key: s.id, label: s.emoji + " " + s.title, phrases: s.phrases, intro: s.intro }));
   const bySc = {};
@@ -771,7 +1076,8 @@ function renderTravel() {
 /* ================= talk (dialogues) ================= */
 function renderTalk() {
   view.innerHTML = "";
-  view.append(el(`<h2>Real conversations 💬</h2>`),
+  view.append(el(`<div class="scene">${sceneSVG("cafe")}</div>`),
+    el(`<h2>Real conversations 💬</h2>`),
     el(`<div class="muted" style="margin:0 4px 8px">the messy real thing — clerk speed and all. B is you!</div>`));
   const all = [...T.dialogues.map(d => ({ ...d, tw: true })), ...D.dialogues];
   if (!all.length) { view.append(el(`<div class="card">content loading…</div>`)); return; }
