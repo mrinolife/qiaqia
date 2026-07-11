@@ -18,6 +18,7 @@ class Handler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=ROOT, **kwargs)
 
     def end_headers(self):
+        self.send_header("Cache-Control", "no-cache")  # always revalidate; sw handles offline
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("X-Frame-Options", "DENY")

@@ -110,31 +110,61 @@ function confetti() {
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function sample(a, n, notIdx) { const pool = a.filter((_, i) => i !== notIdx); return shuffle(pool).slice(0, n); }
 
-/* mascots: original chiikawa-inspired critters (round, dot eyes, blush) */
+/* the trio — fan-art SVG renditions of Chiikawa, Hachiware and Usagi
+   (personal, non-commercial app; characters © Nagano) */
+const MASCOT_NAMES = { chiikawa: "ちいかわ Chiikawa", hachiware: "ハチワレ Hachiware", usagi: "うさぎ Usagi" };
 function mascotSVG(kind, size) {
   const s = size || 96;
-  const face = `<circle cx="24" cy="33" r="2.4" fill="#4a3b30"/><circle cx="40" cy="33" r="2.4" fill="#4a3b30"/>
-    <circle cx="18.5" cy="39" r="3.8" fill="#ffc4d0"/><circle cx="45.5" cy="39" r="3.8" fill="#ffc4d0"/>
-    <path d="M28.5 40 q3.5 3.6 7 0" stroke="#4a3b30" stroke-width="1.9" fill="none" stroke-linecap="round"/>`;
-  const arms = `<circle cx="12" cy="47" r="4.4" fill="#fff" stroke="#4a3b30" stroke-width="2"/>
-    <circle cx="52" cy="47" r="4.4" fill="#fff" stroke="#4a3b30" stroke-width="2"/>`;
-  let head = "";
-  if (kind === "hamu") { // round hamster-ish
-    head = `<circle cx="15" cy="17" r="6" fill="#fff" stroke="#4a3b30" stroke-width="2"/>
-            <circle cx="49" cy="17" r="6" fill="#fff" stroke="#4a3b30" stroke-width="2"/>
-            <circle cx="32" cy="34" r="22" fill="#fff" stroke="#4a3b30" stroke-width="2.4"/>`;
-  } else if (kind === "usa") { // rabbit-ish
-    head = `<ellipse cx="22" cy="9" rx="5" ry="12" fill="#fffbe9" stroke="#4a3b30" stroke-width="2"/>
-            <ellipse cx="42" cy="9" rx="5" ry="12" fill="#fffbe9" stroke="#4a3b30" stroke-width="2"/>
-            <circle cx="32" cy="34" r="22" fill="#fffbe9" stroke="#4a3b30" stroke-width="2.4"/>`;
-  } else { // neko-ish
-    head = `<path d="M13 22 L16 8 L27 16 Z" fill="#e8f4ff" stroke="#4a3b30" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M51 22 L48 8 L37 16 Z" fill="#e8f4ff" stroke="#4a3b30" stroke-width="2" stroke-linejoin="round"/>
-            <circle cx="32" cy="34" r="22" fill="#e8f4ff" stroke="#4a3b30" stroke-width="2.4"/>`;
+  const ink = "#4a3b30";
+  const blush = `<circle cx="19" cy="38" r="3.6" fill="#ffc4d0" opacity=".85"/><circle cx="45" cy="38" r="3.6" fill="#ffc4d0" opacity=".85"/>`;
+  let body = "";
+  if (kind === "chiikawa") {
+    // small white bear-hamster: round ears on a round head, wide-set dot eyes, tiny ω mouth
+    body = `
+      <circle cx="17" cy="14" r="6.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="47" cy="14" r="6.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="17" cy="14" r="3" fill="#ffe3ec"/><circle cx="47" cy="14" r="3" fill="#ffe3ec"/>
+      <path d="M10 32 a22 21 0 1 0 44 0 a22 21 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
+      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="14" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="50" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="23" cy="31" r="2.5" fill="${ink}"/><circle cx="41" cy="31" r="2.5" fill="${ink}"/>
+      ${blush}
+      <path d="M29 38.5 q1.5 2 3 0 q1.5 2 3 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  } else if (kind === "hachiware") {
+    // white cat, blue-grey cap split by a white blaze down the forehead, big happy open smile, tail
+    body = `
+      <path d="M46 52 q10 2 8 -8" stroke="${ink}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M12 24 L14 7 L26 15 Z" fill="#6c92b4" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M52 24 L50 7 L38 15 Z" fill="#6c92b4" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M10 32 a22 21 0 1 0 44 0 a22 21 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
+      <path d="M10.5 30 Q13 13 32 11.5 Q51 13 53.5 30 Q44 26.5 37.5 27.5 Q33.5 28 32 30.5 Q30.5 28 26.5 27.5 Q20 26.5 10.5 30 Z" fill="#6c92b4" stroke="none"/>
+      <path d="M32 28 L28.8 12.2 Q32 11.6 35.2 12.2 Z" fill="#fff" stroke="none"/>
+      <path d="M10 32 a22 21 0 1 0 44 0 a22 21 0 1 0 -44 0" fill="none" stroke="${ink}" stroke-width="2.4"/>
+      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="14" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="50" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
+      <circle cx="23" cy="32" r="2.5" fill="${ink}"/><circle cx="41" cy="32" r="2.5" fill="${ink}"/>
+      ${blush}
+      <path d="M26 38 q6 6.5 12 0 z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>`;
+  } else { // usagi
+    // pale-yellow rabbit: very long upright ears, round wide eyes, big open ヤハ mouth
+    body = `
+      <ellipse cx="23" cy="8" rx="4.6" ry="13" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
+      <ellipse cx="41" cy="8" rx="4.6" ry="13" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
+      <ellipse cx="23" cy="9" rx="2" ry="8" fill="#ffe3ec"/><ellipse cx="41" cy="9" rx="2" ry="8" fill="#ffe3ec"/>
+      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#f6ecc0" stroke="${ink}" stroke-width="2.4"/>
+      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#f6ecc0" stroke="${ink}" stroke-width="2.2"/>
+      <circle cx="13" cy="48" r="4" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
+      <circle cx="51" cy="48" r="4" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
+      <circle cx="23" cy="31" r="3" fill="${ink}"/><circle cx="41" cy="31" r="3" fill="${ink}"/>
+      <circle cx="24" cy="30" r="1" fill="#fff"/><circle cx="42" cy="30" r="1" fill="#fff"/>
+      ${blush}
+      <ellipse cx="32" cy="40" rx="4.5" ry="5" fill="#e0526e" stroke="${ink}" stroke-width="1.8"/>`;
   }
-  return `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true">${head}${face}${arms}</svg>`;
+  return `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true">${body}</svg>`;
 }
-document.getElementById("brandMascot").innerHTML = mascotSVG("hamu", 38);
+document.getElementById("brandMascot").innerHTML = mascotSVG("chiikawa", 38);
 
 /* ================= router ================= */
 const tabs = document.querySelectorAll(".tab");
@@ -154,13 +184,18 @@ function renderHome() {
   const learned = learnedWords().length;
   const due = dueCards().length;
   const next = LESSONS.find(l => !S.doneLessons[l.id]);
-  const cheers = ["今天也加油! (jiāyóu — you got this!)", "哇!! ready to learn?", "一步一步来~ one step at a time!",
-                  "你好呀! let's do a tiny lesson", "小小的努力也是努力! tiny effort still counts!"];
+  const cast = {
+    chiikawa: ["今天也加油! (jiāyóu — you got this!)", "小小的努力也是努力! tiny effort still counts!", "呜呜…学中文我们一起吧 — let's learn together!"],
+    hachiware: ["太好了! ready for a tiny lesson?", "没关系, 慢慢来~ no rush, we'll get there!", "能学会的! we can totally do this!"],
+    usagi: ["呀哈——!! LESSON TIME!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈! quiz? QUIZ!!"],
+  };
+  const who = shuffle(Object.keys(cast))[0];
+  const lines = cast[who];
   view.innerHTML = "";
   view.append(
     el(`<div class="card pink hero">
-          <div class="mascot wobble">${mascotSVG("hamu")}</div>
-          <div class="speech">${esc(cheers[Math.floor(Math.random() * cheers.length)])}</div>
+          <div class="mascot wobble">${mascotSVG(who)}<div class="muted center" style="font-size:.68rem">${esc(MASCOT_NAMES[who])}</div></div>
+          <div class="speech">${esc(lines[Math.floor(Math.random() * lines.length)])}</div>
         </div>`),
     el(`<div class="card yellow center">
           <div class="muted">✈️ Taiwan trip in</div>
@@ -273,7 +308,7 @@ function vocabCheck(l, qi, score) {
   const qs = Math.min(5, l.words.length);
   if (qi >= qs) {
     view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("usa", 72)}</div>
+    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("usagi", 72)}</div>
       <h3>Check done! ${score}/${qs} 🌸</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
     document.getElementById("fin").onclick = () => finishLesson(l);
     return;
@@ -327,7 +362,7 @@ function grammarExercise(l, i, score) {
   const exs = l.grammar.exercises;
   if (i >= exs.length) {
     view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("neko", 72)}</div>
+    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("hachiware", 72)}</div>
       <h3>${score}/${exs.length} sentences built! 🎀</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
     document.getElementById("fin").onclick = () => finishLesson(l);
     return;
@@ -409,14 +444,14 @@ function renderCards() {
   view.innerHTML = "";
   view.append(el(`<h2>Flashcards 🎴 <span class="muted">${Object.keys(S.srs).length} in deck</span></h2>`));
   if (!Object.keys(S.srs).length) {
-    view.append(el(`<div class="card center"><div class="mascot-inline">${mascotSVG("hamu", 72)}</div>
+    view.append(el(`<div class="card center"><div class="mascot-inline">${mascotSVG("chiikawa", 72)}</div>
       <p>Finish a words lesson first — cards appear here for review!</p>
       <button class="btn pink" id="gl">Go learn 🌱</button></div>`));
     document.getElementById("gl").onclick = () => go("learn");
     return;
   }
   if (!due.length) {
-    view.append(el(`<div class="card mint center"><div class="mascot-inline">${mascotSVG("usa", 72)}</div>
+    view.append(el(`<div class="card mint center"><div class="mascot-inline">${mascotSVG("usagi", 72)}</div>
       <p>All reviews done for now — 哇!! come back later 🌸</p></div>`));
     return;
   }
@@ -426,7 +461,7 @@ function flashCard(due, i) {
   if (i >= due.length) {
     bumpStreak(); confetti();
     view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("neko", 72)}</div>
+    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("hachiware", 72)}</div>
       <h3>Deck cleared! +${due.length * 2} xp ✨</h3></div>`));
     addXP(due.length * 2);
     return;
@@ -493,7 +528,7 @@ function mcRound(kind) {
     if (i >= qs.length) {
       bumpStreak(); confetti(); addXP(score * 3);
       view.innerHTML = "";
-      view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("usa", 72)}</div>
+      view.append(el(`<div class="card mint bigcard"><div class="mascot-inline">${mascotSVG("usagi", 72)}</div>
         <h3>${score}/${qs.length} — ${score >= 6 ? "哇!! amazing!" : "加油! keep going!"}</h3>
         <div class="cardrow"><button class="btn pink" id="ag">again</button><button class="btn ghost" id="bk">back</button></div></div>`));
       document.getElementById("ag").onclick = () => mcRound(kind);
@@ -791,7 +826,7 @@ function showDialogue(d) {
 /* ================= boot ================= */
 if (!D.vocab.length) {
   view.innerHTML = "";
-  view.append(el(`<div class="card yellow center"><div class="mascot-inline">${mascotSVG("hamu", 72)}</div>
+  view.append(el(`<div class="card yellow center"><div class="mascot-inline">${mascotSVG("chiikawa", 72)}</div>
     <h3>content pack missing!</h3><div class="muted">data.js didn't load — refresh once it's generated.</div></div>`));
 } else {
   renderStreak();

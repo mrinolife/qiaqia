@@ -1,5 +1,7 @@
-/* qiaqia sw — cache-first app shell so it works offline in Taiwan */
-const CACHE = "qiaqia-v1";
+/* qiaqia sw — stale-while-revalidate: instant load from cache (works offline in
+   Taiwan), silently refetches in the background so the next open gets updates.
+   No version bumps or reinstalls needed when files change on the server. */
+const CACHE = "qiaqia-v2";
 const ASSETS = ["./", "index.html", "style.css", "app.js", "data.js", "taiwan.js",
                 "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest"];
 self.addEventListener("install", e => {
@@ -10,11 +12,16 @@ self.addEventListener("activate", e => {
 });
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
-  e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy));
+  const work = caches.open(CACHE).then(async c => {
+    const hit = await c.match(e.request);
+    // no-cache: bypass the HTTP cache so a server-side update is actually seen
+    const refetch = fetch(e.request, { cache: "no-cache" }).then(async res => {
+      if (res && res.ok) await c.put(e.request, res.clone());
       return res;
-    }).catch(() => caches.match("index.html")))
-  );
+    }).catch(() => hit);
+    // keep the sw alive until the background refresh lands in the cache
+    e.waitUntil(refetch.catch(() => {}));
+    return { hit, refetch };
+  });
+  e.respondWith(work.then(({ hit, refetch }) => hit || refetch));
 });

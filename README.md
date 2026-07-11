@@ -34,4 +34,5 @@ Screen" installs it as an app.
 - Audio = browser TTS (zh-CN voice). On the phone, best in Chrome/Safari with a Chinese voice installed.
 - The 🎤 mic check needs a secure context: fine on localhost; over Tailscale
   use `tailscale serve` (HTTPS) or she gets the shadow-mode fallback automatically.
-- Mascots are original chiikawa-inspired SVG critters (no copyrighted art shipped).
+- Mascots are hand-drawn fan-art SVGs of Chiikawa, Hachiware and Usagi (characters © Nagano).
+  Personal, non-commercial gift app — not for distribution or sale.
