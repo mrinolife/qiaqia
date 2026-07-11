@@ -195,10 +195,11 @@ function checkUnlocks() {
 
 /* local-only art overrides: drop chars/<id>.png next to the app (gitignored,
    never pushed) and that character uses the image instead of the drawn SVG */
-const LOCAL_ART = {};
+const LOCAL_ART = {}, LOCAL_SCENES = {};
 fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   if (!m) return;
   (m.chars || []).forEach(k => { LOCAL_ART[k] = `chars/${k}.png`; });
+  Object.entries(m.scenes || {}).forEach(([k, f]) => { LOCAL_SCENES[k] = `chars/${f}`; });
   if (m.bg) {
     document.body.style.background = `url(chars/${m.bg}) center top / cover fixed`;
     document.body.classList.add("has-wallpaper");
@@ -649,17 +650,31 @@ function renderFriends() {
   document.getElementById("bk").onclick = renderHome;
 }
 
-/* scene backdrops from the meadow world */
+/* scene backdrops from the meadow world (local official art can override via manifest "scenes") */
 function sceneSVG(name) {
-  const sky = `<rect width="200" height="60" fill="#dff0fb"/>
-    <ellipse cx="35" cy="14" rx="14" ry="6" fill="#fff"/><ellipse cx="150" cy="10" rx="18" ry="7" fill="#fff"/>`;
-  const grass = `<path d="M0 38 Q50 28 100 36 Q150 42 200 34 L200 60 L0 60 Z" fill="#cfe8c2"/>
-    <path d="M14 40 l2 -6 l2 6 M30 42 l2 -6 l2 6 M172 40 l2 -6 l2 6" stroke="#8fbf7d" stroke-width="1.6" fill="none"/>
-    <circle cx="60" cy="44" r="2" fill="#ffb7c9"/><circle cx="130" cy="47" r="2" fill="#ffd76e"/><circle cx="90" cy="50" r="2" fill="#fff"/>`;
+  if (LOCAL_SCENES[name]) return `<img src="${LOCAL_SCENES[name]}" style="width:100%;height:100%;object-fit:cover" alt="">`;
+  const sky = `<rect width="200" height="60" fill="#c9e9fb"/>
+    <circle cx="182" cy="12" r="9" fill="#ffe58a" stroke="#f2c94c" stroke-width="1.5"/>
+    <ellipse cx="35" cy="14" rx="14" ry="6" fill="#fff"/><ellipse cx="150" cy="10" rx="18" ry="7" fill="#fff"/>
+    <ellipse cx="95" cy="7" rx="10" ry="4.4" fill="#fff" opacity=".9"/>
+    <path d="M20 8 l1.2 2.6 2.8.4 -2 2 .5 2.8 -2.5-1.3 -2.5 1.3 .5-2.8 -2-2 2.8-.4 Z" fill="#fff" opacity=".9"/>
+    <path d="M120 20 l.9 2 2.1.3 -1.5 1.5 .4 2.1 -1.9-1 -1.9 1 .4-2.1 -1.5-1.5 2.1-.3 Z" fill="#fff" opacity=".7"/>`;
+  const grass = `<path d="M0 38 Q50 28 100 36 Q150 42 200 34 L200 60 L0 60 Z" fill="#bfe3a8"/>
+    <path d="M0 46 Q60 40 120 47 Q170 51 200 46 L200 60 L0 60 Z" fill="#a8d78e" opacity=".8"/>
+    <circle cx="24" cy="34" r="7" fill="#8fca6f"/><rect x="22.5" y="38" width="3" height="6" fill="#a9724b"/>
+    <circle cx="168" cy="32" r="8" fill="#8fca6f"/><rect x="166.5" y="37" width="3" height="7" fill="#a9724b"/>
+    <path d="M14 44 l2 -6 l2 6 M40 46 l2 -6 l2 6 M148 44 l2 -6 l2 6" stroke="#7cb45e" stroke-width="1.6" fill="none"/>
+    <circle cx="60" cy="46" r="2.2" fill="#ffb7c9"/><circle cx="61" cy="46" r=".8" fill="#ffd76e"/>
+    <circle cx="130" cy="49" r="2.2" fill="#ffd76e"/><circle cx="90" cy="52" r="2.2" fill="#fff"/>
+    <circle cx="108" cy="47" r="2.2" fill="#ffb7c9"/>`;
   if (name === "meadow") return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">${sky}${grass}
-    <path d="M78 36 q0 -12 11 -12 q11 0 11 12 Z" fill="#f7e6b6" stroke="#4a3b30" stroke-width="1.4"/>
+    <path d="M78 36 q0 -13 11 -13 q11 0 11 13 Z" fill="#f7e6b6" stroke="#4a3b30" stroke-width="1.4"/>
+    <path d="M78 36 q11 -3 22 0" stroke="#4a3b30" stroke-width="1.2" fill="none"/>
     <rect x="85" y="28" width="8" height="9" rx="2" fill="#a9724b" stroke="#4a3b30" stroke-width="1.2"/>
-    <circle cx="89" cy="20" r="1.5" fill="#4a3b30"/></svg>`;
+    <circle cx="89" cy="20" r="1.5" fill="#4a3b30"/>
+    <rect x="52" y="30" width="3" height="12" fill="#a9724b" stroke="#4a3b30" stroke-width="1"/>
+    <rect x="44" y="24" width="19" height="9" rx="2.5" fill="#e8c98f" stroke="#4a3b30" stroke-width="1.3"/>
+    <path d="M47 28.5 h13" stroke="#4a3b30" stroke-width="1.1"/></svg>`;
   if (name === "questboard") return `<svg viewBox="0 0 200 60" preserveAspectRatio="xMidYMid slice">${sky}${grass}
     <rect x="60" y="10" width="80" height="34" rx="4" fill="#c99e6a" stroke="#4a3b30" stroke-width="1.6"/>
     <rect x="66" y="16" width="20" height="14" fill="#fff" transform="rotate(-3 76 23)"/>

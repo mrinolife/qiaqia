@@ -74,9 +74,10 @@ h3 { margin: 0 0 8px; font-size: 1.02rem; }
 button { font-family: inherit; color: var(--ink); cursor: pointer; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  background: var(--yellow); border: 2.5px solid var(--line); border-radius: 18px;
-  padding: 12px 20px; font-size: 1rem; font-weight: 700;
-  box-shadow: 0 4px 0 var(--line); transition: transform .06s, box-shadow .06s;
+  background: var(--yellow); border: 2.5px solid var(--line); border-radius: 999px;
+  padding: 12px 20px; font-size: 1rem; font-weight: 800;
+  box-shadow: 0 4px 0 var(--line), inset 0 -3px 0 rgba(74,59,48,.12), inset 0 2px 0 rgba(255,255,255,.55);
+  transition: transform .06s, box-shadow .06s;
 }
 .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
 .btn.pink { background: var(--pink); }
