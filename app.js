@@ -78,8 +78,14 @@ if ("speechSynthesis" in window) {
   pickVoice();
   speechSynthesis.onvoiceschanged = pickVoice;
 }
+let warnedNoVoice = false;
 function speak(text, rate, onend) {
   if (!("speechSynthesis" in window)) return;
+  if (!VOICE) pickVoice(); // voices often load late on phones
+  if (!VOICE && speechSynthesis.getVoices().length && !warnedNoVoice) {
+    warnedNoVoice = true;
+    toast("no Chinese voice on this device — run Voice check in Practice 🎤");
+  }
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "zh-CN"; if (VOICE) u.voice = VOICE;
@@ -834,6 +840,7 @@ function renderPractice() {
     ["speak", "🎤 Speaking", "say it, mic checks you", "mint"],
     ["write", "✍️ Writing", "stroke order practice", "yellow"],
     ["tones", "🎵 Tones", "the 4 tones + quiz", ""],
+    ["voice", "🩺 Voice check", "is audio & the mic working?", "blue"],
   ];
   modes.forEach(([id, title, sub, color]) => {
     const c = el(`<button class="lesson"><span class="lemoji" style="background:var(--${color || "card"},#fff)">${title.split(" ")[0]}</span>
@@ -846,7 +853,47 @@ function renderPractice() {
 }
 function startPractice(mode) {
   ({ quiz: () => mcRound("mixed"), listen: () => mcRound("listen"), speak: speakPractice,
-     write: writePractice, tones: tonesPractice }[mode])();
+     write: writePractice, tones: tonesPractice, voice: voiceCheck }[mode])();
+}
+
+/* one-tap health check for both voice directions */
+function voiceCheck() {
+  pickVoice();
+  const zh = speechSynthesis.getVoices().filter(v => /^zh([-_]|$)/i.test(v.lang));
+  view.innerHTML = "";
+  view.append(el(`<div class="qmeta"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">🩺 Voice check</h3></div>`));
+  view.append(el(`<div class="card ${zh.length ? "mint" : "yellow"}">
+      <h3>${zh.length ? "✅" : "⚠️"} Chinese audio (she hears)</h3>
+      <div>${zh.length
+        ? `voice found: <b>${esc((VOICE || zh[0]).name)}</b> — tap to hear a test:`
+        : `no Chinese voice installed. iPhone: Settings → Accessibility → Spoken Content → Voices → Chinese. Android/Windows: install the Chinese (China) language/speech pack, or use Chrome.`}</div>
+      <div class="cardrow" style="justify-content:flex-start">
+        <button class="btn small blue" id="tts1">🔊 你好! 我是恰恰</button>
+        <button class="btn small ghost" id="tts2">🐢 slow test</button>
+      </div>
+      <div class="muted" id="ttsState" style="margin-top:6px"></div></div>`));
+  const srOK = !!SR, secure = window.isSecureContext;
+  view.append(el(`<div class="card ${srOK && secure ? "mint" : "yellow"}">
+      <h3>${srOK && secure ? "✅" : "⚠️"} Microphone (she speaks)</h3>
+      <div>${!secure ? "needs the https site (use the mrinolife.github.io link)."
+        : srOK ? "supported! tap, allow the mic, then say <b>你好</b>:"
+        : "this browser has no speech recognition — use Chrome (Android/desktop). On iPhone Safari, speaking practice falls back to 🐢 shadow mode automatically."}</div>
+      ${srOK && secure ? `<button class="mic" id="vcMic">🎤</button><div class="heard center" id="vcHeard"></div>` : ""}</div>`));
+  document.getElementById("bk").onclick = renderPractice;
+  document.getElementById("tts1").onclick = () => { document.getElementById("ttsState").textContent = zh.length ? "playing… (if silent, check media volume)" : "trying anyway — may be silent without a Chinese voice"; speak("你好! 我是恰恰!", 0.85); };
+  document.getElementById("tts2").onclick = () => speak("你好! 我是恰恰!", 0.5);
+  const m = document.getElementById("vcMic");
+  if (m) m.onclick = async () => {
+    const heard = document.getElementById("vcHeard");
+    try { const s = await navigator.mediaDevices.getUserMedia({ audio: true }); s.getTracks().forEach(t => t.stop()); }
+    catch { heard.textContent = "❌ mic blocked — allow it via the address-bar icon"; return; }
+    const r = new SR(); r.lang = "zh-CN"; let got = false;
+    m.classList.add("listening"); heard.textContent = "listening — say 你好!";
+    r.onresult = e => { got = true; heard.textContent = "✅ heard: " + e.results[0][0].transcript; };
+    r.onerror = e => { got = true; heard.textContent = "❌ " + (e.error === "network" ? "speech service unreachable (needs internet + Chrome)" : "error: " + e.error); };
+    r.onend = () => { m.classList.remove("listening"); if (!got) heard.textContent = "❌ nothing came through — check mic permission"; };
+    r.start();
+  };
 }
 
 /* multiple-choice round: 8 questions, modes mixed(meaning/pinyin) or listen */
