@@ -2,7 +2,7 @@
    Taiwan), silently refetches in the background so the next open gets updates.
    No version bumps or reinstalls needed when files change on the server. */
 const CACHE = "qiaqia-v2";
-const ASSETS = ["./", "index.html", "style.css", "app.js", "data.js", "taiwan.js",
+const ASSETS = ["./", "index.html", "style.css", "app.js", "data.js", "taiwan.js", "chats.js",
                 "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

@@ -32,6 +32,7 @@ function addXP(n) { S.xp += n; save(); checkUnlocks(); }
 /* ================= data ================= */
 const D = window.QIAQIA_DATA || { vocab: [], phrases: [], dialogues: [], tones: [] };
 const T = window.QIAQIA_TAIWAN || { grammar: [], scenarios: [], dialogues: [], culture: [] };
+const CHATS = window.QIAQIA_CHATS || [];
 D.vocab.forEach((v, i) => v.id = "v" + i);
 
 /* lesson path: vocab chunks interleaved with grammar + travel scenario packs */
@@ -131,8 +132,9 @@ const CAST = [
 ];
 function unlockedCast() { return CAST.filter(c => S.xp >= c.unlock); }
 
-/* snack shelf: foods from the show + taiwan treats — each teaches its Chinese name */
-const SNACKS = [
+/* snack shelf: foods from the show + taiwan treats — each teaches its Chinese name.
+   chats.js ships the full 30-food set with real order-phrases; this is the fallback. */
+const SNACKS_FALLBACK = [
   { id: "ramen",    emoji: "🍜", name: "Ron-style ramen",   hanzi: "拉面",     pinyin: "lāmiàn",        en: "ramen" },
   { id: "hamburg",  emoji: "🍖", name: "reward hamburg steak", hanzi: "汉堡排", pinyin: "hànbǎopái",    en: "hamburg steak" },
   { id: "parfait",  emoji: "🍨", name: "celebration parfait", hanzi: "圣代",   pinyin: "shèngdài",      en: "parfait / sundae" },
@@ -146,6 +148,7 @@ const SNACKS = [
   { id: "mangoice", emoji: "🥭", name: "mango shaved ice",  hanzi: "芒果冰",   pinyin: "mángguǒbīng",   en: "mango ice" },
   { id: "sweetpotato", emoji: "🍠", name: "roasted sweet potato", hanzi: "烤地瓜", pinyin: "kǎo dìguā",  en: "roast sweet potato" },
 ];
+const SNACKS = (window.QIAQIA_FOODS && window.QIAQIA_FOODS.length >= 12) ? window.QIAQIA_FOODS : SNACKS_FALLBACK;
 function awardSnack() {
   S.snacks = S.snacks || {};
   const snack = shuffle(SNACKS)[0];
@@ -175,11 +178,17 @@ function checkUnlocks() {
 /* local-only art overrides: drop chars/<id>.png next to the app (gitignored,
    never pushed) and that character uses the image instead of the drawn SVG */
 const LOCAL_ART = {};
-Object.keys(MASCOT_NAMES).forEach(k => {
-  fetch(`chars/${k}.png`, { method: "HEAD" }).then(r => {
-    if (r.ok) LOCAL_ART[k] = `chars/${k}.png`;
-  }).catch(() => {});
-});
+fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
+  if (!m) return;
+  (m.chars || []).forEach(k => { LOCAL_ART[k] = `chars/${k}.png`; });
+  if (m.bg) {
+    document.body.style.background = `url(chars/${m.bg}) center top / cover fixed`;
+    document.body.classList.add("has-wallpaper");
+  }
+  const brand = document.getElementById("brandMascot");
+  if (brand) brand.innerHTML = mascotSVG("chiikawa", 38);
+  if (document.querySelector(".hero")) renderHome();
+}).catch(() => {});
 
 function mascotSVG(kind, size) {
   const s = size || 96;
@@ -462,9 +471,24 @@ function renderFriends() {
         <div class="muted" style="font-size:.72rem">${n ? esc(sn.pinyin) + (n > 1 ? " ×" + n : "") : esc(sn.name)}</div>
       </button>`);
     cell.onclick = () => {
-      if (!n) { toast("win it from a quiz or review! 加油!"); return; }
-      toast(`${sn.emoji} ${sn.hanzi} ${sn.pinyin} — ${sn.en}`);
+      if (!n) { toast("win it from a quiz, review or chat! 加油!"); return; }
       speak(sn.hanzi);
+      const ov = el(`<div class="unlock-pop"><div class="card yellow bigcard" style="text-align:left">
+          <div class="center" style="font-size:3rem">${sn.emoji}</div>
+          <h3 class="center">${esc(sn.hanzi)} <span class="pinyin">${esc(sn.pinyin)}</span></h3>
+          <div class="center muted">${esc(sn.en)}</div>
+          ${sn.order ? `<div class="note" style="margin-top:12px">🗣️ <b>how to order it:</b><br>
+            <span class="hz" style="font-size:1.1rem">${esc(sn.order.hanzi)}</span><br>
+            <span class="pinyin">${esc(sn.order.pinyin)}</span><br>
+            <span class="muted">${esc(sn.order.en)}</span></div>` : ""}
+          ${sn.tip ? `<div class="muted" style="margin-top:8px">💡 ${esc(sn.tip)}</div>` : ""}
+          <div class="cardrow">${sn.order ? `<button class="btn small blue" id="sayOrder">🔊 say the order</button>` : ""}
+            <button class="btn small pink" id="closeSnack">yum!</button></div>
+        </div></div>`);
+      ov.querySelector("#closeSnack").onclick = () => ov.remove();
+      const so = ov.querySelector("#sayOrder");
+      if (so) so.onclick = () => speak(sn.order.hanzi, 0.7);
+      document.body.appendChild(ov);
     };
     shelf.appendChild(cell);
   });
@@ -906,11 +930,22 @@ function speakPractice() {
             <button class="mic" id="mic">🎤</button><div class="heard" id="heard"></div></div>`)
       );
       const mic = document.getElementById("mic"), heard = document.getElementById("heard");
-      mic.onclick = () => {
+      mic.onclick = async () => {
+        // explicit permission first — otherwise recognition can end silently
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop());
+        } catch {
+          heard.textContent = "";
+          toast("🎤 mic is blocked — tap the 🔒/mic icon in the address bar and allow it");
+          return;
+        }
         const r = new SR();
         r.lang = "zh-CN"; r.interimResults = false; r.maxAlternatives = 3;
-        mic.classList.add("listening"); heard.textContent = "listening…";
+        let got = false;
+        mic.classList.add("listening"); heard.textContent = "listening… say it now!";
         r.onresult = e => {
+          got = true;
           const alts = [...e.results[0]].map(a => a.transcript.replace(/[。，？！\s]/g, ""));
           const target = p.hanzi.replace(/[。，？！\s]/g, "");
           const hit = alts.some(a => a === target || a.includes(target) || target.includes(a) && a.length >= Math.ceil(target.length * 0.6));
@@ -919,9 +954,21 @@ function speakPractice() {
           if (hit) { addXP(4); confetti(); toast("哇!! sounded great! 🌸"); }
           else toast("close! listen 🐢 and try again~");
         };
-        r.onerror = () => { heard.textContent = ""; toast("mic didn't catch that — try again"); };
-        r.onend = () => mic.classList.remove("listening");
-        r.start();
+        r.onerror = e => {
+          got = true; heard.textContent = "";
+          toast({
+            "not-allowed": "🎤 mic blocked — allow it via the icon in the address bar",
+            "service-not-allowed": "🎤 mic blocked — allow it in browser settings",
+            "network": "speech check needs internet + Chrome/Edge — use 🐢 shadow mode for now",
+            "no-speech": "didn't hear anything — speak right after tapping 🎤",
+            "audio-capture": "no microphone found on this device",
+          }[e.error] || "mic error (" + e.error + ") — use 🐢 shadow mode");
+        };
+        r.onend = () => {
+          mic.classList.remove("listening");
+          if (!got) { heard.textContent = ""; toast("nothing came through — check the mic icon in the address bar, then try again"); }
+        };
+        try { r.start(); } catch { toast("mic is busy — try again in a second"); }
       };
     } else {
       view.append(el(`<div class="card yellow"><b>Shadow mode:</b> this browser has no speech recognition —
@@ -1083,12 +1130,27 @@ function renderTravel() {
   renderGroup();
 }
 
-/* ================= talk (dialogues) ================= */
+/* ================= talk (chats + dialogues) ================= */
 function renderTalk() {
   view.innerHTML = "";
-  view.append(el(`<div class="scene">${sceneSVG("cafe")}</div>`),
-    el(`<h2>Real conversations 💬</h2>`),
-    el(`<div class="muted" style="margin:0 4px 8px">the messy real thing — clerk speed and all. B is you!</div>`));
+  view.append(el(`<div class="scene">${sceneSVG("cafe")}</div>`));
+  if (CHATS.length) {
+    view.append(el(`<h2>Chat with friends 📱</h2>`),
+      el(`<div class="muted" style="margin:0 4px 8px">they text you into real Taiwan situations — you pick what to say back!</div>`));
+    CHATS.forEach(c => {
+      const cast = CAST.find(x => x.id === c.host);
+      const locked = cast && S.xp < cast.unlock;
+      const b = el(`<button class="lesson ${locked ? "locked" : ""}">
+        <span class="lemoji" style="background:var(--pink)">${locked ? "🔒" : mascotSVG(c.host, 34)}</span>
+        <span class="linfo"><span class="ltitle">${esc(c.title)}</span> ${c.emoji}
+        <br><span class="lsub">${locked ? "meet " + esc(MASCOT_NAMES[c.host].split(" ")[1]) + " first (" + cast.unlock + " ✨xp)" : esc(MASCOT_NAMES[c.host]) + " · 📍 " + esc(c.place)}</span></span>
+        <span class="lstate">${S.doneLessons["chat-" + c.id] ? "✅" : "→"}</span></button>`);
+      b.onclick = () => { if (locked) { toast("earn " + (cast.unlock - S.xp) + " more ✨xp to unlock this friend!"); return; } runChat(c); };
+      view.append(b);
+    });
+  }
+  view.append(el(`<h2>Eavesdrop mode 🎧</h2>`),
+    el(`<div class="muted" style="margin:0 4px 8px">listen in on the real thing — clerk speed and all. B is you!</div>`));
   const all = [...T.dialogues.map(d => ({ ...d, tw: true })), ...D.dialogues];
   if (!all.length) { view.append(el(`<div class="card">content loading…</div>`)); return; }
   all.forEach(d => {
@@ -1099,6 +1161,86 @@ function renderTalk() {
     view.append(b);
   });
 }
+/* reactive chat: typing dots, bubbles popping in, tap-a-reply choices */
+function runChat(c) {
+  let i = 0, score = 0, total = 0, immersion = false;
+  view.innerHTML = "";
+  view.append(
+    el(`<div class="backrow"><button class="iconbtn" id="bk">←</button>
+        <span style="display:inline-flex;align-items:center;gap:8px">${mascotSVG(c.host, 40)}
+        <span><b>${esc(MASCOT_NAMES[c.host])}</b><br><span class="muted" style="font-size:.75rem">📍 ${esc(c.place)}</span></span></span>
+        <span class="spacer"></span>
+        <button class="btn small ghost" id="zen">🙈 hide help</button></div>`)
+  );
+  const wrap = el(`<div class="bubblewrap chatwrap"></div>`);
+  const tray = el(`<div class="chattray"></div>`);
+  view.append(wrap, tray);
+  document.getElementById("bk").onclick = renderTalk;
+  document.getElementById("zen").onclick = e => {
+    immersion = !immersion;
+    wrap.classList.toggle("zen", immersion);
+    e.target.textContent = immersion ? "🙉 show help" : "🙈 hide help";
+  };
+  const scrollDown = () => { if (wrap.lastChild) wrap.lastChild.scrollIntoView({ block: "end", behavior: "smooth" }); };
+  const addBubble = (who, m, extra) => {
+    const b = el(`<div class="bubble ${who} popin">
+        <div class="hz">${esc(m.hanzi)}</div><div class="pinyin">${esc(m.pinyin)}</div>
+        <div class="en">${esc(m.en)}</div>${m.note ? `<div class="note">💡 ${esc(m.note)}</div>` : ""}${extra || ""}</div>`);
+    b.onclick = () => { if (b.classList.contains("reveal")) speak(m.hanzi, who === "A" ? 0.85 : 0.75); else b.classList.add("reveal"); };
+    if (!immersion) b.classList.add("reveal");
+    wrap.appendChild(b); scrollDown();
+    return b;
+  };
+  const npcSay = (m, then) => {
+    const t = el(`<div class="bubble A typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`);
+    wrap.appendChild(t); scrollDown();
+    setTimeout(() => {
+      t.remove();
+      addBubble("A", m);
+      speak(m.hanzi, 0.85);
+      setTimeout(then, 650 + Math.min(1200, m.hanzi.length * 90));
+    }, 550 + Math.random() * 500);
+  };
+  const step = () => {
+    tray.innerHTML = "";
+    if (i >= c.script.length) return finish();
+    const node = c.script[i++];
+    if (node.npc) return npcSay(node.npc, step);
+    // choice point
+    tray.appendChild(el(`<div class="muted center" style="margin-bottom:4px">your reply — pick one! 👇</div>`));
+    node.choice.options.forEach(o => {
+      const btn = el(`<button class="choice chatchoice"><span class="hz">${esc(o.hanzi)}</span>
+          <span class="pinyin">${esc(o.pinyin)}</span><span class="muted" style="font-size:.8rem">${esc(o.en)}</span></button>`);
+      btn.onclick = () => {
+        tray.innerHTML = "";
+        total++;
+        if (o.good !== false) score++;
+        addBubble("B", o);
+        speak(o.hanzi, 0.75);
+        setTimeout(() => { if (o.react) npcSay(o.react, step); else step(); }, 800);
+      };
+      tray.appendChild(btn);
+    });
+    scrollDown();
+  };
+  const finish = () => {
+    const great = total > 0 && score >= Math.ceil(total * 0.7);
+    addXP(score * 4);
+    if (great) awardSnack();
+    if (!S.doneLessons["chat-" + c.id]) { S.doneLessons["chat-" + c.id] = today(); save(); }
+    bumpStreak(); confetti();
+    tray.appendChild(el(`<div class="card mint bigcard">
+        <div class="mascot-inline wobble">${mascotSVG(c.host, 64)}</div>
+        <h3>${great ? "聊得真好! great chat! 🎀" : "chat done! 加油~"} ${score}/${total}</h3>
+        <div class="cardrow"><button class="btn pink" id="reChat">chat again</button>
+        <button class="btn ghost" id="outChat">back</button></div></div>`));
+    tray.querySelector("#reChat").onclick = () => runChat(c);
+    tray.querySelector("#outChat").onclick = renderTalk;
+    scrollDown();
+  };
+  step();
+}
+
 function showDialogue(d) {
   let hide = null; // null | "text" (listening drill) — plus per-line reveal
   view.innerHTML = "";
