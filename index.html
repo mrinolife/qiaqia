@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QiaQia 恰恰 · Chinese for the Trip</title>
+<meta name="theme-color" content="#fff7ec">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='34' r='24' fill='%23fff' stroke='%234a3b30' stroke-width='2.5'/%3E%3Ccircle cx='24' cy='32' r='2.6' fill='%234a3b30'/%3E%3Ccircle cx='40' cy='32' r='2.6' fill='%234a3b30'/%3E%3Ccircle cx='19' cy='39' r='4' fill='%23ffc4d0'/%3E%3Ccircle cx='45' cy='39' r='4' fill='%23ffc4d0'/%3E%3Cpath d='M28 40 q4 4 8 0' stroke='%234a3b30' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header id="topbar">
+  <div id="brand">
+    <span class="brand-mascot" id="brandMascot"></span>
+    <span class="brand-name">QiaQia <span class="brand-cn">恰恰</span></span>
+  </div>
+  <div id="streakChip" class="chip" title="day streak">🔥 <b id="streakN">0</b></div>
+</header>
+
+<main id="view"></main>
+
+<nav id="tabs">
+  <button data-tab="home"    class="tab active"><span>🏠</span>Home</button>
+  <button data-tab="learn"   class="tab"><span>🌱</span>Learn</button>
+  <button data-tab="cards"   class="tab"><span>🎴</span>Cards</button>
+  <button data-tab="quiz"    class="tab"><span>⭐</span>Quiz</button>
+  <button data-tab="phrases" class="tab"><span>🧳</span>Travel</button>
+  <button data-tab="talk"    class="tab"><span>💬</span>Talk</button>
+</nav>
+
+<div id="toast"></div>
+<div id="confetti"></div>
+
+<script src="data.js"></script>
+<script src="taiwan.js"></script>
+<script src="strokes.js"></script>
+<script src="vendor-hanzi-writer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
