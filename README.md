@@ -10,7 +10,8 @@ localStorage, all content ships with the app, works offline once loaded.
 bash start.sh        # idempotent, binds 0.0.0.0:8807, kept alive by cron (*/5)
 ```
 
-Open http://localhost:8807 (or the Tailscale IP from a phone). "Add to Home
+Live anywhere: **https://mrinolife.github.io/qiaqia/** (GitHub Pages, auto-updates on push).
+Local dev: http://localhost:8807. "Add to Home
 Screen" installs it as an app.
 
 ## The five skills

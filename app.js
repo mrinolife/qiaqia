@@ -172,8 +172,18 @@ function checkUnlocks() {
   }
 }
 
+/* local-only art overrides: drop chars/<id>.png next to the app (gitignored,
+   never pushed) and that character uses the image instead of the drawn SVG */
+const LOCAL_ART = {};
+Object.keys(MASCOT_NAMES).forEach(k => {
+  fetch(`chars/${k}.png`, { method: "HEAD" }).then(r => {
+    if (r.ok) LOCAL_ART[k] = `chars/${k}.png`;
+  }).catch(() => {});
+});
+
 function mascotSVG(kind, size) {
   const s = size || 96;
+  if (LOCAL_ART[kind]) return `<img src="${LOCAL_ART[kind]}" width="${s}" height="${s}" style="object-fit:contain" alt="">`;
   const ink = "#4a3b30";
   const blush = `<circle cx="19" cy="38" r="3.6" fill="#ffc4d0" opacity=".85"/><circle cx="45" cy="38" r="3.6" fill="#ffc4d0" opacity=".85"/>`;
   let body = "";
