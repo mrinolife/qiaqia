@@ -196,7 +196,9 @@ function checkUnlocks() {
 /* local-only art overrides: drop chars/<id>.png next to the app (gitignored,
    never pushed) and that character uses the image instead of the drawn SVG */
 const LOCAL_ART = {}, LOCAL_SCENES = {};
-fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
+// local-art probe only where it can exist (jzn's machine) — keeps the public site's console clean
+const isLocalHost = /^(localhost|127\.|192\.168\.|10\.|172\.)/.test(location.hostname);
+(isLocalHost ? fetch("chars/manifest.json").then(r => r.ok ? r.json() : null) : Promise.resolve(null)).then(m => {
   if (!m) return;
   (m.chars || []).forEach(k => { LOCAL_ART[k] = `chars/${k}.png`; });
   Object.entries(m.scenes || {}).forEach(([k, f]) => { LOCAL_SCENES[k] = `chars/${f}`; });
@@ -526,11 +528,26 @@ const LEX = (() => {
 })();
 const stripTones = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[\s'’-]/g, "").toLowerCase();
 
+/* Taiwan writes traditional — show 繁體 alongside wherever she'll read signs/menus */
+const TRAD = window.QIAQIA_TRAD || {}, TRAD_CHAR = window.QIAQIA_TRAD_CHAR || {};
+function tradOf(s) {
+  if (!s) return null;
+  if (TRAD[s]) return TRAD[s];
+  // piecewise over hanzi runs: phrase map first, then per-char fallback
+  const out = s.replace(/[一-鿿]+/g, run =>
+    TRAD[run] || [...run].map(c => TRAD_CHAR[c] || c).join(""));
+  return out !== s ? out : null;
+}
+const tradChip = s => {
+  const t = tradOf(s);
+  return t ? `<div class="tradline">繁 ${esc(t)} <span class="muted" style="font-size:.68rem">(what Taiwan signs use)</span></div>` : "";
+};
+
 function wordPopup(w) {
   speak(w.hanzi);
   const chars = [...w.hanzi].filter(c => /[一-鿿]/.test(c));
   const ov = el(`<div class="unlock-pop"><div class="card bigcard" style="max-width:340px;width:100%">
-      <div class="hanzi-lg">${esc(w.hanzi)}</div>
+      <div class="hanzi-lg">${esc(w.hanzi)}</div>${tradChip(w.hanzi)}
       <div class="pinyin">${esc(w.pinyin)}</div><div class="en">${esc(w.en)}</div>
       <div class="cardrow"><button class="iconbtn" id="wpS">🔊</button><button class="iconbtn" id="wpSlow">🐢</button></div>
       ${chars.length ? `<div class="muted" style="margin-top:8px">tap a character to see its strokes:</div>
@@ -575,7 +592,8 @@ function renderDict() {
       : LEX.filter(w => w.hanzi.includes(q) || stripTones(w.pinyin).includes(nq) || w.en.toLowerCase().replace(/\s/g, "").includes(nq)).slice(0, 40);
     if (!hits.length) { res.append(el(`<div class="card center muted">nothing found — try pinyin without tones, like "nihao"</div>`)); return; }
     hits.forEach(w => {
-      const row = el(`<button class="lesson"><span class="linfo"><span class="ltitle">${esc(w.hanzi)} <span class="pinyin" style="font-size:.9rem">${esc(w.pinyin)}</span></span>
+      const t = tradOf(w.hanzi);
+      const row = el(`<button class="lesson"><span class="linfo"><span class="ltitle">${esc(w.hanzi)}${t ? ` <span class="muted" style="font-weight:400">繁 ${esc(t)}</span>` : ""} <span class="pinyin" style="font-size:.9rem">${esc(w.pinyin)}</span></span>
         <br><span class="lsub">${esc(w.en)}</span></span><span class="badge">${esc(w.src)}</span></button>`);
       row.onclick = () => wordPopup(w);
       res.append(row);
@@ -630,6 +648,7 @@ function renderFriends() {
       const ov = el(`<div class="unlock-pop"><div class="card yellow bigcard" style="text-align:left">
           <div class="center" style="font-size:3rem">${sn.emoji}</div>
           <h3 class="center">${esc(sn.hanzi)} <span class="pinyin">${esc(sn.pinyin)}</span></h3>
+          <div class="center">${tradChip(sn.hanzi)}</div>
           <div class="center muted">${esc(sn.en)}</div>
           ${sn.order ? `<div class="note" style="margin-top:12px">🗣️ <b>how to order it:</b><br>
             <span class="hz" style="font-size:1.1rem">${esc(sn.order.hanzi)}</span><br>
@@ -826,7 +845,7 @@ function runLesson(l) {
 function runVocabLesson(l) {
   let i = 0;
   const show = () => {
-    if (i >= l.words.length) return vocabCheck(l, 0, 0);
+    if (i >= l.words.length) return vocabCheck(l);
     const w = l.words[i];
     view.innerHTML = "";
     view.append(
@@ -850,22 +869,24 @@ function runVocabLesson(l) {
   };
   show();
 }
-function vocabCheck(l, qi, score) {
-  const qs = Math.min(5, l.words.length);
-  if (qi >= qs) {
+function vocabCheck(l, queue, score, asked) {
+  // duolingo-style: missed words go back in the queue until answered right (capped)
+  if (!queue) { queue = shuffle(l.words).slice(0, 5); score = 0; asked = 0; }
+  if (!queue.length || asked >= 12) {
     view.innerHTML = "";
     const hero = shuffle(unlockedCast())[0];
     view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</div>
-      <h3>Check done! ${score}/${qs} 🌸</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
+      <h3>Check done! ${score}/${Math.min(5, l.words.length)} first-try 🌸</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
     document.getElementById("fin").onclick = () => finishLesson(l);
     return;
   }
-  const w = shuffle(l.words)[0];
-  const others = sample(D.vocab.filter(v => v.hanzi !== w.hanzi), 3);
+  const w = queue[0];
+  const others = sample(D.vocab.filter(v => v.hanzi !== w.hanzi && v.en !== w.en), 3);
   const opts = shuffle([w, ...others]);
+  const firstTry = !w._retry;
   view.innerHTML = "";
   view.append(
-    el(`<div class="qmeta"><span class="muted">quick check ${qi + 1}/${qs}</span><span class="muted">⭐ ${score}</span></div>`),
+    el(`<div class="qmeta"><span class="muted">quick check · ${queue.length} to go${w._retry ? " · retry!" : ""}</span><span class="muted">⭐ ${score}</span></div>`),
     el(`<div class="card bigcard"><div class="hanzi-xl">${esc(w.hanzi)}</div>
         <button class="iconbtn" id="sp" style="margin-top:8px">🔊</button></div>`)
   );
@@ -876,7 +897,10 @@ function vocabCheck(l, qi, score) {
       const right = o.hanzi === w.hanzi;
       b.classList.add(right ? "right" : "wrong");
       if (!right) [...ch.children].find(c => c.textContent === w.en)?.classList.add("right");
-      setTimeout(() => vocabCheck(l, qi + 1, score + (right ? 1 : 0)), 700);
+      queue.shift();
+      if (right) { if (firstTry) score++; }
+      else { noteWrong(w.id); const again = Object.assign({}, w, { _retry: true }); queue.push(again); toast("we'll see that one again~ 加油!"); }
+      setTimeout(() => vocabCheck(l, queue, score, asked + 1), right ? 700 : 1100);
     };
     ch.appendChild(b);
   });
@@ -972,7 +996,7 @@ function runScenarioLesson(l) {
 }
 function phraseCard(p) {
   const c = el(`<div class="card phrase"><div class="ptext">
-      <div class="hz">${esc(p.hanzi)}</div><div class="pinyin">${esc(p.pinyin)}</div>
+      <div class="hz">${esc(p.hanzi)}</div>${tradChip(p.hanzi)}<div class="pinyin">${esc(p.pinyin)}</div>
       <div class="en muted">${esc(p.en)}</div>${p.note ? `<div class="note">💡 ${esc(p.note)}</div>` : ""}</div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <button class="iconbtn sp">🔊</button><button class="iconbtn sl">🐢</button>
@@ -1146,7 +1170,13 @@ function mcRound(kind) {
     }
     const w = qs[i];
     const sub = kind === "listen" ? "listen" : (Math.random() < 0.5 ? "meaning" : "pinyin");
-    const others = sample(pool.filter(v => v.hanzi !== w.hanzi), 3);
+    const labelOf = o => sub === "pinyin" ? stripTones(o.pinyin) : sub === "listen" ? o.hanzi : o.en.toLowerCase();
+    // distractors must differ in the *displayed* label too (他/她 are both "tā")
+    const others = [];
+    for (const v of shuffle(pool)) {
+      if (others.length === 3) break;
+      if (v.hanzi !== w.hanzi && labelOf(v) !== labelOf(w) && !others.some(o => labelOf(o) === labelOf(v))) others.push(v);
+    }
     const opts = shuffle([w, ...others]);
     view.innerHTML = "";
     view.append(el(`<div class="qmeta"><button class="iconbtn" id="bk">←</button>
@@ -1186,7 +1216,10 @@ function mcRound(kind) {
 
 /* speaking practice: shadow + mic check */
 function speakPractice() {
-  const items = shuffle([...T.scenarios.flatMap(s => s.phrases), ...D.phrases]).slice(0, 10);
+  // gentle ramp: short phrases first until she's spoken a while
+  let items = shuffle([...T.scenarios.flatMap(s => s.phrases), ...D.phrases]);
+  if ((S.stats.spoken || 0) < 25) items = items.sort((a, b) => a.hanzi.length - b.hanzi.length);
+  items = items.slice(0, 10);
   if (!items.length) { toast("content still loading"); return; }
   let i = 0;
   const show = () => {
@@ -1390,7 +1423,8 @@ function renderTravel() {
     body.innerHTML = "";
     const g = groups.find(x => x.key === active);
     if (g.culture) {
-      T.culture.forEach(t => body.append(el(`<div class="card yellow"><h3>${t.emoji} ${esc(t.title)}</h3><div>${esc(t.tip)}</div></div>`)));
+      const scriptTip = { emoji: "🈶", title: "Taiwan writes traditional characters", tip: "You're learning simplified (like mainland China + most apps), but Taiwan's menus, signs and MRT maps use traditional characters — 鸡排 will appear as 雞排. That's why phrases and foods here show a 繁 line: you don't have to write them, just recognize them. Many look similar, and locals will happily read your simplified notes." };
+      [scriptTip, ...T.culture].forEach(t => body.append(el(`<div class="card yellow"><h3>${t.emoji} ${esc(t.title)}</h3><div>${esc(t.tip)}</div></div>`)));
       return;
     }
     if (g.intro) body.append(el(`<div class="card pink">${esc(g.intro)}</div>`));

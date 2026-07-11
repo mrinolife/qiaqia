@@ -3,7 +3,8 @@
    No version bumps or reinstalls needed when files change on the server. */
 const CACHE = "qiaqia-v2";
 const ASSETS = ["./", "index.html", "style.css", "app.js", "data.js", "taiwan.js", "chats.js",
-                "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest"];
+                "trad.js", "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest",
+                "icon-180.png", "icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
