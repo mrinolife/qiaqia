@@ -285,6 +285,16 @@ input[type="date"] {
 .monsterbox { height: 56px; width: 56px; display: flex; align-items: center; justify-content: center; }
 .monsterbox svg { width: 56px; height: 56px; }
 
+/* ---------- streak calendar ---------- */
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.calhd { font-size: .68rem; font-weight: 800; color: var(--ink-soft); }
+.calday {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; border-radius: 10px; color: var(--ink-soft);
+}
+.calday.on { background: var(--pink); color: var(--ink); }
+.calday.today { outline: 2px solid var(--line); font-weight: 800; color: var(--ink); }
+
 /* ---------- reactive chat ---------- */
 .chatwrap { min-height: 40vh; padding-bottom: 8px; }
 .bubble.popin { animation: bubblein .28s cubic-bezier(.34,1.56,.64,1); }

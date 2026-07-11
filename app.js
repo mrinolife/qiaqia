@@ -15,14 +15,17 @@ function loadState() {
 }
 function blankState() {
   return { doneLessons: {}, srs: {}, xp: 0, streak: { last: "", count: 0 }, tripDate: DEFAULT_TRIP,
-           stats: { quiz: 0, correct: 0, spoken: 0, written: 0 }, snacks: {}, metFriends: {} };
+           stats: { quiz: 0, correct: 0, spoken: 0, written: 0 }, snacks: {}, metFriends: {},
+           activeDays: {}, daily: {}, name: "Rachel" };
 }
 const S = loadState();
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(S)); }
 function today() { return new Date().toISOString().slice(0, 10); }
 function bumpStreak() {
   const t = today();
-  if (S.streak.last === t) return;
+  S.activeDays = S.activeDays || {};
+  S.activeDays[t] = 1;
+  if (S.streak.last === t) { save(); return; }
   const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
   S.streak.count = (S.streak.last === y) ? S.streak.count + 1 : 1;
   S.streak.last = t; save(); renderStreak();
@@ -376,20 +379,73 @@ function maybePeek() {
 }
 function renderStreak() { document.getElementById("streakN").textContent = S.streak.count; }
 
+/* ================= today's mix (guided daily session) ================= */
+const MIX = { active: false, steps: [], i: 0 };
+function startMix() {
+  MIX.steps = [];
+  const due = dueCards().length;
+  if (due) MIX.steps.push(["cards", `🎴 review ${Math.min(due, 30)} cards`]);
+  const next = LESSONS.find(l => !S.doneLessons[l.id]);
+  if (next) MIX.steps.push(["lesson", `${next.emoji} lesson: ${next.title}`]);
+  MIX.steps.push(["quiz", "⭐ one 討伐 quiz round"]);
+  MIX.active = true; MIX.i = 0;
+  mixGo();
+}
+function mixGo() {
+  if (!MIX.active) return go("home");
+  if (MIX.i >= MIX.steps.length) {
+    MIX.active = false;
+    S.daily = S.daily || {}; S.daily[today()] = true;
+    addXP(10); bumpStreak(); save(); confetti();
+    const hero = shuffle(unlockedCast())[0];
+    view.innerHTML = "";
+    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 90)}</div>
+      <h3>Today's mix complete! 🌟 +10 bonus xp</h3>
+      <div class="muted">${esc(MASCOT_NAMES[hero.id])} says: 今天辛苦了! see you tomorrow~</div>
+      <button class="btn big yellow" id="mixHome">back home ✨</button></div>`));
+    document.getElementById("mixHome").onclick = () => go("home");
+    return;
+  }
+  const [kind, label] = MIX.steps[MIX.i];
+  const hero = shuffle(unlockedCast())[0];
+  view.innerHTML = "";
+  view.append(el(`<div class="card blue bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 80)}</div>
+    <div class="muted">today's mix · step ${MIX.i + 1}/${MIX.steps.length}</div>
+    <h3>${esc(label)}</h3>
+    <div class="cardrow"><button class="btn big pink" id="mixStart">let's go! →</button></div>
+    <button class="btn small ghost" id="mixStop" style="margin-top:8px">stop the mix</button></div>`));
+  document.getElementById("mixStart").onclick = () => {
+    MIX.i++;
+    if (kind === "cards") renderCards();
+    else if (kind === "lesson") { const l = LESSONS.find(x => !S.doneLessons[x.id]); l ? runLesson(l) : mixGo(); }
+    else mcRound("mixed");
+  };
+  document.getElementById("mixStop").onclick = () => { MIX.active = false; go("home"); };
+}
+function mixContinueBtn() {
+  if (!MIX.active) return null;
+  const b = el(`<button class="btn big blue" style="margin-top:10px">▶ continue today's mix (${MIX.i}/${MIX.steps.length} done)</button>`);
+  b.onclick = mixGo;
+  return b;
+}
+
 /* ================= home ================= */
 function renderHome() {
   const days = Math.max(0, Math.ceil((new Date(S.tripDate + "T00:00") - new Date()) / 864e5));
   const learned = learnedWords().length;
   const due = dueCards().length;
   const next = LESSONS.find(l => !S.doneLessons[l.id]);
+  MIX.active = false; // leaving an unfinished mix resets it
   const who = shuffle(unlockedCast())[0];
   const friendsN = unlockedCast().length;
+  const line = who.lines[Math.floor(Math.random() * who.lines.length)];
+  const greet = Math.random() < 0.4 ? (S.name || "Rachel") + "! " : "";
   view.innerHTML = "";
   view.append(
     el(`<div class="scene">${sceneSVG("meadow")}</div>`),
     el(`<div class="card pink hero">
           <div class="mascot wobble">${mascotSVG(who.id)}<div class="muted center" style="font-size:.68rem">${esc(MASCOT_NAMES[who.id])}</div></div>
-          <div class="speech">${esc(who.lines[Math.floor(Math.random() * who.lines.length)])}</div>
+          <div class="speech">${esc(greet + line)}</div>
         </div>`),
     el(`<div class="card yellow center">
           <div class="muted">✈️ Taiwan trip in</div>
@@ -402,14 +458,15 @@ function renderHome() {
           <div class="card"><div class="stat-big">${S.xp}</div><div class="muted">✨ xp</div></div>
         </div>`),
     el(`<div class="card">
-          <h3>Today's plan 🍡</h3>
-          <div class="muted" style="margin-bottom:10px">${next ? "Next lesson: <b>" + esc(next.emoji + " " + next.title) + "</b>" : "All lessons done — 哇!!"}
-            ${due ? " · <b>" + due + "</b> cards to review" : ""}</div>
-          <div class="cardrow" style="justify-content:flex-start">
-            ${next ? `<button class="btn pink" id="goNext">Start lesson</button>` : ""}
-            <button class="btn blue" id="goReview">Review cards${due ? " (" + due + ")" : ""}</button>
+          <h3>Today's mix 🍡 ${S.daily && S.daily[today()] ? '<span class="badge" style="background:var(--mint)">done today ✅</span>' : ""}</h3>
+          <div class="muted" style="margin-bottom:10px">${due ? "<b>" + due + "</b> cards to review · " : ""}${next ? "next: <b>" + esc(next.emoji + " " + next.title) + "</b> · " : ""}one quiz round</div>
+          <button class="btn big yellow" id="goMix">▶ start today's mix</button>
+          <div class="cardrow" style="justify-content:flex-start;margin-top:8px">
+            ${next ? `<button class="btn small pink" id="goNext">just the lesson</button>` : ""}
+            <button class="btn small blue" id="goReview">just cards${due ? " (" + due + ")" : ""}</button>
           </div>
         </div>`),
+    calendarCard(),
     el(`<div class="card blue" id="friendsCard" style="cursor:pointer">
           <h3>Friends & snacks 🧺 <span class="muted">${friendsN}/${CAST.length} met</span></h3>
           <div class="friendrow">${unlockedCast().map(c => mascotSVG(c.id, 40)).join("")}
@@ -433,6 +490,7 @@ function renderHome() {
   view.append(progress);
   document.getElementById("tripDate").onchange = e => { S.tripDate = e.target.value; save(); renderHome(); };
   document.getElementById("friendsCard").onclick = renderFriends;
+  document.getElementById("goMix").onclick = startMix;
   const gn = document.getElementById("goNext"); if (gn) gn.onclick = () => runLesson(next);
   document.getElementById("goReview").onclick = () => go("cards");
   view.querySelectorAll("[data-go]").forEach(b => b.onclick = () => {
@@ -646,6 +704,24 @@ function monsterSVG(frac) {
     ${eyes}${mood}</svg>`;
 }
 
+/* month calendar of active days */
+function calendarCard() {
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  const firstDow = new Date(y, m, 1).getDay();
+  const nDays = new Date(y, m + 1, 0).getDate();
+  const tISO = today();
+  let cells = "<span></span>".repeat(firstDow);
+  for (let d = 1; d <= nDays; d++) {
+    const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const active = (S.activeDays || {})[iso];
+    const isToday = iso === tISO;
+    cells += `<span class="calday ${active ? "on" : ""} ${isToday ? "today" : ""}">${active ? "🌸" : d}</span>`;
+  }
+  const monthName = now.toLocaleString("en", { month: "long" });
+  return el(`<div class="card"><h3>${monthName} 🗓️ <span class="muted">${Object.keys(S.activeDays || {}).length} active days</span></h3>
+    <div class="cal"><span class="calhd">S</span><span class="calhd">M</span><span class="calhd">T</span><span class="calhd">W</span><span class="calhd">T</span><span class="calhd">F</span><span class="calhd">S</span>${cells}</div></div>`);
+}
+
 /* ================= learn path ================= */
 function renderLearn() {
   view.innerHTML = "";
@@ -674,6 +750,7 @@ function finishLesson(l, backTo) {
     addXP(20);
   }
   bumpStreak(); save(); confetti(); toast("哇!! lesson done! +20 xp");
+  if (MIX.active) return mixGo();
   go(backTo || "learn");
 }
 
@@ -878,6 +955,7 @@ function flashCard(due, i) {
       <h3>Deck cleared! +${due.length * 2} xp ✨</h3>
       <div class="muted">${esc(MASCOT_NAMES[hero.id])}: 好棒! see you at the next review~</div></div>`));
     addXP(due.length * 2);
+    const mx = mixContinueBtn(); if (mx) view.append(mx);
     return;
   }
   const w = due[i];
@@ -994,6 +1072,7 @@ function mcRound(kind) {
         <div class="cardrow"><button class="btn pink" id="ag">again</button><button class="btn ghost" id="bk">back</button></div></div>`));
       document.getElementById("ag").onclick = () => mcRound(kind);
       document.getElementById("bk").onclick = renderPractice;
+      const mx = mixContinueBtn(); if (mx) view.append(mx);
       return;
     }
     const w = qs[i];
