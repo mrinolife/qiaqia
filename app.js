@@ -441,6 +441,85 @@ function renderHome() {
   });
 }
 
+/* ================= dictionary ================= */
+const LEX = (() => {
+  const seen = new Set(), out = [];
+  const push = (hanzi, pinyin, en, src) => {
+    if (!hanzi || seen.has(hanzi)) return;
+    seen.add(hanzi); out.push({ hanzi, pinyin, en, src });
+  };
+  D.vocab.forEach(v => push(v.hanzi, v.pinyin, v.en, "HSK1"));
+  D.phrases.forEach(p => push(p.hanzi, p.pinyin, p.en, "phrase"));
+  T.scenarios.forEach(s => s.phrases.forEach(p => push(p.hanzi, p.pinyin, p.en, "travel")));
+  SNACKS.forEach(f => push(f.hanzi, f.pinyin, f.en, "food"));
+  D.dialogues.concat(T.dialogues).forEach(d => d.turns.forEach(t => push(t.hanzi, t.pinyin, t.en, "line")));
+  return out;
+})();
+const stripTones = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[\s'’-]/g, "").toLowerCase();
+
+function wordPopup(w) {
+  speak(w.hanzi);
+  const chars = [...w.hanzi].filter(c => /[一-鿿]/.test(c));
+  const ov = el(`<div class="unlock-pop"><div class="card bigcard" style="max-width:340px;width:100%">
+      <div class="hanzi-lg">${esc(w.hanzi)}</div>
+      <div class="pinyin">${esc(w.pinyin)}</div><div class="en">${esc(w.en)}</div>
+      <div class="cardrow"><button class="iconbtn" id="wpS">🔊</button><button class="iconbtn" id="wpSlow">🐢</button></div>
+      ${chars.length ? `<div class="muted" style="margin-top:8px">tap a character to see its strokes:</div>
+      <div class="cardrow" id="wpChars">${chars.map(c => `<button class="tile" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+      <div id="wpWriter" style="display:none;margin:8px auto 0;width:170px;height:170px;background:var(--card);border:2px solid var(--line);border-radius:16px"></div>` : ""}
+      <button class="btn small pink" id="wpX" style="margin-top:10px">close</button>
+    </div></div>`);
+  ov.querySelector("#wpS").onclick = () => speak(w.hanzi);
+  ov.querySelector("#wpSlow").onclick = () => speak(w.hanzi, 0.5);
+  ov.querySelector("#wpX").onclick = () => ov.remove();
+  ov.addEventListener("click", e => { if (e.target === ov) ov.remove(); });
+  ov.querySelectorAll("#wpChars .tile").forEach(t => t.onclick = () => {
+    const c = t.dataset.c;
+    const box = ov.querySelector("#wpWriter");
+    box.style.display = "block"; box.innerHTML = "";
+    speak(c);
+    const single = LEX.find(x => x.hanzi === c);
+    if (window.HanziWriter && window.QIAQIA_STROKES && window.QIAQIA_STROKES[c]) {
+      HanziWriter.create(box, c, { width: 166, height: 166, padding: 8, showOutline: true,
+        strokeColor: "#4a3b30", outlineColor: "#eadfd2",
+        charDataLoader: (ch, done) => done(window.QIAQIA_STROKES[ch]) }).animateCharacter();
+    } else box.textContent = c;
+    if (single) toast(`${c} = ${single.pinyin} · ${single.en}`);
+  });
+  document.body.appendChild(ov);
+}
+
+function renderDict() {
+  view.innerHTML = "";
+  view.append(
+    el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">🔍 Dictionary <span class="muted">${LEX.length} entries</span></h3></div>`),
+    el(`<input id="dictQ" type="search" placeholder="hanzi · pinyin (ni hao) · english" autocomplete="off"
+        style="width:100%;padding:12px;border:2.5px solid var(--line);border-radius:16px;font-size:1rem;font-family:inherit;background:var(--card)">`)
+  );
+  const res = el(`<div></div>`);
+  view.append(res);
+  const show = q => {
+    res.innerHTML = "";
+    q = q.trim();
+    const nq = stripTones(q);
+    const hits = !q ? LEX.slice(0, 25)
+      : LEX.filter(w => w.hanzi.includes(q) || stripTones(w.pinyin).includes(nq) || w.en.toLowerCase().replace(/\s/g, "").includes(nq)).slice(0, 40);
+    if (!hits.length) { res.append(el(`<div class="card center muted">nothing found — try pinyin without tones, like "nihao"</div>`)); return; }
+    hits.forEach(w => {
+      const row = el(`<button class="lesson"><span class="linfo"><span class="ltitle">${esc(w.hanzi)} <span class="pinyin" style="font-size:.9rem">${esc(w.pinyin)}</span></span>
+        <br><span class="lsub">${esc(w.en)}</span></span><span class="badge">${esc(w.src)}</span></button>`);
+      row.onclick = () => wordPopup(w);
+      res.append(row);
+    });
+  };
+  const q = document.getElementById("dictQ");
+  q.oninput = () => show(q.value);
+  q.focus();
+  show("");
+  document.getElementById("bk").onclick = () => go("home");
+}
+document.getElementById("dictBtn").onclick = () => { speechSynthesis && speechSynthesis.cancel(); renderDict(); };
+
 /* ================= friends & snacks ================= */
 function renderFriends() {
   view.innerHTML = "";
