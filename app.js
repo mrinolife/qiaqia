@@ -16,7 +16,7 @@ function loadState() {
 function blankState() {
   return { doneLessons: {}, srs: {}, xp: 0, streak: { last: "", count: 0 }, tripDate: DEFAULT_TRIP,
            stats: { quiz: 0, correct: 0, spoken: 0, written: 0 }, snacks: {}, metFriends: {},
-           activeDays: {}, daily: {}, name: "Rachel" };
+           activeDays: {}, daily: {}, name: "Rachel", wrong: {} };
 }
 const S = loadState();
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(S)); }
@@ -70,6 +70,15 @@ function learnedWords() {
   return ws;
 }
 function quizPool() { const w = learnedWords(); return w.length >= 8 ? w : D.vocab.slice(0, 30); }
+
+/* weak-word tracking: misses raise a word's heat, hits cool it down */
+function noteWrong(id) { S.wrong = S.wrong || {}; S.wrong[id] = (S.wrong[id] || 0) + 2; save(); }
+function noteRight(id) { S.wrong = S.wrong || {}; if (S.wrong[id]) { S.wrong[id] = Math.max(0, S.wrong[id] - 1); save(); } }
+function weakWords() {
+  return Object.entries(S.wrong || {}).filter(([, n]) => n >= 2)
+    .map(([id, n]) => ({ w: D.vocab.find(v => v.id === id), n })).filter(x => x.w)
+    .sort((a, b) => b.n - a.n).map(x => x.w);
+}
 
 /* ================= tts / speech ================= */
 let VOICE = null;
@@ -484,9 +493,10 @@ function renderHome() {
           </div>
         </div>`)
   );
-  const progress = el(`<div class="card"><h3>HSK 1 progress 🌸</h3>
+  const progress = el(`<div class="card" style="cursor:pointer"><h3>HSK 1 progress 🌸 <span class="muted" style="font-size:.8rem">tap for details</span></h3>
     <div class="progress-track"><div class="progress-fill" style="width:${Math.round(learned / Math.max(1, D.vocab.length) * 100)}%"></div></div>
-    <div class="muted" style="margin-top:6px">${Math.round(learned / Math.max(1, D.vocab.length) * 100)}% of HSK 1 words learned</div></div>`);
+    <div class="muted" style="margin-top:6px">${Math.round(learned / Math.max(1, D.vocab.length) * 100)}% of HSK 1 words learned${weakWords().length ? " · <b>" + weakWords().length + "</b> weak words 💪" : ""}</div></div>`);
+  progress.onclick = renderMastery;
   view.append(progress);
   document.getElementById("tripDate").onchange = e => { S.tripDate = e.target.value; save(); renderHome(); };
   document.getElementById("friendsCard").onclick = renderFriends;
@@ -702,6 +712,43 @@ function monsterSVG(frac) {
     <path d="M10 36 q-2 -24 22 -24 q24 0 22 24 q1 16 -10 14 q-4 -1 -5 3 q-4 3 -7 -1 q-3 4 -7 1 q-1 -4 -5 -3 q-11 2 -10 -14 Z"
       fill="#b7a6d9" stroke="#4a3b30" stroke-width="2.4" stroke-linejoin="round"/>
     ${eyes}${mood}</svg>`;
+}
+
+/* per-category mastery breakdown */
+function renderMastery() {
+  const learnedSet = new Set(learnedWords().map(w => w.id));
+  const cats = {};
+  D.vocab.forEach(v => {
+    const c = cats[v.cat] = cats[v.cat] || { total: 0, learned: 0, solid: 0, weak: 0 };
+    c.total++;
+    if (learnedSet.has(v.id)) c.learned++;
+    const srs = S.srs[v.id];
+    if (srs && srs.iv >= 4 && !(S.wrong || {})[v.id]) c.solid++;
+    if ((S.wrong || {})[v.id] >= 2) c.weak++;
+  });
+  view.innerHTML = "";
+  view.append(el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">Progress 🌸</h3></div>`),
+    el(`<div class="muted" style="margin:0 4px 8px">seen = met in a lesson · solid = keeps surviving spaced reviews</div>`));
+  Object.entries(cats).sort((a, b) => b[1].learned / b[1].total - a[1].learned / a[1].total).forEach(([cat, c]) => {
+    view.append(el(`<div class="card">
+      <h3 style="text-transform:capitalize">${esc(cat)} <span class="muted">${c.learned}/${c.total} seen · ${c.solid} solid${c.weak ? " · " + c.weak + " weak 💪" : ""}</span></h3>
+      <div class="progress-track"><div class="progress-fill" style="width:${Math.round(c.learned / c.total * 100)}%"></div></div>
+    </div>`));
+  });
+  const weak = weakWords();
+  if (weak.length) {
+    view.append(el(`<h3 style="margin:14px 4px 4px">Weak words 💪</h3>`));
+    weak.slice(0, 12).forEach(w => {
+      const row = el(`<button class="lesson"><span class="linfo"><span class="ltitle">${esc(w.hanzi)} <span class="pinyin" style="font-size:.9rem">${esc(w.pinyin)}</span></span>
+        <br><span class="lsub">${esc(w.en)}</span></span><span class="lstate">🔊</span></button>`);
+      row.onclick = () => speak(w.hanzi);
+      view.append(row);
+    });
+    const drill = el(`<button class="btn big pink">💪 drill them now</button>`);
+    drill.onclick = () => flashCard(shuffle(weak).slice(0, 15), 0);
+    view.append(drill);
+  }
+  document.getElementById("bk").onclick = () => go("home");
 }
 
 /* month calendar of active days */
@@ -938,6 +985,12 @@ function renderCards() {
     document.getElementById("gl").onclick = () => go("learn");
     return;
   }
+  const weak = weakWords();
+  if (weak.length) {
+    const wb = el(`<button class="btn big pink" style="margin-bottom:10px">💪 drill weak words (${weak.length})</button>`);
+    wb.onclick = () => flashCard(shuffle(weak).slice(0, 15), 0);
+    view.append(wb);
+  }
   if (!due.length) {
     view.append(el(`<div class="card mint center"><div class="mascot-inline">${mascotSVG("usagi", 72)}</div>
       <p>All reviews done for now — 哇!! come back later 🌸</p></div>`));
@@ -975,8 +1028,9 @@ function flashCard(due, i) {
       <button class="btn mint">easy 😎</button></div>`);
   const [ag, gd, ez] = grades.querySelectorAll("button");
   const grade = mult => {
-    const c = S.srs[w.id];
+    const c = S.srs[w.id] = S.srs[w.id] || { iv: 0, due: Date.now(), reps: 0 };
     c.reps++;
+    mult === 0 ? noteWrong(w.id) : noteRight(w.id);
     if (mult === 0) { c.iv = 0; c.due = Date.now() + 10 * 60e3; }
     else { c.iv = Math.max(1, Math.round((c.iv || 0.5) * mult * 2)); c.due = Date.now() + c.iv * 864e5; }
     save(); flashCard(due, i + 1);
@@ -1101,6 +1155,7 @@ function mcRound(kind) {
       b.onclick = () => {
         const right = o.hanzi === w.hanzi;
         S.stats.quiz++; if (right) { S.stats.correct++; score++; } save();
+        if (w.id) right ? noteRight(w.id) : noteWrong(w.id);
         b.classList.add(right ? "right" : "wrong");
         if (!right) [...ch.children].find(c => c.textContent === label(w))?.classList.add("right");
         if (sub !== "listen") speak(w.hanzi);
