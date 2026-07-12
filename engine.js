@@ -470,17 +470,27 @@ const TASK_UI = {
     document.getElementById("skSl").onclick = () => speak(p.hanzi, 0.5);
     document.getElementById("skSkip").onclick = () => s.next();
     const zone = document.getElementById("skZone");
-    if (SR && window.isSecureContext) {
-      zone.append(el(`<button class="mic" id="skMic">🎤</button><div class="heard" id="skHeard"></div>`));
+    if (SR && window.isSecureContext && S.speakingOn !== false) {
+      zone.append(el(`<div class="miczone"><button class="mic" id="skMic">🎤</button><div class="heard" id="skHeard"></div>
+        <button class="btn small ghost" id="skNoSpeak" style="margin-top:8px">🙊 not right now — skip speaking</button></div>`));
       const mic = document.getElementById("skMic"), heard = document.getElementById("skHeard");
+      document.getElementById("skNoSpeak").onclick = () => { S.speakingOn = false; save(); shadowFallback(); };
       mic.onclick = async () => {
         try { const st = await navigator.mediaDevices.getUserMedia({ audio: true }); st.getTracks().forEach(t => t.stop()); }
         catch { toast("🎤 mic is blocked — tap the icon in the address bar and allow it"); return; }
         const r = new SR(); r.lang = "zh-CN"; r.maxAlternatives = 3;
         let got = false;
         mic.classList.add("listening"); heard.textContent = "listening — say it now!";
-        r.onresult = e => {
+        const watchdog = setTimeout(() => {
+          if (got) return;
           got = true;
+          try { r.abort(); } catch {}
+          mic.classList.remove("listening"); heard.textContent = "";
+          toast("mic check timed out — try again, or skip this one");
+        }, 8000);
+        r.onresult = e => {
+          if (got) return;
+          got = true; clearTimeout(watchdog);
           const alts = [...e.results[0]].map(a => a.transcript.replace(PUNCT_RE, ""));
           const target = p.hanzi.replace(PUNCT_RE, "");
           const hit = alts.some(a => a === target || a.includes(target) || (target.includes(a) && a.length >= Math.ceil(target.length * 0.6)));
@@ -488,15 +498,16 @@ const TASK_UI = {
           S.stats.spoken++; save();
           hit ? s.hit(null) : s.feedback(false, `listen 🐢 and try once more — or skip, no pressure!`, null, () => {});
         };
-        r.onerror = () => { got = true; heard.textContent = ""; toast("mic hiccup — 🐢 shadow it out loud and tap 'said it'"); shadowFallback(); };
-        r.onend = () => { mic.classList.remove("listening"); if (!got) { toast("didn't catch that — try again or skip"); } };
+        r.onerror = () => { if (got) return; got = true; clearTimeout(watchdog); heard.textContent = ""; toast("mic hiccup — 🐢 shadow it out loud and tap 'said it'"); shadowFallback(); };
+        r.onend = () => { clearTimeout(watchdog); mic.classList.remove("listening"); if (!got) { got = true; toast("didn't catch that — try again or skip"); } };
         try { r.start(); } catch { toast("mic is busy — try again in a second"); }
       };
     } else shadowFallback();
     function shadowFallback() {
       if (document.getElementById("skSaid")) return;
-      zone.append(el(`<div class="muted" style="margin:6px 0">no mic check here — play 🐢, repeat out loud 2×</div>
-        <button class="btn pink" id="skSaid">said it! 🌸</button>`));
+      zone.innerHTML = "";
+      zone.append(el(`<div class="miczone"><div class="muted" style="margin:6px 0">no mic check here — play 🐢, repeat out loud 2×${S.speakingOn === false ? "<br>(speaking practice is off — switch it back on any time from your profile)" : ""}</div>
+        <button class="btn pink" id="skSaid">said it! 🌸</button></div>`));
       document.getElementById("skSaid").onclick = () => { S.stats.spoken++; save(); s.hit(null); };
     }
   },

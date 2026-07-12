@@ -422,6 +422,11 @@ function renderProfile() {
       <button class="btn small ${S.showPinyin === false ? "pink" : "mint"}" id="pinToggle" style="margin-top:8px">${S.showPinyin === false ? "hidden — show it" : "shown — hide it"}</button></div>`);
   pin.querySelector("#pinToggle").onclick = () => { togglePinyin(); renderProfile(); };
   view.append(pin);
+  const spk = el(`<div class="card wob"><h3>🎤 Speaking practice</h3>
+      <div class="muted">turn this off any time she'd rather not talk out loud — speaking tasks switch to listen-and-repeat instead, no mic needed</div>
+      <button class="btn small ${S.speakingOn === false ? "pink" : "mint"}" id="spkToggle" style="margin-top:8px">${S.speakingOn === false ? "off — turn it back on" : "on — turn it off"}</button></div>`);
+  spk.querySelector("#spkToggle").onclick = () => { S.speakingOn = S.speakingOn === false ? true : false; save(); renderProfile(); };
+  view.append(spk);
   const backup = el(`<div class="card wob">
       <h3>📤 Backup &amp; progress code</h3>
       <div class="muted">Her progress lives only on this device's browser. Tap "get code" any time to

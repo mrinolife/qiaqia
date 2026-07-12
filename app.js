@@ -17,7 +17,7 @@ function loadState() {
 function blankState() {
   return { doneLessons: {}, srs: {}, xp: 0, streak: { last: "", count: 0 }, tripDate: DEFAULT_TRIP,
            stats: { quiz: 0, correct: 0, spoken: 0, written: 0 }, snacks: {}, metFriends: {},
-           activeDays: {}, daily: {}, name: "Rachel", wrong: {} };
+           activeDays: {}, daily: {}, name: "Rachel", wrong: {}, speakingOn: true };
 }
 const S = loadState();
 function save() { S._v = (S._v || 0) + 1; localStorage.setItem(LS_KEY, JSON.stringify(S)); }
@@ -982,12 +982,14 @@ function speakPractice() {
           <div class="pinyin">${esc(p.pinyin)}</div><div class="en muted">${esc(p.en)}</div>
           <div class="cardrow"><button class="iconbtn" id="sp">🔊</button><button class="iconbtn" id="sl">🐢</button></div></div>`)
     );
-    if (SR) {
+    if (SR && S.speakingOn !== false) {
       view.append(
         el(`<div class="card pink center"><div class="muted">listen 🐢 first, then hold nothing — just tap & speak!</div>
-            <button class="mic" id="mic">🎤</button><div class="heard" id="heard"></div></div>`)
+            <button class="mic" id="mic">🎤</button><div class="heard" id="heard"></div>
+            <button class="btn small ghost" id="noSpeak" style="margin-top:8px">🙊 not right now — skip speaking</button></div>`)
       );
       const mic = document.getElementById("mic"), heard = document.getElementById("heard");
+      document.getElementById("noSpeak").onclick = () => { S.speakingOn = false; save(); show(); };
       mic.onclick = async () => {
         // explicit permission first — otherwise recognition can end silently
         try {
@@ -1002,8 +1004,18 @@ function speakPractice() {
         r.lang = "zh-CN"; r.interimResults = false; r.maxAlternatives = 3;
         let got = false;
         mic.classList.add("listening"); heard.textContent = "listening… say it now!";
-        r.onresult = e => {
+        // watchdog: some browsers' recognizer can hang with zero events firing at all —
+        // don't leave her staring at "listening…" forever with no way forward
+        const watchdog = setTimeout(() => {
+          if (got) return;
           got = true;
+          try { r.abort(); } catch {}
+          mic.classList.remove("listening"); heard.textContent = "";
+          toast("mic check timed out — try again, or use 🐢 shadow mode for now");
+        }, 8000);
+        r.onresult = e => {
+          if (got) return;
+          got = true; clearTimeout(watchdog);
           const alts = [...e.results[0]].map(a => a.transcript.replace(/[。，？！\s]/g, ""));
           const target = p.hanzi.replace(/[。，？！\s]/g, "");
           const hit = alts.some(a => a === target || a.includes(target) || target.includes(a) && a.length >= Math.ceil(target.length * 0.6));
@@ -1013,7 +1025,8 @@ function speakPractice() {
           else toast("close! listen 🐢 and try again~");
         };
         r.onerror = e => {
-          got = true; heard.textContent = "";
+          if (got) return;
+          got = true; clearTimeout(watchdog); heard.textContent = "";
           toast({
             "not-allowed": "🎤 mic blocked — allow it via the icon in the address bar",
             "service-not-allowed": "🎤 mic blocked — allow it in browser settings",
@@ -1023,14 +1036,15 @@ function speakPractice() {
           }[e.error] || "mic error (" + e.error + ") — use 🐢 shadow mode");
         };
         r.onend = () => {
+          clearTimeout(watchdog);
           mic.classList.remove("listening");
-          if (!got) { heard.textContent = ""; toast("nothing came through — check the mic icon in the address bar, then try again"); }
+          if (!got) { got = true; heard.textContent = ""; toast("nothing came through — check the mic icon in the address bar, then try again"); }
         };
         try { r.start(); } catch { toast("mic is busy — try again in a second"); }
       };
     } else {
-      view.append(el(`<div class="card yellow"><b>Shadow mode:</b> this browser has no speech recognition —
-        play 🐢 slow audio and repeat out loud 3×, then move on. (Chrome has the mic check!)</div>`));
+      view.append(el(`<div class="card yellow"><b>Shadow mode:</b> play 🐢 slow audio and repeat out loud, then move on.
+        ${S.speakingOn === false ? `<div class="muted" style="margin-top:6px">speaking practice is turned off — switch it back on any time from your profile page.</div>` : ""}</div>`));
     }
     view.append(el(`<button class="btn big blue" id="nx">next →</button>`));
     document.getElementById("sp").onclick = () => speak(p.hanzi);
