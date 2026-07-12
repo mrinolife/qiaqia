@@ -8,10 +8,40 @@
 /* ================= state ================= */
 const QQ_BUILD = "b12-audio-check";
 const LS_KEY = "qq_state_v1";
+const PROFILES_KEY = "qq_profiles_v1";
 const DEFAULT_TRIP = "2026-08-31";
 
+/* real progress captured by actually playing unit 1's word + phrase lessons —
+   not hand-authored — stopped right before the exam, matching where she really is. */
+const RACHEL_SEED = {"doneLessons": {}, "srs": {"v42": {"box": 1, "due": 1783936774575}, "v105": {"box": 1, "due": 1783936775801}, "v106": {"box": 1, "due": 1783936777001}, "v107": {"box": 1, "due": 1783936778218}, "v108": {"box": 1, "due": 1783936790450}, "v109": {"box": 1, "due": 1783936791034}, "v110": {"box": 1, "due": 1783936791633}}, "xp": 48, "streak": {"last": "2026-07-12", "count": 1}, "tripDate": "2026-08-31", "stats": {"quiz": 51, "correct": 16, "spoken": 0, "written": 0}, "snacks": {}, "metFriends": {}, "activeDays": {"2026-07-12": 1}, "daily": {}, "name": "Rachel", "wrong": {"v107": 12, "v42": 2, "v105": 8, "v106": 1, "v108": 3, "v109": 8, "v110": 9}, "speakingOn": true, "dayXP": {"2026-07-12": 48}, "stars": {"u1-w0": 1, "u1-w1": 1, "u1-p0": 1}}
+;
+const JZN_SEED = { name: "jzn", fullAccess: true, hsk2Open: true };
+
+function stateKey(name) { return LS_KEY + "::" + name; }
+function loadProfiles() {
+  let idx;
+  try { idx = JSON.parse(localStorage.getItem(PROFILES_KEY)); } catch { idx = null; }
+  if (idx && idx.names && idx.names.length) return idx;
+  // first run under the profile system — migrate whatever's really on this device
+  // (if anything) into Rachel's profile so nothing already saved is ever lost
+  const legacy = localStorage.getItem(LS_KEY);
+  localStorage.setItem(stateKey("Rachel"), legacy || JSON.stringify(RACHEL_SEED));
+  localStorage.setItem(stateKey("jzn"), JSON.stringify(Object.assign(blankState(), JZN_SEED)));
+  idx = { names: ["Rachel", "jzn"], active: "Rachel" };
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(idx));
+  return idx;
+}
+function activeProfileName() { return loadProfiles().active; }
+function allProfileNames() { return loadProfiles().names; }
+function switchProfile(name) {
+  const idx = loadProfiles();
+  idx.active = name;
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(idx));
+  location.reload();
+}
+
 function loadState() {
-  try { return Object.assign(blankState(), JSON.parse(localStorage.getItem(LS_KEY) || "{}")); }
+  try { return Object.assign(blankState(), JSON.parse(localStorage.getItem(stateKey(activeProfileName())) || "{}")); }
   catch { return blankState(); }
 }
 function blankState() {
@@ -20,7 +50,7 @@ function blankState() {
            activeDays: {}, daily: {}, name: "Rachel", wrong: {}, speakingOn: true };
 }
 const S = loadState();
-function save() { S._v = (S._v || 0) + 1; localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+function save() { S._v = (S._v || 0) + 1; localStorage.setItem(stateKey(activeProfileName()), JSON.stringify(S)); }
 
 /* resync guard: fixes progress "resetting" after backgrounding/resuming the app.
    S lives in memory for the whole page lifetime; iOS Safari (and any browser's
@@ -31,7 +61,7 @@ function save() { S._v = (S._v || 0) + 1; localStorage.setItem(LS_KEY, JSON.stri
    clobber the other. */
 function resyncFromStorage() {
   let fresh;
-  try { fresh = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch { return; }
+  try { fresh = JSON.parse(localStorage.getItem(stateKey(activeProfileName())) || "{}"); } catch { return; }
   if ((fresh._v || 0) <= (S._v || 0)) return;
   for (const k of Object.keys(S)) delete S[k];
   Object.assign(S, blankState(), fresh);

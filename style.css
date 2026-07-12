@@ -775,3 +775,9 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   background: radial-gradient(ellipse, rgba(74,63,53,.16), transparent 72%);
   z-index: -1;
 }
+
+/* ---------- profile switcher ---------- */
+.profile-switch {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  flex-wrap: wrap; padding: 10px 14px; margin: 8px 0;
+}

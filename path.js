@@ -122,6 +122,7 @@ Object.defineProperty(window, "ALL_NODES", { get: allNodes });
 /* ---------- progress helpers ---------- */
 function nodeStars(id) { return (S.stars || {})[id] || 0; }
 function nodeUnlocked(nodes, idx) {
+  if (S.fullAccess) return true;
   if (idx === 0) return true;
   return nodeStars(nodes[idx - 1].id) > 0;
 }
@@ -379,14 +380,20 @@ function renderProfile() {
   view.innerHTML = "";
   const learned = learnedWordCount();
   const starSum = Object.values(S.stars || {}).reduce((a, b) => a + b, 0);
-  view.append(el(`<h2 class="page-title">🌸 Rachel's page</h2>`));
+  const others = allProfileNames().filter(n => n !== activeProfileName());
+  view.append(el(`<div class="profile-switch wob">
+      <span>👤 <b>${esc(activeProfileName())}</b>${S.fullAccess ? ' <span class="badge">full access</span>' : ""}</span>
+      ${others.map(n => `<button class="btn small ghost" data-switch="${esc(n)}">switch to ${esc(n)}</button>`).join("")}
+    </div>`));
+  view.querySelectorAll("[data-switch]").forEach(b => b.onclick = () => switchProfile(b.dataset.switch));
+  view.append(el(`<h2 class="page-title">🌸 ${esc(activeProfileName())}'s page</h2>`));
   const li = levelInfo(S.xp);
   const lic = el(`<div class="license wob">
       <div class="lic-head"><span class="lic-title">討伐ライセンス · HUNTER LICENSE</span><span class="lic-yaha">ヤハ!</span></div>
       <div class="lic-body">
         <div class="lic-photo bob">${art("usagi", "cheer", 92)}</div>
         <div class="lic-fields">
-          <div class="lic-name">RACHEL <span class="lic-lv">LV${li.lv}</span></div>
+          <div class="lic-name">${esc(activeProfileName().toUpperCase())} <span class="lic-lv">LV${li.lv}</span></div>
           <div class="lic-rank">${esc(li.title)}<br><span class="muted">${esc(li.titleEn)}</span></div>
           <div class="lic-xpbar"><div class="lic-xpfill" style="width:${li.pct}%"></div></div>
           <div class="lic-xptext">✨ ${S.xp} xp${li.need ? ` · ${li.need} to LV${li.lv + 1}` : " · MAX RANK"}</div>
