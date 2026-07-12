@@ -17,14 +17,14 @@ const UNITS = (() => {
     { id: "u1",  title: "打招呼 Greetings",   emoji: "👋", host: "chiikawa",  cats: ["greetings"], scen: ["greetings"] },
     { id: "u2",  title: "数字 Numbers",       emoji: "🔢", host: "hachiware", cats: ["numbers"],   scen: ["money"] },
     { id: "u3",  title: "你和我 People",      emoji: "👪", host: "usagi",     cats: ["people"],    scen: ["smalltalk"], dlg: dlg("introduc") || dlg("meeting") },
-    { id: "u4",  title: "问问题 Questions",   emoji: "❓", host: "momonga",   cats: ["question"] },
+    { id: "u4",  title: "问问题 Questions",   emoji: "❓", host: "usagi",     cats: ["question"] },
     { id: "u5",  title: "时间 Time",          emoji: "🕐", host: "kani",      cats: ["time"] },
     { id: "u6",  title: "吃和喝 Food & Drink", emoji: "🍜", host: "kurimanju", cats: ["food"],     scen: ["restaurant"], dlg: dlg("ordering") },
     { id: "u7",  title: "地方 Places",        emoji: "🗺️", host: "shisa",     cats: ["places"],    scen: ["directions"] },
-    { id: "u8",  title: "东西 Things",        emoji: "🎒", host: "chimera",   cats: ["objects"],   scen: ["shopping"] },
+    { id: "u8",  title: "东西 Things",        emoji: "🎒", host: "usagi",     cats: ["objects"],   scen: ["shopping"] },
     { id: "u9",  title: "动词 Doing Words I",  emoji: "🏃", host: "rakko",    catsSlice: ["verbs", 0, 15] },
     { id: "u10", title: "动词 Doing Words II", emoji: "💪", host: "rakko",    catsSlice: ["verbs", 15, 99] },
-    { id: "u11", title: "形容 Describing",    emoji: "✨", host: "momonga",   cats: ["adjectives"] },
+    { id: "u11", title: "形容 Describing",    emoji: "✨", host: "usagi",     cats: ["adjectives"] },
     { id: "u12", title: "语法胶水 Glue Words", emoji: "🧩", host: "yoroi",     cats: ["grammar"],   scen: ["transport"] },
     { id: "u13", title: "旅行 Getting Around", emoji: "✈️", host: "hachiware", cats: ["travel"],   scen: ["airport", "hotel", "emergency"] },
   ];
@@ -49,7 +49,7 @@ const UNITS = (() => {
   // Grammar Gym unit from T.grammar (14 points -> nodes of ~3)
   const gpts = T.grammar || [];
   if (gpts.length) {
-    const gu = { id: "gram", title: "语法 Grammar Gym", emoji: "🧩", host: "hachiware" };
+    const gu = { id: "gram", title: "语法 Grammar Gym", emoji: "🧩", host: "usagi" };
     const gnodes = chunkBalanced(gpts, 3).map((pts, i) => ({
       id: `gram-g${i}`, kind: "grammar", points: pts, host: gu.host,
       title: pts.map(x => x.title.split(" ")[0]).join(" · "), label: "语",
@@ -149,7 +149,7 @@ function renderPath() {
   const NODES = allNodes();
   const curIdx = currentNodeIdx(NODES);
   const cur = NODES[curIdx];
-  const hero = shuffle(unlockedCast())[0] || CAST[0];
+  const hero = (Math.random() < 0.5 ? CAST.find(c => c.id === "usagi") : shuffle(unlockedCast())[0]) || CAST[0];
   const line = hero.lines[Math.floor(Math.random() * hero.lines.length)];
   const learned = learnedWordCount();
   const due = dueCards().length;
@@ -218,7 +218,7 @@ function renderPath() {
     map.append(off);
   }
   map.append(el(`<div class="path-end">
-      <div class="bob">${art("chiikawa", "cheer", 60)}${art("hachiware", "cheer", 60)}${art("usagi", "cheer", 60)}</div>
+      <div class="bob">${art("chiikawa", "cheer", 54)}${art("usagi", "cheer", 76)}${art("hachiware", "cheer", 54)}</div>
       <div class="muted">台湾见! see you in Taiwan! 🇹🇼</div></div>`));
   view.append(map);
 

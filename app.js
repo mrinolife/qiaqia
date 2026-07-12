@@ -263,7 +263,7 @@ fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   Object.entries(m.scenes || {}).forEach(([k, f]) => { LOCAL_SCENES[k] = `chars/${f}`; });
   // wallpaper override removed — the path map needs the clean meadow background
   const brand = document.getElementById("brandMascot");
-  if (brand) brand.innerHTML = mascotSVG("chiikawa", 38);
+  if (brand) brand.innerHTML = mascotSVG("usagi", 38);
   if (document.querySelector(".path-hero")) renderPath();
 }).catch(() => {});
 
@@ -417,7 +417,7 @@ function mascotSVG(kind, size) {
   }
   return `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true">${body}</svg>`;
 }
-document.getElementById("brandMascot").innerHTML = mascotSVG("chiikawa", 38);
+document.getElementById("brandMascot").innerHTML = mascotSVG("usagi", 38);
 
 /* ================= router ================= */
 const tabs = document.querySelectorAll(".tab");
@@ -433,7 +433,8 @@ function go(tab) {
 /* a friend occasionally peeks in to cheer */
 function maybePeek() {
   if (Math.random() > 0.22 || document.querySelector(".peek")) return;
-  const c = shuffle(unlockedCast())[0];
+  // usagi is the favorite — she peeks in half the time
+  const c = Math.random() < 0.5 ? CAST.find(x => x.id === "usagi") : shuffle(unlockedCast())[0];
   const line = c.lines[Math.floor(Math.random() * c.lines.length)];
   const pk = el(`<button class="peek">${mascotSVG(c.id, 64)}</button>`);
   pk.onclick = () => {

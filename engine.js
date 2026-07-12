@@ -146,7 +146,7 @@ function runSession(opts) {
   const total0 = Q.length;
   let done = 0, firstTryRight = 0, firstTryTotal = 0, combo = 0, bestCombo = 0;
   const requeued = new Set();
-  const host = opts.host || "chiikawa";
+  const host = opts.host || "usagi";
   let alive = true;  // killed on quit so pending timeouts can't render into a dead screen
   speechSynthesis && speechSynthesis.cancel();
 
@@ -235,7 +235,7 @@ function runSession(opts) {
       ? (pass ? "討伐完了!! unit cleared!! ⚔️🎀" : "the exam got away… 加油, try again!")
       : "lesson clear! ✨";
     view.innerHTML = "";
-    const clip = animGIF(!pass ? "cry" : stars === 3 ? (Math.random() < 0.4 ? "usagi" : "celebrate") : "celebrate", 160);
+    const clip = animGIF(!pass ? "cry" : (Math.random() < 0.55 ? "usagi" : "celebrate"), 160) || animGIF(pass ? "celebrate" : "cry", 160);
     view.append(el(`<div class="sess-done">
         ${clip ? `<div class="done-clip">${clip}</div>` : ""}
         <div class="done-mascot ${pass ? "bounce" : "droop"}" ${clip ? 'style="display:none"' : ""}>${art(host, mood, 110)}</div>
@@ -651,5 +651,5 @@ function startReview(backTo) {
     tasks.push(mcTask(w, ["meaning", "listen", "reverse", "pinyin"][Math.floor(Math.random() * 4)], due.length >= 4 ? due : D.vocab));
   });
   for (let i = 0; i + 4 <= due.length && tasks.length < 22; i += 4) tasks.push({ t: "pairs", words: due.slice(i, i + 4) });
-  runSession({ title: "review", tasks: shuffle(tasks), kind: "review", host: "hachiware", backTo: backTo || renderReview });
+  runSession({ title: "review", tasks: shuffle(tasks), kind: "review", host: "usagi", backTo: backTo || renderReview });
 }
