@@ -14,7 +14,7 @@ const UNITS = (() => {
   const phr = sc => D.phrases.filter(p => p.scenario === sc);
   const dlg = title => D.dialogues.find(d => d.title.toLowerCase().includes(title));
   const spec = [
-    { id: "u1",  title: "打招呼 Greetings",   emoji: "👋", host: "chiikawa",  cats: ["greetings"], scen: ["greetings"] },
+    { id: "u1",  title: "打招呼 Greetings",   emoji: "👋", host: "usagi",     cats: ["greetings"], scen: ["greetings"] },
     { id: "u2",  title: "数字 Numbers",       emoji: "🔢", host: "hachiware", cats: ["numbers"],   scen: ["money"] },
     { id: "u3",  title: "你和我 People",      emoji: "👪", host: "usagi",     cats: ["people"],    scen: ["smalltalk"], dlg: dlg("introduc") || dlg("meeting") },
     { id: "u4",  title: "问问题 Questions",   emoji: "❓", host: "usagi",     cats: ["question"] },
