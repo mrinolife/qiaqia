@@ -65,9 +65,8 @@ function buildLessons() {
 }
 function doneCount() { return LESSONS.filter(l => S.doneLessons[l.id]).length; }
 function learnedWords() {
-  const ws = [];
-  LESSONS.forEach(l => { if (l.type === "vocab" && S.doneLessons[l.id]) ws.push(...l.words); });
-  return ws;
+  // words she has actually met = everything the path engine put in the SRS deck
+  return Object.keys(S.srs || {}).map(id => D.vocab.find(v => v.id === id)).filter(Boolean);
 }
 function quizPool() { const w = learnedWords(); return w.length >= 8 ? w : D.vocab.slice(0, 30); }
 
@@ -202,13 +201,10 @@ const isLocalHost = /^(localhost|127\.|192\.168\.|10\.|172\.)/.test(location.hos
   if (!m) return;
   (m.chars || []).forEach(k => { LOCAL_ART[k] = `chars/${k}.png`; });
   Object.entries(m.scenes || {}).forEach(([k, f]) => { LOCAL_SCENES[k] = `chars/${f}`; });
-  if (m.bg) {
-    document.body.style.background = `url(chars/${m.bg}) center top / cover fixed`;
-    document.body.classList.add("has-wallpaper");
-  }
+  // wallpaper override removed — the path map needs the clean meadow background
   const brand = document.getElementById("brandMascot");
   if (brand) brand.innerHTML = mascotSVG("chiikawa", 38);
-  if (document.querySelector(".hero")) renderHome();
+  if (document.querySelector(".path-hero")) renderPath();
 }).catch(() => {});
 
 function mascotSVG(kind, size) {
@@ -369,8 +365,8 @@ tabs.forEach(b => b.addEventListener("click", () => go(b.dataset.tab)));
 function go(tab) {
   tabs.forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   speechSynthesis && speechSynthesis.cancel();
-  ({ home: renderHome, learn: renderLearn, cards: renderCards, quiz: renderPractice,
-     phrases: renderTravel, talk: renderTalk }[tab] || renderHome)();
+  ({ home: renderPath, learn: renderPath, cards: renderReview, quiz: renderPractice,
+     phrases: renderTravel, talk: renderTalk, profile: renderProfile }[tab] || renderPath)();
   window.scrollTo(0, 0);
   maybePeek();
 }
@@ -391,127 +387,9 @@ function maybePeek() {
 }
 function renderStreak() { document.getElementById("streakN").textContent = S.streak.count; }
 
-/* ================= today's mix (guided daily session) ================= */
-const MIX = { active: false, steps: [], i: 0 };
-function startMix() {
-  MIX.steps = [];
-  const due = dueCards().length;
-  if (due) MIX.steps.push(["cards", `🎴 review ${Math.min(due, 30)} cards`]);
-  const next = LESSONS.find(l => !S.doneLessons[l.id]);
-  if (next) MIX.steps.push(["lesson", `${next.emoji} lesson: ${next.title}`]);
-  MIX.steps.push(["quiz", "⭐ one 討伐 quiz round"]);
-  MIX.active = true; MIX.i = 0;
-  mixGo();
-}
-function mixGo() {
-  if (!MIX.active) return go("home");
-  if (MIX.i >= MIX.steps.length) {
-    MIX.active = false;
-    S.daily = S.daily || {}; S.daily[today()] = true;
-    addXP(10); bumpStreak(); save(); confetti();
-    const hero = shuffle(unlockedCast())[0];
-    view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 90)}</div>
-      <h3>Today's mix complete! 🌟 +10 bonus xp</h3>
-      <div class="muted">${esc(MASCOT_NAMES[hero.id])} says: 今天辛苦了! see you tomorrow~</div>
-      <button class="btn big yellow" id="mixHome">back home ✨</button></div>`));
-    document.getElementById("mixHome").onclick = () => go("home");
-    return;
-  }
-  const [kind, label] = MIX.steps[MIX.i];
-  const hero = shuffle(unlockedCast())[0];
-  view.innerHTML = "";
-  view.append(el(`<div class="card blue bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 80)}</div>
-    <div class="muted">today's mix · step ${MIX.i + 1}/${MIX.steps.length}</div>
-    <h3>${esc(label)}</h3>
-    <div class="cardrow"><button class="btn big pink" id="mixStart">let's go! →</button></div>
-    <button class="btn small ghost" id="mixStop" style="margin-top:8px">stop the mix</button></div>`));
-  document.getElementById("mixStart").onclick = () => {
-    MIX.i++;
-    if (kind === "cards") renderCards();
-    else if (kind === "lesson") { const l = LESSONS.find(x => !S.doneLessons[x.id]); l ? runLesson(l) : mixGo(); }
-    else mcRound("mixed");
-  };
-  document.getElementById("mixStop").onclick = () => { MIX.active = false; go("home"); };
-}
-function mixContinueBtn() {
-  if (!MIX.active) return null;
-  const b = el(`<button class="btn big blue" style="margin-top:10px">▶ continue today's mix (${MIX.i}/${MIX.steps.length} done)</button>`);
-  b.onclick = mixGo;
-  return b;
-}
+function mixContinueBtn() { return null; }
 
 /* ================= home ================= */
-function renderHome() {
-  const days = Math.max(0, Math.ceil((new Date(S.tripDate + "T00:00") - new Date()) / 864e5));
-  const learned = learnedWords().length;
-  const due = dueCards().length;
-  const next = LESSONS.find(l => !S.doneLessons[l.id]);
-  MIX.active = false; // leaving an unfinished mix resets it
-  const who = shuffle(unlockedCast())[0];
-  const friendsN = unlockedCast().length;
-  const line = who.lines[Math.floor(Math.random() * who.lines.length)];
-  const greet = Math.random() < 0.4 ? (S.name || "Rachel") + "! " : "";
-  view.innerHTML = "";
-  view.append(
-    el(`<div class="scene">${sceneSVG("meadow")}</div>`),
-    el(`<div class="card pink hero">
-          <div class="mascot wobble">${mascotSVG(who.id)}<div class="muted center" style="font-size:.68rem">${esc(MASCOT_NAMES[who.id])}</div></div>
-          <div class="speech">${esc(greet + line)}</div>
-        </div>`),
-    el(`<div class="card yellow center">
-          <div class="muted">✈️ Taiwan trip in</div>
-          <div class="countdown-num">${days}</div>
-          <div class="muted">days · <input type="date" id="tripDate" value="${esc(S.tripDate)}"></div>
-        </div>`),
-    el(`<div class="statrow">
-          <div class="card"><div class="stat-big">${learned}<span class="muted">/${D.vocab.length || 150}</span></div><div class="muted">words</div></div>
-          <div class="card"><div class="stat-big">${doneCount()}<span class="muted">/${LESSONS.length}</span></div><div class="muted">lessons</div></div>
-          <div class="card"><div class="stat-big">${S.xp}</div><div class="muted">✨ xp</div></div>
-        </div>`),
-    el(`<div class="card">
-          <h3>Today's mix 🍡 ${S.daily && S.daily[today()] ? '<span class="badge" style="background:var(--mint)">done today ✅</span>' : ""}</h3>
-          <div class="muted" style="margin-bottom:10px">${due ? "<b>" + due + "</b> cards to review · " : ""}${next ? "next: <b>" + esc(next.emoji + " " + next.title) + "</b> · " : ""}one quiz round</div>
-          <button class="btn big yellow" id="goMix">▶ start today's mix</button>
-          <div class="cardrow" style="justify-content:flex-start;margin-top:8px">
-            ${next ? `<button class="btn small pink" id="goNext">just the lesson</button>` : ""}
-            <button class="btn small blue" id="goReview">just cards${due ? " (" + due + ")" : ""}</button>
-          </div>
-        </div>`),
-    calendarCard(),
-    el(`<div class="card blue" id="friendsCard" style="cursor:pointer">
-          <h3>Friends & snacks 🧺 <span class="muted">${friendsN}/${CAST.length} met</span></h3>
-          <div class="friendrow">${unlockedCast().map(c => mascotSVG(c.id, 40)).join("")}
-            ${CAST.length > friendsN ? `<span class="lockball">+${CAST.length - friendsN}?</span>` : ""}</div>
-          <div class="muted" style="margin-top:4px">earn ✨xp to meet everyone — tap to visit</div>
-        </div>`),
-    el(`<div class="card mint">
-          <h3>Skills 🎯</h3>
-          <div class="cardrow" style="justify-content:flex-start">
-            <button class="btn small ghost" data-go="quiz">⭐ Quiz</button>
-            <button class="btn small ghost" data-go="listen">👂 Listening</button>
-            <button class="btn small ghost" data-go="speak">🎤 Speaking</button>
-            <button class="btn small ghost" data-go="write">✍️ Writing</button>
-            <button class="btn small ghost" data-go="tones">🎵 Tones</button>
-          </div>
-        </div>`)
-  );
-  const progress = el(`<div class="card" style="cursor:pointer"><h3>HSK 1 progress 🌸 <span class="muted" style="font-size:.8rem">tap for details</span></h3>
-    <div class="progress-track"><div class="progress-fill" style="width:${Math.round(learned / Math.max(1, D.vocab.length) * 100)}%"></div></div>
-    <div class="muted" style="margin-top:6px">${Math.round(learned / Math.max(1, D.vocab.length) * 100)}% of HSK 1 words learned${weakWords().length ? " · <b>" + weakWords().length + "</b> weak words 💪" : ""}</div></div>`);
-  progress.onclick = renderMastery;
-  view.append(progress);
-  document.getElementById("tripDate").onchange = e => { S.tripDate = e.target.value; save(); renderHome(); };
-  document.getElementById("friendsCard").onclick = renderFriends;
-  document.getElementById("goMix").onclick = startMix;
-  const gn = document.getElementById("goNext"); if (gn) gn.onclick = () => runLesson(next);
-  document.getElementById("goReview").onclick = () => go("cards");
-  view.querySelectorAll("[data-go]").forEach(b => b.onclick = () => {
-    if (b.dataset.go === "quiz") go("quiz");
-    else { go("quiz"); startPractice(b.dataset.go); }
-  });
-}
-
 /* ================= dictionary ================= */
 const LEX = (() => {
   const seen = new Set(), out = [];
@@ -606,14 +484,12 @@ function renderDict() {
   document.getElementById("bk").onclick = () => go("home");
 }
 document.getElementById("dictBtn").onclick = () => { speechSynthesis && speechSynthesis.cancel(); renderDict(); };
+document.getElementById("profileBtn").onclick = () => { speechSynthesis && speechSynthesis.cancel(); renderProfile(); };
 
 /* ================= friends & snacks ================= */
-function renderFriends() {
-  view.innerHTML = "";
-  view.append(
-    el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">Friends 🧺 <span class="muted">${unlockedCast().length}/${CAST.length}</span></h3></div>`),
-    el(`<div class="muted" style="margin:0 4px 8px">everyone from the meadow — keep learning to meet them all!</div>`)
-  );
+function renderFriendsInto(view) {
+  view.append(el(`<h3 style="margin:16px 4px 4px">Friends 🧺 <span class="muted">${unlockedCast().length}/${CAST.length}</span></h3>`),
+    el(`<div class="muted" style="margin:0 4px 8px">everyone from the meadow — keep learning to meet them all!</div>`));
   const grid = el(`<div class="friendgrid"></div>`);
   CAST.forEach(c => {
     const got = S.xp >= c.unlock;
@@ -666,7 +542,6 @@ function renderFriends() {
     shelf.appendChild(cell);
   });
   view.append(shelf);
-  document.getElementById("bk").onclick = renderHome;
 }
 
 /* scene backdrops from the meadow world (local official art can override via manifest "scenes") */
@@ -748,337 +623,12 @@ function monsterSVG(frac) {
     ${eyes}${mood}</svg>`;
 }
 
-/* per-category mastery breakdown */
-function renderMastery() {
-  const learnedSet = new Set(learnedWords().map(w => w.id));
-  const cats = {};
-  D.vocab.forEach(v => {
-    const c = cats[v.cat] = cats[v.cat] || { total: 0, learned: 0, solid: 0, weak: 0 };
-    c.total++;
-    if (learnedSet.has(v.id)) c.learned++;
-    const srs = S.srs[v.id];
-    if (srs && srs.iv >= 4 && !(S.wrong || {})[v.id]) c.solid++;
-    if ((S.wrong || {})[v.id] >= 2) c.weak++;
-  });
-  view.innerHTML = "";
-  view.append(el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">Progress 🌸</h3></div>`),
-    el(`<div class="muted" style="margin:0 4px 8px">seen = met in a lesson · solid = keeps surviving spaced reviews</div>`));
-  Object.entries(cats).sort((a, b) => b[1].learned / b[1].total - a[1].learned / a[1].total).forEach(([cat, c]) => {
-    view.append(el(`<div class="card">
-      <h3 style="text-transform:capitalize">${esc(cat)} <span class="muted">${c.learned}/${c.total} seen · ${c.solid} solid${c.weak ? " · " + c.weak + " weak 💪" : ""}</span></h3>
-      <div class="progress-track"><div class="progress-fill" style="width:${Math.round(c.learned / c.total * 100)}%"></div></div>
-    </div>`));
-  });
-  const weak = weakWords();
-  if (weak.length) {
-    view.append(el(`<h3 style="margin:14px 4px 4px">Weak words 💪</h3>`));
-    weak.slice(0, 12).forEach(w => {
-      const row = el(`<button class="lesson"><span class="linfo"><span class="ltitle">${esc(w.hanzi)} <span class="pinyin" style="font-size:.9rem">${esc(w.pinyin)}</span></span>
-        <br><span class="lsub">${esc(w.en)}</span></span><span class="lstate">🔊</span></button>`);
-      row.onclick = () => speak(w.hanzi);
-      view.append(row);
-    });
-    const drill = el(`<button class="btn big pink">💪 drill them now</button>`);
-    drill.onclick = () => flashCard(shuffle(weak).slice(0, 15), 0);
-    view.append(drill);
-  }
-  document.getElementById("bk").onclick = () => go("home");
-}
-
-/* month calendar of active days */
-function calendarCard() {
-  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
-  const firstDow = new Date(y, m, 1).getDay();
-  const nDays = new Date(y, m + 1, 0).getDate();
-  const tISO = today();
-  let cells = "<span></span>".repeat(firstDow);
-  for (let d = 1; d <= nDays; d++) {
-    const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const active = (S.activeDays || {})[iso];
-    const isToday = iso === tISO;
-    cells += `<span class="calday ${active ? "on" : ""} ${isToday ? "today" : ""}">${active ? "🌸" : d}</span>`;
-  }
-  const monthName = now.toLocaleString("en", { month: "long" });
-  return el(`<div class="card"><h3>${monthName} 🗓️ <span class="muted">${Object.keys(S.activeDays || {}).length} active days</span></h3>
-    <div class="cal"><span class="calhd">S</span><span class="calhd">M</span><span class="calhd">T</span><span class="calhd">W</span><span class="calhd">T</span><span class="calhd">F</span><span class="calhd">S</span>${cells}</div></div>`);
-}
-
-/* ================= learn path ================= */
-function renderLearn() {
-  view.innerHTML = "";
-  view.append(el(`<div class="scene">${sceneSVG("questboard")}</div>`),
-    el(`<h2>Labor board 🌱 <span class="muted">(${doneCount()}/${LESSONS.length} quests)</span></h2>`));
-  const path = el(`<div class="path"></div>`);
-  const unlocked = doneCount(); // linear unlock: can open anything up to first-not-done
-  LESSONS.forEach((l, i) => {
-    const done = !!S.doneLessons[l.id];
-    const locked = i > unlocked;
-    const b = el(`<button class="lesson ${done ? "done" : ""} ${locked ? "locked" : ""}">
-        <span class="lemoji">${l.emoji}</span>
-        <span class="linfo"><span class="ltitle">${esc(l.title)}</span>${l.type === "grammar" ? '<span class="badge">grammar</span>' : ""}${l.type === "scenario" ? '<span class="badge">travel</span>' : ""}
-        <br><span class="lsub">${esc(l.sub)}</span></span>
-        <span class="lstate">${done ? "✅" : locked ? "🔒" : "🌟"}</span></button>`);
-    b.onclick = () => { if (locked) { toast("finish the lessons before it first! 加油!"); return; } runLesson(l); };
-    path.appendChild(b);
-  });
-  view.append(path);
-}
-
-function finishLesson(l, backTo) {
-  if (!S.doneLessons[l.id]) {
-    S.doneLessons[l.id] = today();
-    if (l.type === "vocab") l.words.forEach(w => { if (!S.srs[w.id]) S.srs[w.id] = { iv: 0, due: Date.now(), reps: 0 }; });
-    addXP(20);
-  }
-  bumpStreak(); save(); confetti(); toast("哇!! lesson done! +20 xp");
-  if (MIX.active) return mixGo();
-  go(backTo || "learn");
-}
-
-function runLesson(l) {
-  if (l.type === "vocab") return runVocabLesson(l);
-  if (l.type === "grammar") return runGrammarLesson(l);
-  if (l.type === "scenario") return runScenarioLesson(l);
-}
-
-/* --- vocab lesson: teach cards, then 5-question check --- */
-function runVocabLesson(l) {
-  let i = 0;
-  const show = () => {
-    if (i >= l.words.length) return vocabCheck(l);
-    const w = l.words[i];
-    view.innerHTML = "";
-    view.append(
-      el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">${l.emoji} ${esc(l.title)}</h3><span class="spacer"></span><span class="muted">${i + 1}/${l.words.length}</span></div>`),
-      el(`<div class="card bigcard">
-            <div class="hanzi-xl">${esc(w.hanzi)}</div>
-            <div class="pinyin">${esc(w.pinyin)}</div>
-            <div class="en">${esc(w.en)} <span class="muted">(${esc(w.pos)})</span></div>
-            <div class="cardrow">
-              <button class="iconbtn" id="sp">🔊</button>
-              <button class="iconbtn" id="sl" title="slow">🐢</button>
-            </div>
-          </div>`),
-      el(`<button class="btn big pink" id="nx">Got it! →</button>`)
-    );
-    document.getElementById("bk").onclick = () => go("learn");
-    document.getElementById("sp").onclick = () => speak(w.hanzi);
-    document.getElementById("sl").onclick = () => speak(w.hanzi, 0.5);
-    document.getElementById("nx").onclick = () => { i++; show(); };
-    speak(w.hanzi);
-  };
-  show();
-}
-function vocabCheck(l, queue, score, asked) {
-  // duolingo-style: missed words go back in the queue until answered right (capped)
-  if (!queue) { queue = shuffle(l.words).slice(0, 5); score = 0; asked = 0; }
-  if (!queue.length || asked >= 12) {
-    view.innerHTML = "";
-    const hero = shuffle(unlockedCast())[0];
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</div>
-      <h3>Check done! ${score}/${Math.min(5, l.words.length)} first-try 🌸</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
-    document.getElementById("fin").onclick = () => finishLesson(l);
-    return;
-  }
-  const w = queue[0];
-  const others = sample(D.vocab.filter(v => v.hanzi !== w.hanzi && v.en !== w.en), 3);
-  const opts = shuffle([w, ...others]);
-  const firstTry = !w._retry;
-  view.innerHTML = "";
-  view.append(
-    el(`<div class="qmeta"><span class="muted">quick check · ${queue.length} to go${w._retry ? " · retry!" : ""}</span><span class="muted">⭐ ${score}</span></div>`),
-    el(`<div class="card bigcard"><div class="hanzi-xl">${esc(w.hanzi)}</div>
-        <button class="iconbtn" id="sp" style="margin-top:8px">🔊</button></div>`)
-  );
-  const ch = el(`<div class="choices"></div>`);
-  opts.forEach(o => {
-    const b = el(`<button class="choice">${esc(o.en)}</button>`);
-    b.onclick = () => {
-      const right = o.hanzi === w.hanzi;
-      b.classList.add(right ? "right" : "wrong");
-      if (!right) [...ch.children].find(c => c.textContent === w.en)?.classList.add("right");
-      queue.shift();
-      if (right) { if (firstTry) score++; }
-      else { noteWrong(w.id); const again = Object.assign({}, w, { _retry: true }); queue.push(again); toast("we'll see that one again~ 加油!"); }
-      setTimeout(() => vocabCheck(l, queue, score, asked + 1), right ? 700 : 1100);
-    };
-    ch.appendChild(b);
-  });
-  view.append(ch);
-  document.getElementById("sp").onclick = () => speak(w.hanzi);
-  speak(w.hanzi);
-}
-
-/* --- grammar lesson: explain → examples → scrambles --- */
-function runGrammarLesson(l) {
-  const g = l.grammar;
-  view.innerHTML = "";
-  view.append(
-    el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">🧩 ${esc(g.title)}</h3></div>`),
-    el(`<div class="card yellow"><h3>${esc(g.pattern)}</h3><div>${esc(g.explain)}</div></div>`)
-  );
-  g.examples.forEach(ex => {
-    const c = el(`<div class="card phrase"><div class="ptext"><div class="hz">${esc(ex.hanzi)}</div>
-      <div class="pinyin">${esc(ex.pinyin)}</div><div class="en muted">${esc(ex.en)}</div></div>
-      <button class="iconbtn">🔊</button></div>`);
-    c.querySelector("button").onclick = () => speak(ex.hanzi);
-    view.append(c);
-  });
-  const start = el(`<button class="btn big pink">Try it! 🧩 →</button>`);
-  start.onclick = () => grammarExercise(l, 0, 0);
-  view.append(start);
-  document.getElementById("bk").onclick = () => go("learn");
-}
-function grammarExercise(l, i, score) {
-  const exs = l.grammar.exercises;
-  if (i >= exs.length) {
-    view.innerHTML = "";
-    const hero = shuffle(unlockedCast())[0];
-    if (score === exs.length) awardSnack();
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</div>
-      <h3>${score}/${exs.length} sentences built! 🎀</h3><button class="btn big yellow" id="fin">Finish lesson ✨</button></div>`));
-    document.getElementById("fin").onclick = () => finishLesson(l);
-    return;
-  }
-  const ex = exs[i];
-  scrambleUI({
-    title: `🧩 build the sentence (${i + 1}/${exs.length})`,
-    en: ex.en, words: ex.words, answer: ex.answer,
-    onDone: ok => setTimeout(() => grammarExercise(l, i + 1, score + (ok ? 1 : 0)), 900),
-    onBack: () => runGrammarLesson(l),
-  });
-}
-function scrambleUI({ title, en, words, answer, onDone, onBack }) {
-  view.innerHTML = "";
-  view.append(
-    el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">${esc(title)}</h3></div>`),
-    el(`<div class="card blue center"><div class="en"><b>${esc(en)}</b></div><div class="muted">tap the tiles in order</div></div>`)
-  );
-  const strip = el(`<div class="answer-strip"></div>`);
-  const tiles = el(`<div class="tiles"></div>`);
-  const picked = [];
-  shuffle(words.map((w, idx) => ({ w, idx }))).forEach(({ w, idx }) => {
-    const t = el(`<button class="tile">${esc(w)}</button>`);
-    t.onclick = () => {
-      if (t.classList.contains("used")) return;
-      t.classList.add("used"); picked.push({ w, t });
-      const st = el(`<button class="tile">${esc(w)}</button>`);
-      st.onclick = () => { st.remove(); t.classList.remove("used"); picked.splice(picked.findIndex(p => p.t === t), 1); };
-      strip.appendChild(st);
-      if (picked.length === words.length) {
-        const got = picked.map(p => p.w).join("");
-        const ok = got === answer;
-        toast(ok ? "对了! correct! 🌸" : "almost! it's " + answer);
-        speak(answer);
-        if (ok) addXP(5);
-        onDone(ok);
-      }
-    };
-    tiles.appendChild(t);
-  });
-  view.append(strip, tiles);
-  document.getElementById("bk").onclick = onBack;
-}
-
-/* --- scenario lesson: browse pack, mark done --- */
-function runScenarioLesson(l) {
-  const s = l.scenario;
-  view.innerHTML = "";
-  view.append(
-    el(`<div class="backrow"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">${s.emoji} ${esc(s.title)}</h3></div>`),
-    el(`<div class="card pink">${esc(s.intro)}</div>`)
-  );
-  s.phrases.forEach(p => view.append(phraseCard(p)));
-  const fin = el(`<button class="btn big yellow">Done — I read them all ✨</button>`);
-  fin.onclick = () => finishLesson(l);
-  view.append(fin);
-  document.getElementById("bk").onclick = () => go("learn");
-}
-function phraseCard(p) {
-  const c = el(`<div class="card phrase"><div class="ptext">
-      <div class="hz">${esc(p.hanzi)}</div>${tradChip(p.hanzi)}<div class="pinyin">${esc(p.pinyin)}</div>
-      <div class="en muted">${esc(p.en)}</div>${p.note ? `<div class="note">💡 ${esc(p.note)}</div>` : ""}</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button class="iconbtn sp">🔊</button><button class="iconbtn sl">🐢</button>
-      </div></div>`);
-  c.querySelector(".sp").onclick = () => speak(p.hanzi);
-  c.querySelector(".sl").onclick = () => speak(p.hanzi, 0.5);
-  return c;
-}
-
 /* ================= flashcards (SRS) ================= */
 function dueCards() {
   const now = Date.now();
   return Object.entries(S.srs).filter(([, c]) => c.due <= now)
     .map(([id]) => D.vocab.find(v => v.id === id)).filter(Boolean);
 }
-function renderCards() {
-  const due = shuffle(dueCards());
-  view.innerHTML = "";
-  view.append(el(`<div class="scene">${sceneSVG("room")}</div>`),
-    el(`<h2>Flashcards 🎴 <span class="muted">${Object.keys(S.srs).length} in deck</span></h2>`));
-  if (!Object.keys(S.srs).length) {
-    view.append(el(`<div class="card center"><div class="mascot-inline">${mascotSVG("chiikawa", 72)}</div>
-      <p>Finish a words lesson first — cards appear here for review!</p>
-      <button class="btn pink" id="gl">Go learn 🌱</button></div>`));
-    document.getElementById("gl").onclick = () => go("learn");
-    return;
-  }
-  const weak = weakWords();
-  if (weak.length) {
-    const wb = el(`<button class="btn big pink" style="margin-bottom:10px">💪 drill weak words (${weak.length})</button>`);
-    wb.onclick = () => flashCard(shuffle(weak).slice(0, 15), 0);
-    view.append(wb);
-  }
-  if (!due.length) {
-    view.append(el(`<div class="card mint center"><div class="mascot-inline">${mascotSVG("usagi", 72)}</div>
-      <p>All reviews done for now — 哇!! come back later 🌸</p></div>`));
-    return;
-  }
-  flashCard(due, 0);
-}
-function flashCard(due, i) {
-  if (i >= due.length) {
-    bumpStreak(); confetti();
-    if (due.length >= 5) awardSnack();
-    const hero = shuffle(unlockedCast())[0];
-    view.innerHTML = "";
-    view.append(el(`<div class="card mint bigcard"><div class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</div>
-      <h3>Deck cleared! +${due.length * 2} xp ✨</h3>
-      <div class="muted">${esc(MASCOT_NAMES[hero.id])}: 好棒! see you at the next review~</div></div>`));
-    addXP(due.length * 2);
-    const mx = mixContinueBtn(); if (mx) view.append(mx);
-    return;
-  }
-  const w = due[i];
-  let flipped = false;
-  view.innerHTML = "";
-  view.append(
-    el(`<div class="qmeta"><span class="muted">🎴 ${i + 1}/${due.length}</span><span class="muted">tap card to flip</span></div>`)
-  );
-  const card = el(`<div class="card bigcard" id="fc">
-      <div class="hanzi-xl">${esc(w.hanzi)}</div>
-      <div id="back" style="display:none"><div class="pinyin">${esc(w.pinyin)}</div><div class="en">${esc(w.en)}</div></div>
-      <div class="flip-hint">🔊 auto · tap to flip</div></div>`);
-  card.onclick = () => { flipped = true; card.querySelector("#back").style.display = "block"; grades.style.display = "flex"; };
-  const grades = el(`<div class="cardrow" style="display:none">
-      <button class="btn pink">again 😵</button>
-      <button class="btn blue">good 🙂</button>
-      <button class="btn mint">easy 😎</button></div>`);
-  const [ag, gd, ez] = grades.querySelectorAll("button");
-  const grade = mult => {
-    const c = S.srs[w.id] = S.srs[w.id] || { iv: 0, due: Date.now(), reps: 0 };
-    c.reps++;
-    mult === 0 ? noteWrong(w.id) : noteRight(w.id);
-    if (mult === 0) { c.iv = 0; c.due = Date.now() + 10 * 60e3; }
-    else { c.iv = Math.max(1, Math.round((c.iv || 0.5) * mult * 2)); c.due = Date.now() + c.iv * 864e5; }
-    save(); flashCard(due, i + 1);
-  };
-  ag.onclick = () => grade(0); gd.onclick = () => grade(1); ez.onclick = () => grade(1.8);
-  view.append(card, grades);
-  speak(w.hanzi);
-}
-
 /* ================= practice hub (quiz/listen/speak/write/tones) ================= */
 function renderPractice() {
   view.innerHTML = "";
@@ -1403,6 +953,18 @@ function toneQuiz(i, score) {
 }
 
 /* ================= travel (phrasebook + culture) ================= */
+function phraseCard(p) {
+  const c = el(`<div class="card phrase"><div class="ptext">
+      <div class="hz">${esc(p.hanzi)}</div>${tradChip(p.hanzi)}<div class="pinyin">${esc(p.pinyin)}</div>
+      <div class="en muted">${esc(p.en)}</div>${p.note ? `<div class="note">💡 ${esc(p.note)}</div>` : ""}</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="iconbtn sp">🔊</button><button class="iconbtn sl">🐢</button>
+      </div></div>`);
+  c.querySelector(".sp").onclick = () => speak(p.hanzi);
+  c.querySelector(".sl").onclick = () => speak(p.hanzi, 0.5);
+  return c;
+}
+
 function renderTravel() {
   view.innerHTML = "";
   view.append(el(`<div class="scene">${sceneSVG("ramen")}</div>`),
@@ -1590,13 +1152,4 @@ function showDialogue(d) {
   };
 }
 
-/* ================= boot ================= */
-if (!D.vocab.length) {
-  view.innerHTML = "";
-  view.append(el(`<div class="card yellow center"><div class="mascot-inline">${mascotSVG("chiikawa", 72)}</div>
-    <h3>content pack missing!</h3><div class="muted">data.js didn't load — refresh once it's generated.</div></div>`));
-} else {
-  renderStreak();
-  go("home");
-}
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

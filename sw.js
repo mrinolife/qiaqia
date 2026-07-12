@@ -1,8 +1,9 @@
 /* qiaqia sw — stale-while-revalidate: instant load from cache (works offline in
    Taiwan), silently refetches in the background so the next open gets updates.
    No version bumps or reinstalls needed when files change on the server. */
-const CACHE = "qiaqia-v2";
-const ASSETS = ["./", "index.html", "style.css", "app.js", "data.js", "taiwan.js", "chats.js",
+const CACHE = "qiaqia-v3";
+const ASSETS = ["./", "index.html", "style.css", "app.js", "engine.js", "path.js", "art.js",
+                "data.js", "taiwan.js", "chats.js",
                 "trad.js", "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest",
                 "icon-180.png", "icon-512.png"];
 self.addEventListener("install", e => {
