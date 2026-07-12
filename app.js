@@ -6,6 +6,7 @@
 "use strict";
 
 /* ================= state ================= */
+const QQ_BUILD = "b12-audio-check";
 const LS_KEY = "qq_state_v1";
 const DEFAULT_TRIP = "2026-08-31";
 
@@ -136,7 +137,13 @@ function speak(text, rate, onend) {
     a.playbackRate = !rate || rate >= 0.8 ? 1 : rate <= 0.55 ? 0.62 : 0.8;
     if (onend) a.onended = onend;
     qqPlayer = a;
-    a.play().catch(() => ttsSpeak(text, rate, onend));
+    a.play().catch(err => {
+      if (err && err.name === "NotAllowedError" && !window.__audioHinted) {
+        window.__audioHinted = true;
+        toast("🔇 the browser blocked sound — tap any 🔊 button once to enable it");
+      }
+      ttsSpeak(text, rate, onend);
+    });
     return;
   }
   ttsSpeak(text, rate, onend);
@@ -732,7 +739,34 @@ function voiceCheck() {
   pickVoice();
   const zh = speechSynthesis.getVoices().filter(v => /^zh([-_]|$)/i.test(v.lang));
   view.innerHTML = "";
-  view.append(el(`<div class="qmeta"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">🩺 Voice check</h3></div>`));
+  view.append(el(`<div class="qmeta"><button class="iconbtn" id="bk">←</button><h3 style="margin:0">🩺 Voice check</h3><span class="spacer"></span><span class="badge">build ${QQ_BUILD}</span></div>`));
+  const nClips = AUDIO_IDX ? Object.keys(AUDIO_IDX).length : 0;
+  view.append(el(`<div class="card ${nClips ? "mint" : "yellow"}">
+      <h3>${nClips ? "✅" : "⚠️"} Real audio pack</h3>
+      <div>${nClips
+        ? `<b>${nClips}</b> voice clips loaded — this is the main sound path (no OS voices needed). Tap to test:`
+        : `clip index didn't load (old cached build or offline first run) — refresh the page twice.`}</div>
+      ${nClips ? `<div class="cardrow" style="justify-content:flex-start">
+        <button class="btn small pink" id="clipTest">▶ play test clip (你好)</button>
+        <button class="btn small ghost" id="clipTest2">🐢 slow</button></div>
+      <div class="muted" id="clipState" style="margin-top:6px"></div>` : ""}</div>`));
+  const ct = document.getElementById("clipTest");
+  if (ct) {
+    const st = document.getElementById("clipState");
+    const runTest = rate => {
+      st.textContent = "loading clip…";
+      const f = AUDIO_IDX["你好"];
+      if (!f) { st.textContent = "❌ 你好 missing from index (corrupt cache — refresh twice)"; return; }
+      const au = new Audio("audio/" + f);
+      if (rate) au.playbackRate = rate;
+      au.onplaying = () => { st.textContent = "🔊 PLAYING now (" + f + ") — if you hear nothing, the browser tab or the app is muted in your system volume mixer"; };
+      au.onended = () => { st.textContent += " · finished ✓"; };
+      au.onerror = () => { st.textContent = "❌ clip failed to load: " + (au.error && au.error.message); };
+      au.play().catch(e => { st.textContent = "❌ playback blocked: " + e.name + " — tap the button again"; });
+    };
+    ct.onclick = () => runTest();
+    document.getElementById("clipTest2").onclick = () => runTest(0.62);
+  }
   view.append(el(`<div class="card ${zh.length ? "mint" : "yellow"}">
       <h3>${zh.length ? "✅" : "⚠️"} Chinese audio (she hears)</h3>
       <div>${zh.length

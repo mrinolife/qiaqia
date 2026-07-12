@@ -380,7 +380,7 @@ function renderProfile() {
       <button class="btn small ${S.showPinyin === false ? "pink" : "mint"}" id="pinToggle" style="margin-top:8px">${S.showPinyin === false ? "hidden — show it" : "shown — hide it"}</button></div>`);
   pin.querySelector("#pinToggle").onclick = () => { togglePinyin(); renderProfile(); };
   view.append(pin);
-  const vc = el(`<button class="btn small ghost" style="margin:4px auto;display:block">🩺 voice & mic check</button>`);
+  const vc = el(`<button class="btn small ghost" style="margin:4px auto;display:block">🩺 sound & mic check · build ${QQ_BUILD}</button>`);
   vc.onclick = voiceCheck;
   view.append(vc);
 }
