@@ -352,6 +352,38 @@
       s += dot(45, 78, 3.4, "#5a4632") + dot(53, 81, 3.4, "#5a4632") + dot(48, 70, 3.2, "#5a4632") + dot(56, 72, 3, "#5a4632");
       s += '<ellipse cx="50" cy="46" rx="8" ry="4" fill="#f6ddba" opacity="0.8"/>';
       return s;
+    },
+    mushroom: function (R) {
+      var s = blob(R, [[43, 62], [41, 80], [42, 92], [58, 92], [59, 80], [57, 62]], "#fffaf2", 0.9);
+      s += blob(R, [[16, 58], [22, 34], [50, 17], [78, 34], [84, 58], [64, 68], [50, 71], [36, 68]], "#e2604f", 1.5);
+      s += dot(36, 40, 4.2, "#fff6e6") + dot(58, 32, 3.6, "#fff6e6") + dot(68, 50, 3, "#fff6e6") + dot(44, 55, 2.6, "#fff6e6");
+      return s;
+    },
+    lantern: function (R) {
+      var s = '<circle cx="50" cy="52" r="34" fill="#ffcf7a" opacity="0.22"/>';
+      s += wline(R, [[50, 4], [50, 20]], { amp: 0.4, w: 2, stroke: "#8a6b4a" });
+      s += blob(R, [[42, 18], [58, 18], [60, 24], [40, 24]], "#8a6b4a", 0.6);
+      s += blob(R, [[34, 26], [66, 26], [72, 50], [66, 74], [34, 74], [28, 50]], "#ff9a52", 1.4);
+      s += wline(R, [[40, 27], [37, 50], [40, 73]], { amp: 0.3, w: 1.6, stroke: "#e2703a" });
+      s += wline(R, [[50, 27], [50, 73]], { amp: 0.3, w: 1.6, stroke: "#e2703a" });
+      s += wline(R, [[60, 27], [63, 50], [60, 73]], { amp: 0.3, w: 1.6, stroke: "#e2703a" });
+      s += blob(R, [[42, 74], [58, 74], [60, 80], [40, 80]], "#8a6b4a", 0.6);
+      s += wline(R, [[50, 80], [50, 92]], { amp: 0.3, w: 1.8, stroke: "#8a6b4a" });
+      s += sparkle4(50, 89, 3, "#ffe9a8");
+      return s;
+    },
+    hut: function (R) {
+      var s = blob(R, [[24, 60], [24, 92], [76, 92], [76, 60]], "#f5e1c8", 0.9);
+      s += blob(R, [[16, 62], [50, 30], [84, 62], [70, 66], [50, 50], [30, 66]], "#d9765a", 1.3);
+      s += blob(R, [[44, 74], [56, 74], [56, 92], [44, 92]], "#8a6b4a", 0.7);
+      s += dot(32, 72, 3, "#fffdf8");
+      return s;
+    },
+    puddle: function (R) {
+      var s = blob(R, [[20, 62], [40, 52], [64, 54], [82, 64], [70, 76], [40, 78], [22, 72]], "#a9c9dc", 1.3, ' opacity="0.75"');
+      s += wline(R, [[34, 62], [50, 58], [64, 62]], { amp: 0.3, w: 1.6, stroke: "#7fa8bf" });
+      s += wline(R, [[38, 70], [50, 67], [60, 70]], { amp: 0.3, w: 1.4, stroke: "#7fa8bf" });
+      return s;
     }
   };
 
@@ -407,6 +439,70 @@
       s += '<line x1="346" y1="18" x2="346" y2="62" stroke="' + INK + '" stroke-width="2"/>';
       s += '<line x1="318" y1="40" x2="374" y2="40" stroke="' + INK + '" stroke-width="2"/>';
       s += place("cloud", R, 322, 20, 0.22);
+    } else if (variant === "forest") {
+      s += '<defs><linearGradient id="qqskyF" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#dff2d8"/><stop offset="0.6" stop-color="#c3e6bd"/><stop offset="1" stop-color="#e8f5df"/></linearGradient></defs>';
+      s += '<rect width="400" height="120" fill="url(#qqskyF)"/>';
+      s += '<g opacity="0.55">' + place("tree", R, 30, 4, 0.34) + place("tree", R, 100, -2, 0.3) +
+        place("tree", R, 250, 2, 0.32) + place("tree", R, 340, 0, 0.3) + "</g>";
+      s += '<g opacity="0.85">' + place("tree", R, 70, 18, 0.44) + place("tree", R, 190, 14, 0.4) +
+        place("tree", R, 300, 20, 0.42) + "</g>";
+      s += '<path d="M0 92 Q80 80 150 88 Q230 96 300 82 Q350 78 400 90 L400 120 L0 120Z" fill="#6fae5e" stroke="' + INK + '" stroke-width="2"/>';
+      s += place("tree", R, 6, 40, 0.62) + place("tree", R, 130, 44, 0.58) + place("tree", R, 220, 42, 0.6) + place("tree", R, 360, 46, 0.56);
+      s += blob(R, [[150, 96], [210, 92], [214, 100], [154, 104]], "#a97c50", 1);
+      s += '<ellipse cx="212" cy="96" rx="5" ry="6" fill="#8a6140" stroke="' + INK + '" stroke-width="1.6"/>';
+      s += wline(R, [[165, 95], [190, 93]], { amp: 0.3, w: 1.4, stroke: "#8a6140" });
+      s += place("mushroom", R, 58, 88, 0.22) + place("mushroom", R, 260, 84, 0.2) + place("mushroom", R, 340, 90, 0.18);
+    } else if (variant === "market") {
+      s += '<defs><linearGradient id="qqskyMk" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#4a3a63"/><stop offset="0.6" stop-color="#7a5a7c"/><stop offset="1" stop-color="#c98a72"/></linearGradient></defs>';
+      s += '<rect width="400" height="120" fill="url(#qqskyMk)"/>';
+      s += '<rect y="94" width="400" height="26" fill="#5a4a52" stroke="' + INK + '" stroke-width="2"/>';
+      s += '<line x1="0" y1="94" x2="400" y2="94" stroke="' + INK + '" stroke-width="2"/>';
+      s += wline(R, [[0, 14], [100, 22], [200, 12], [300, 24], [400, 14]], { amp: 0.6, w: 1.6, stroke: "#3a2f2a" });
+      [[30, 18], [90, 24], [150, 16], [210, 22], [270, 14], [330, 24], [380, 18]].forEach(function (p, i) {
+        s += place("lantern", R, p[0], p[1], 0.24 + (i % 2 ? 0.03 : 0));
+      });
+      s += blob(R, [[40, 66], [39, 84], [41, 96], [109, 96], [111, 84], [110, 66]], "#8a6b4a", 1.1);
+      s += blob(R, [[32, 66], [46, 49], [104, 49], [118, 66], [92, 62], [58, 62]], "#d9483f", 1.3);
+      s += wline(R, [[52, 50], [46, 66]], { amp: 0.4, w: 1.8, stroke: INK }) +
+        wline(R, [[72, 49.5], [68, 66]], { amp: 0.4, w: 1.8, stroke: INK }) +
+        wline(R, [[92, 50], [90, 66]], { amp: 0.4, w: 1.8, stroke: INK });
+      s += blob(R, [[36, 88], [36, 98], [114, 98], [114, 88]], "#c89b6a", 0.9);
+      s += dot(52, 92, 3, "#ffd66e") + dot(64, 91, 2.6, "#e58f8f") + dot(76, 92, 3, "#ffd66e") + dot(88, 91, 2.6, "#e58f8f");
+      s += blob(R, [[280, 70], [279, 84], [281, 96], [343, 96], [345, 84], [344, 70]], "#7a5a44", 1.1);
+      s += blob(R, [[272, 70], [284, 54], [340, 54], [352, 70], [328, 66], [296, 66]], "#4f7a8c", 1.3);
+      s += wline(R, [[292, 55], [288, 70]], { amp: 0.4, w: 1.8, stroke: INK }) +
+        wline(R, [[312, 54.5], [310, 70]], { amp: 0.4, w: 1.8, stroke: INK }) +
+        wline(R, [[332, 55], [331, 70]], { amp: 0.4, w: 1.8, stroke: INK });
+      s += blob(R, [[276, 90], [276, 98], [348, 98], [348, 90]], "#5f8fa0", 0.9);
+      s += dot(292, 93, 2.8, "#fffdf8") + dot(304, 92, 2.4, "#ffd66e") + dot(316, 93, 2.8, "#fffdf8") + dot(328, 92, 2.4, "#ffd66e");
+      s += sparkle4(160, 40, 3.5, "#ffe9a8") + sparkle4(230, 36, 3, "#ffe9a8");
+    } else if (variant === "town") {
+      s += '<defs><linearGradient id="qqskyT" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#cfe8ff"/><stop offset="0.7" stop-color="#eef6ea"/><stop offset="1" stop-color="#fdf1e0"/></linearGradient></defs>';
+      s += '<rect width="400" height="120" fill="url(#qqskyT)"/>';
+      s += '<circle cx="40" cy="22" r="13" fill="#ffe9a8" stroke="#f5cf72" stroke-width="2"/>';
+      s += place("cloud", R, 200, 10, 0.3) + place("cloud", R, 320, 16, 0.26);
+      s += '<path d="M0 92 Q90 80 170 88 Q250 96 320 82 Q360 76 400 86 L400 120 L0 120Z" fill="#cfe3a8" stroke="' + INK + '" stroke-width="2"/>';
+      function cottage(x, y, scale, wallFill, roofFill) {
+        var g = '<g transform="translate(' + x + ' ' + y + ') scale(' + scale + ')">';
+        g += blob(R, [[10, 50], [10, 90], [70, 90], [70, 50]], wallFill, 1);
+        g += blob(R, [[0, 52], [40, 10], [80, 52], [64, 58], [40, 38], [16, 58]], roofFill, 1.4);
+        g += '<rect x="34" y="66" width="14" height="24" fill="#8a6b4a" stroke="' + INK + '" stroke-width="1.6"/>';
+        g += '<circle cx="54" cy="70" r="4.5" fill="#cfe8ff" stroke="' + INK + '" stroke-width="1.6"/>';
+        g += "</g>";
+        return g;
+      }
+      s += place("hut", R, 30, 46, 0.62);
+      s += cottage(140, 40, 0.72, "#e8f0e0", "#7fa9c9");
+      s += cottage(280, 44, 0.66, "#fbe6e6", "#d9a05a");
+      s += place("signpost", R, 220, 60, 0.34);
+      s += wline(R, [[356, 96], [356, 60]], { amp: 0.3, w: 3, stroke: "#5a4a3a" });
+      s += blob(R, [[350, 48], [362, 48], [364, 58], [348, 58]], "#8a6b4a", 0.8);
+      s += '<circle cx="356" cy="42" r="10" fill="#ffe9a8" opacity="0.35"/>';
+      s += blob(R, [[349, 36], [363, 36], [363, 50], [349, 50]], "#fff6c9", 0.7);
+      s += dot(356, 43, 3, "#ffd66e");
     } else { // meadow
       s += '<defs><linearGradient id="qqskyM" x1="0" y1="0" x2="0" y2="1">' +
         '<stop offset="0" stop-color="#cfe8ff"/><stop offset="0.65" stop-color="#eaf4f0"/><stop offset="1" stop-color="#fdf6e3"/></linearGradient></defs>';

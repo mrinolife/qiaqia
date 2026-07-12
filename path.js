@@ -171,15 +171,27 @@ function renderPath() {
   if (hd) hd.onclick = () => startReview(renderPath);
 
   const map = el(`<div class="path-map"></div>`);
+  map.append(el(`<div class="path-ambient">
+      <span class="amb a1">🌸</span><span class="amb a2">✨</span><span class="amb a3">🍃</span>
+      <span class="amb a4">⭐</span><span class="amb a5">🌸</span></div>`));
   let gIdx = 0;
   const OFFS = [0, -1, 0, 1]; // winding pattern
-  activeUnits().forEach(u => {
+  const BIOMES = ["meadow", "forest", "town", "market"];
+  const LDECO = ["grass", "flower", "mushroom", "weed", "tree", "puddle"];
+  const RDECO = ["sparkle", "lantern", "star", "cloud", "hut", "grass"];
+  activeUnits().forEach((u, uidx) => {
+    const biome = BIOMES[uidx % BIOMES.length];
     const uStars = u.nodes.reduce((a, n) => a + nodeStars(n.id), 0);
     const uDone = u.nodes.filter(n => nodeStars(n.id)).length;
-    map.append(el(`<div class="unit-banner wob">
-        <span class="unit-host">${art(u.host, uDone === u.nodes.length ? "cheer" : "idle", 46)}</span>
-        <span class="unit-name">${u.emoji} <b>${esc(u.title)}</b><br>
-        <span class="muted">${uDone}/${u.nodes.length} · ${"★".repeat(Math.min(3, Math.round(uStars / Math.max(1, u.nodes.length))))||"☆"}</span></span>
+    const group = el(`<div class="unit-group biome-${biome}"></div>`);
+    const sceneSVG = (window.QQ_ART && QQ_ART.scene) ? QQ_ART.scene(biome) : "";
+    group.append(el(`<div class="unit-banner wob">
+        ${sceneSVG ? `<div class="unit-scene">${sceneSVG}</div>` : ""}
+        <div class="unit-overlay">
+          <span class="unit-host">${art(u.host, uDone === u.nodes.length ? "cheer" : "idle", 46)}</span>
+          <span class="unit-name">${u.emoji} <b>${esc(u.title)}</b><br>
+          <span class="muted">${uDone}/${u.nodes.length} · ${"★".repeat(Math.min(3, Math.round(uStars / Math.max(1, u.nodes.length))))||"☆"}</span></span>
+        </div>
       </div>`));
     u.nodes.forEach(n => {
       const idx = gIdx++;
@@ -187,8 +199,10 @@ function renderPath() {
       const unlocked = nodeUnlocked(NODES, idx);
       const isCur = idx === curIdx;
       const off = OFFS[idx % 4];
+      const ld = deco(LDECO[idx % LDECO.length], 24), rd = deco(RDECO[idx % RDECO.length], 24);
       const row = el(`<div class="path-row" style="--off:${off}">
-          ${deco(["grass", "flower", "sparkle", "grass", "tree", "weed"][idx % 6], 22) ? `<span class="path-deco ${off === 1 ? "left" : "right"}">${deco(["grass", "flower", "sparkle", "grass", "tree", "weed"][idx % 6], 26)}</span>` : ""}
+          ${ld ? `<span class="path-deco left">${ld}</span>` : ""}
+          ${rd ? `<span class="path-deco right">${rd}</span>` : ""}
           <button class="path-node ${n.kind} ${stars ? "done" : ""} ${!unlocked ? "locked" : ""} ${isCur ? "cur" : ""}" data-i="${idx}">
             <span class="node-face">${!unlocked ? "🔒" : n.kind === "exam" ? "试" : esc(n.label)}</span>
             ${stars ? `<span class="node-stars">${"★".repeat(stars)}</span>` : ""}
@@ -201,8 +215,9 @@ function renderPath() {
         SFX.tap();
         nodeSheet(NODES[idx]);
       };
-      map.append(row);
+      group.append(row);
     });
+    map.append(group);
   });
   if ((window.QIAQIA_HSK2 || []).length && !S.hsk2Open) {
     const gate = el(`<div class="unit-banner wob" style="background:var(--yellow)">
