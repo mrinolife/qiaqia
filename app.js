@@ -504,6 +504,26 @@ function renderDict() {
 document.getElementById("dictBtn").onclick = () => { speechSynthesis && speechSynthesis.cancel(); renderDict(); };
 document.getElementById("profileBtn").onclick = () => { speechSynthesis && speechSynthesis.cancel(); renderProfile(); };
 
+/* pinyin visibility: Rachel can hide pinyin to force real character reading.
+   Hidden pinyin is blurred, and a tap on it peeks (recall first, verify after). */
+function applyPinyinPref() {
+  document.body.classList.toggle("hide-pinyin", S.showPinyin === false);
+  const b = document.getElementById("pinBtn");
+  if (b) b.classList.toggle("off", S.showPinyin === false);
+}
+function togglePinyin() {
+  S.showPinyin = S.showPinyin === false ? true : false;
+  save(); applyPinyinPref();
+  toast(S.showPinyin === false ? "拼音 hidden — tap any blurred pinyin to peek 👀" : "拼音 shown");
+}
+document.getElementById("pinBtn").onclick = togglePinyin;
+applyPinyinPref();
+document.addEventListener("click", e => {
+  if (S.showPinyin !== false) return;
+  const p = e.target.closest(".pinyin, .ch-pin");
+  if (p && !p.closest("button")) p.classList.toggle("reveal");
+});
+
 /* ================= friends & snacks ================= */
 function renderFriendsInto(view) {
   view.append(el(`<h3 style="margin:16px 4px 4px">Friends 🧺 <span class="muted">${unlockedCast().length}/${CAST.length}</span></h3>`),

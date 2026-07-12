@@ -531,3 +531,11 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   .node-start { right: calc(50% + 44px); }
   .hanzi-xl { font-size: 2.8rem; }
 }
+
+/* ---------- pinyin hidden mode (tap to peek) ---------- */
+.hide-pinyin .pinyin, .hide-pinyin .ch-pin {
+  filter: blur(5px); opacity: .75; transition: filter .15s;
+}
+.hide-pinyin .pinyin:not(button *) { cursor: pointer; }
+.hide-pinyin .pinyin.reveal, .hide-pinyin .ch-pin.reveal { filter: none; opacity: 1; }
+#pinBtn.off { background: var(--paper2); color: var(--ink-soft); text-decoration: line-through; }
