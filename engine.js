@@ -7,7 +7,11 @@
 /* ---------- tiny sfx (WebAudio, no assets) ---------- */
 const SFX = (() => {
   let ctx = null;
-  const ac = () => (ctx = ctx || new (window.AudioContext || window.webkitAudioContext)());
+  const ac = () => {
+    ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  };
   const blip = (freqs, dur, type, gain) => {
     try {
       const c = ac(), t0 = c.currentTime;

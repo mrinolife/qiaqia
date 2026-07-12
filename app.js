@@ -89,8 +89,27 @@ if ("speechSynthesis" in window) {
   pickVoice();
   speechSynthesis.onvoiceschanged = pickVoice;
 }
-let warnedNoVoice = false;
+/* real audio pack (neural TTS clips shipped in audio/) — plays everywhere,
+   no OS voices needed; browser speechSynthesis is only the fallback */
+let AUDIO_IDX = null;
+fetch("audio/index.json").then(r => r.ok ? r.json() : null).then(j => { AUDIO_IDX = j; }).catch(() => {});
+let qqPlayer = null;
 function speak(text, rate, onend) {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  if (qqPlayer) { qqPlayer.onended = null; qqPlayer.pause(); qqPlayer = null; }
+  if (AUDIO_IDX && AUDIO_IDX[text]) {
+    const a = new Audio("audio/" + AUDIO_IDX[text]);
+    // old TTS-rate semantics -> playbackRate: default ~1x, turtle ~0.62x
+    a.playbackRate = !rate || rate >= 0.8 ? 1 : rate <= 0.55 ? 0.62 : 0.8;
+    if (onend) a.onended = onend;
+    qqPlayer = a;
+    a.play().catch(() => ttsSpeak(text, rate, onend));
+    return;
+  }
+  ttsSpeak(text, rate, onend);
+}
+let warnedNoVoice = false;
+function ttsSpeak(text, rate, onend) {
   if (!("speechSynthesis" in window)) return;
   if (!VOICE) pickVoice(); // voices often load late on phones
   if (!VOICE && speechSynthesis.getVoices().length && !warnedNoVoice) {
