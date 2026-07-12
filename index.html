@@ -30,7 +30,17 @@
   </div>
 </header>
 
-<main id="view"></main>
+<div id="appShell">
+  <nav id="sideNav">
+    <button data-tab="home"    class="tab active"><span>🗺️</span>Path</button>
+    <button data-tab="cards"   class="tab"><span>🎴</span>Review</button>
+    <button data-tab="quiz"    class="tab"><span>⭐</span>Practice</button>
+    <button data-tab="phrases" class="tab"><span>🧳</span>Travel</button>
+    <button data-tab="talk"    class="tab"><span>💬</span>Talk</button>
+  </nav>
+  <main id="view"></main>
+  <aside id="sideStats"></aside>
+</div>
 
 <nav id="tabs">
   <button data-tab="home"    class="tab active"><span>🗺️</span>Path</button>

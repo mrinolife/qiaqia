@@ -267,6 +267,19 @@ fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   if (document.querySelector(".path-hero")) renderPath();
 }).catch(() => {});
 
+// local-only snack art overrides: drop chars/food/<id>.png next to the app (gitignored,
+// never pushed) and that snack uses the real fan-art image instead of its emoji
+const LOCAL_FOOD = {};
+fetch("chars/food/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
+  if (!m) return;
+  (m.foods || []).forEach(k => { LOCAL_FOOD[k] = `chars/food/${k}.png`; });
+}).catch(() => {});
+function snackArt(sn, size) {
+  const s = size || 40;
+  if (LOCAL_FOOD[sn.id]) return `<img src="${LOCAL_FOOD[sn.id]}" width="${s}" height="${s}" style="object-fit:cover;border-radius:10px" alt="">`;
+  return null;
+}
+
 function mascotSVG(kind, size) {
   const s = size || 96;
   if (LOCAL_ART[kind]) return `<img src="${LOCAL_ART[kind]}" width="${s}" height="${s}" style="object-fit:contain" alt="">`;
@@ -420,7 +433,7 @@ function mascotSVG(kind, size) {
 document.getElementById("brandMascot").innerHTML = mascotSVG("usagi", 38);
 
 /* ================= router ================= */
-const tabs = document.querySelectorAll(".tab");
+const tabs = document.querySelectorAll("#tabs .tab, #sideNav .tab");
 tabs.forEach(b => b.addEventListener("click", () => go(b.dataset.tab)));
 function go(tab) {
   tabs.forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
@@ -429,6 +442,43 @@ function go(tab) {
      phrases: renderTravel, talk: renderTalk, profile: renderProfile }[tab] || renderPath)();
   window.scrollTo(0, 0);
   maybePeek();
+  renderSideStats();
+}
+
+/* desktop-only persistent status rail (≥900px; harmless no-op elsewhere) */
+function renderSideStats() {
+  const rail = document.getElementById("sideStats");
+  if (!rail) return;
+  rail.innerHTML = "";
+  try {
+    const xp = S.xp || 0;
+    const li = levelInfo(xp);
+    const due = dueCards();
+    const learned = learnedWordCount();
+    const total = (D.vocab && D.vocab.length) || 1;
+    rail.append(el(`<div class="card wob sidebar-card">
+        <div class="sidebar-id">
+          <span class="sidebar-avatar">${art("usagi", "happy", 64)}</span>
+          <div class="sidebar-idtext">
+            <div class="lic-lv" style="margin-left:0">LV${li.lv}</div>
+            <div class="lic-rank" style="margin:2px 0 0">${esc(li.title)}<br><span class="muted">${esc(li.titleEn)}</span></div>
+          </div>
+        </div>
+        <div class="lic-xpbar sidebar-xpbar"><div class="lic-xpfill" style="width:${li.pct}%"></div></div>
+        <div class="lic-xptext">✨ ${xp} xp${li.need ? ` · ${li.need} to LV${li.lv + 1}` : " · MAX RANK"}</div>
+      </div>`));
+    rail.append(el(`<div class="card wob sidebar-card sidebar-chips">
+        <span class="chip">🔥 ${(S.streak && S.streak.count) || 0} day streak</span>
+        <span class="chip ${todayXP() >= DAY_GOAL ? "chip-done" : ""}">🌟 ${Math.min(todayXP(), DAY_GOAL)}/${DAY_GOAL} today</span>
+        <span class="chip">✈️ ${tripDays()} days to Taiwan</span>
+        <span class="chip">📖 ${learned}/${total} words</span>
+      </div>`));
+    if (due.length > 0) {
+      const btn = el(`<button class="btn small pink sidebar-review-btn">🎴 ${due.length} due — review now</button>`);
+      btn.onclick = () => startReview(renderPath);
+      rail.append(btn);
+    }
+  } catch (e) { /* defensive: never let the rail crash boot/render */ }
 }
 /* a friend occasionally peeks in to cheer */
 function maybePeek() {
@@ -594,8 +644,9 @@ function renderFriendsInto(view) {
   const shelf = el(`<div class="friendgrid snacks"></div>`);
   SNACKS.forEach(sn => {
     const n = (S.snacks || {})[sn.id] || 0;
+    const art = n ? snackArt(sn, 46) : null;
     const cell = el(`<button class="card friendcell ${n ? "" : "locked"}">
-        <span style="font-size:2.2rem">${n ? sn.emoji : "❓"}</span>
+        ${art ? art : `<span style="font-size:2.2rem">${n ? sn.emoji : "❓"}</span>`}
         <div class="fname">${n ? esc(sn.hanzi) : "???"}</div>
         <div class="muted" style="font-size:.72rem">${n ? esc(sn.pinyin) + (n > 1 ? " ×" + n : "") : esc(sn.name)}</div>
       </button>`);
