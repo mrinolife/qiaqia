@@ -402,7 +402,7 @@ function renderProfile() {
       </div>
       <div class="lic-foot"><span>恰恰学院 QIAQIA ACADEMY</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
     </div>`);
-  lic.onclick = () => { speak("呀哈"); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
+  lic.onclick = () => { speakAs("呀哈", "usagi"); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
   view.append(lic);
   view.append(el(`<div class="card wob">
       <div class="cardrow" style="justify-content:space-around;text-align:center">
