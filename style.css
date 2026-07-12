@@ -624,3 +624,29 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 }
 .lic-barcode { letter-spacing: -1px; font-size: .8rem; color: var(--ink); }
 .chip-done { background: var(--mint); }
+
+/* ---------- desktop / wide-screen adjustments ---------- */
+@media (min-width: 700px) {
+  #tabs {
+    left: 50%; right: auto; bottom: 12px;
+    transform: translateX(-50%);
+    width: min(560px, calc(100vw - 24px));
+    border: 2.5px solid var(--ink);
+    border-radius: 22px 26px 20px 24px / 26px 20px 24px 22px;
+    box-shadow: 0 4px 0 rgba(74, 63, 53, .3);
+    padding: 6px 8px;
+  }
+  body { padding-bottom: 96px; }
+  .sess-foot { bottom: 92px; }
+  .chattray { bottom: 92px; }
+  #toast { bottom: 104px; }
+  .peek { bottom: 140px; }
+  /* chip rows: wrap instead of hidden horizontal scroll (no touch on PC) */
+  .chips { flex-wrap: wrap; overflow-x: visible; }
+  /* hover affordances for mouse users */
+  .btn:hover, .iconbtn:hover, .choice:hover:not(:disabled), .tile:hover:not(.used),
+  .pairbtn:hover:not(.gone), .lesson:hover, .path-node:hover:not(.locked), .wb-row:hover {
+    filter: brightness(1.03);
+  }
+  .path-node:hover:not(.locked) { transform: translateY(-2px); }
+}
