@@ -413,10 +413,11 @@ function renderProfile() {
       </div>
       <div class="hskbar"><div class="hskfill" style="width:${Math.round(learned / D.vocab.length * 100)}%"></div></div>
       <div class="muted center">${Math.round(learned / D.vocab.length * 100)}% of HSK 1</div></div>`));
+  const tripDate = new Date((S.tripDate || DEFAULT_TRIP) + "T00:00:00");
+  const tripFmt = tripDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   const trip = el(`<div class="card yellow wob"><h3>✈️ Taiwan trip</h3>
       <div class="cardrow" style="align-items:center"><b style="font-size:1.6rem">${tripDays()}</b> days to go ·
-      <input type="date" id="tripD" value="${esc(S.tripDate || DEFAULT_TRIP)}" style="font-family:inherit;padding:6px;border:2px solid var(--line);border-radius:10px;background:var(--card)"></div></div>`);
-  trip.querySelector("#tripD").onchange = e => { S.tripDate = e.target.value; save(); renderProfile(); };
+      <span style="font-weight:800">${esc(tripFmt)}</span></div></div>`);
   view.append(trip);
   const fg = el(`<button class="btn big yellow" style="margin:10px auto;display:block">🍜 Food Gallery — see the real show art</button>`);
   fg.onclick = renderFoodGallery;

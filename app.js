@@ -9,11 +9,11 @@
 const QQ_BUILD = "b12-audio-check";
 const LS_KEY = "qq_state_v1";
 const PROFILES_KEY = "qq_profiles_v1";
-const DEFAULT_TRIP = "2026-08-31";
+const DEFAULT_TRIP = "2026-08-25";
 
 /* real progress captured by actually playing unit 1's word + phrase lessons —
    not hand-authored — stopped right before the exam, matching where she really is. */
-const RACHEL_SEED = {"doneLessons": {}, "srs": {"v42": {"box": 1, "due": 1783936774575}, "v105": {"box": 1, "due": 1783936775801}, "v106": {"box": 1, "due": 1783936777001}, "v107": {"box": 1, "due": 1783936778218}, "v108": {"box": 1, "due": 1783936790450}, "v109": {"box": 1, "due": 1783936791034}, "v110": {"box": 1, "due": 1783936791633}}, "xp": 48, "streak": {"last": "2026-07-12", "count": 1}, "tripDate": "2026-08-31", "stats": {"quiz": 51, "correct": 16, "spoken": 0, "written": 0}, "snacks": {}, "metFriends": {}, "activeDays": {"2026-07-12": 1}, "daily": {}, "name": "Rachel", "wrong": {"v107": 12, "v42": 2, "v105": 8, "v106": 1, "v108": 3, "v109": 8, "v110": 9}, "speakingOn": true, "dayXP": {"2026-07-12": 48}, "stars": {"u1-w0": 1, "u1-w1": 1, "u1-p0": 1}}
+const RACHEL_SEED = {"doneLessons": {}, "srs": {"v42": {"box": 1, "due": 1783936774575}, "v105": {"box": 1, "due": 1783936775801}, "v106": {"box": 1, "due": 1783936777001}, "v107": {"box": 1, "due": 1783936778218}, "v108": {"box": 1, "due": 1783936790450}, "v109": {"box": 1, "due": 1783936791034}, "v110": {"box": 1, "due": 1783936791633}}, "xp": 48, "streak": {"last": "2026-07-12", "count": 1}, "tripDate": "2026-08-25", "stats": {"quiz": 51, "correct": 16, "spoken": 0, "written": 0}, "snacks": {}, "metFriends": {}, "activeDays": {"2026-07-12": 1}, "daily": {}, "name": "Rachel", "wrong": {"v107": 12, "v42": 2, "v105": 8, "v106": 1, "v108": 3, "v109": 8, "v110": 9}, "speakingOn": true, "dayXP": {"2026-07-12": 48}, "stars": {"u1-w0": 1, "u1-w1": 1, "u1-p0": 1}}
 ;
 const JZN_SEED = { name: "jzn", fullAccess: true, hsk2Open: true };
 
@@ -50,6 +50,7 @@ function blankState() {
            activeDays: {}, daily: {}, name: "Rachel", wrong: {}, speakingOn: true };
 }
 const S = loadState();
+S.tripDate = "2026-08-25"; // set in stone — the date picker is gone, this can no longer drift
 function save() { S._v = (S._v || 0) + 1; localStorage.setItem(stateKey(activeProfileName()), JSON.stringify(S)); }
 
 /* resync guard: fixes progress "resetting" after backgrounding/resuming the app.
@@ -716,9 +717,10 @@ function renderFriendsInto(view) {
    and the Food Gallery showcase (every item with real art, unlocked or not) */
 function snackDetailPopup(sn) {
   speak(sn.hanzi);
-  const eclip = typeof animGIF === "function" ? animGIF("eat", 120) : "";
+  // the food's own real photo always wins when we have one — a generic "eating" clip
+  // for a DIFFERENT dish would show mismatched content, so it's never used here
   const foodArt = snackArt(sn, 96);
-  const centerpiece = eclip || foodArt || `<span style="font-size:3rem">${sn.emoji}</span>`;
+  const centerpiece = foodArt || `<span style="font-size:3rem">${sn.emoji}</span>`;
   const ov = el(`<div class="unlock-pop"><div class="card yellow bigcard" style="text-align:left">
       <div class="center">${centerpiece}</div>
       <h3 class="center">${esc(sn.hanzi)} <span class="pinyin">${esc(sn.pinyin)}</span></h3>
