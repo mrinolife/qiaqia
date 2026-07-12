@@ -26,5 +26,23 @@
   "sleep": [
     "sleep1.gif",
     "sleep2.gif"
+  ],
+  "ramen": [
+    "ramen1.gif",
+    "ramen2.gif",
+    "ramen3.gif"
+  ],
+  "market": [
+    "market1.gif",
+    "market2.gif"
+  ],
+  "hunt": [
+    "hunt1.gif",
+    "hunt2.gif",
+    "hunt3.gif"
+  ],
+  "group": [
+    "group1.gif",
+    "group2.gif"
   ]
 }

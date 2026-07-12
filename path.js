@@ -177,16 +177,12 @@ function renderPath() {
   let gIdx = 0;
   const OFFS = [0, -1, 0, 1]; // winding pattern
   const BIOMES = ["meadow", "forest", "town", "market"];
-  const LDECO = ["grass", "flower", "mushroom", "weed", "tree", "puddle"];
-  const RDECO = ["sparkle", "lantern", "star", "cloud", "hut", "grass"];
   activeUnits().forEach((u, uidx) => {
     const biome = BIOMES[uidx % BIOMES.length];
     const uStars = u.nodes.reduce((a, n) => a + nodeStars(n.id), 0);
     const uDone = u.nodes.filter(n => nodeStars(n.id)).length;
     const group = el(`<div class="unit-group biome-${biome}"></div>`);
-    const sceneSVG = (window.QQ_ART && QQ_ART.scene) ? QQ_ART.scene(biome) : "";
-    group.append(el(`<div class="unit-banner wob">
-        ${sceneSVG ? `<div class="unit-scene">${sceneSVG}</div>` : ""}
+    group.append(el(`<div class="unit-banner card">
         <div class="unit-overlay">
           <span class="unit-host">${art(u.host, uDone === u.nodes.length ? "cheer" : "idle", 46)}</span>
           <span class="unit-name">${u.emoji} <b>${esc(u.title)}</b><br>
@@ -199,10 +195,7 @@ function renderPath() {
       const unlocked = nodeUnlocked(NODES, idx);
       const isCur = idx === curIdx;
       const off = OFFS[idx % 4];
-      const ld = deco(LDECO[idx % LDECO.length], 24), rd = deco(RDECO[idx % RDECO.length], 24);
       const row = el(`<div class="path-row" style="--off:${off}">
-          ${ld ? `<span class="path-deco left">${ld}</span>` : ""}
-          ${rd ? `<span class="path-deco right">${rd}</span>` : ""}
           <button class="path-node ${n.kind} ${stars ? "done" : ""} ${!unlocked ? "locked" : ""} ${isCur ? "cur" : ""}" data-i="${idx}">
             <span class="node-face">${!unlocked ? "🔒" : n.kind === "exam" ? "试" : esc(n.label)}</span>
             ${stars ? `<span class="node-stars">${"★".repeat(stars)}</span>` : ""}
@@ -351,6 +344,36 @@ function renderWordbook() {
   document.getElementById("wbBk").onclick = () => go("cards");
 }
 
+/* ---------- food gallery: showcase every real show-art food image large,
+   whether or not it's been won yet from the snack shelf ---------- */
+function renderFoodGallery() {
+  view.innerHTML = "";
+  view.append(el(`<div class="backrow"><button class="iconbtn" id="fgBk">←</button>
+    <h3 style="margin:0">🍜 Food Gallery <span class="muted">real art from the show</span></h3></div>`));
+  view.append(el(`<div class="muted" style="margin:0 4px 12px">every real Chiikawa food image we've tracked down, all in one place —
+    tap any dish to hear it said out loud. 🔒 just means you haven't won it from a quiz yet, but it's still yours to enjoy!</div>`));
+  const items = SNACKS.filter(sn => LOCAL_FOOD[sn.id]);
+  if (!items.length) {
+    view.append(el(`<div class="card wob center muted">no real food art installed yet — check back later!</div>`));
+  } else {
+    const grid = el(`<div class="foodgrid"></div>`);
+    items.forEach(sn => {
+      const n = (S.snacks || {})[sn.id] || 0;
+      const cell = el(`<button class="card foodcell ${n ? "" : "locked"}">
+          <img src="${LOCAL_FOOD[sn.id]}" alt="${esc(sn.en)}">
+          ${n ? "" : `<span class="lockbadge">🔒 unlock via quizzes</span>`}
+          <div class="fname">${esc(sn.hanzi)}</div>
+          <div class="pinyin">${esc(sn.pinyin)}</div>
+          <div class="muted" style="font-size:.78rem">${esc(sn.en)}</div>
+        </button>`);
+      cell.onclick = () => snackDetailPopup(sn);
+      grid.appendChild(cell);
+    });
+    view.append(grid);
+  }
+  document.getElementById("fgBk").onclick = () => renderProfile();
+}
+
 /* ---------- profile (friends, snacks, stats, settings) ---------- */
 function renderProfile() {
   view.innerHTML = "";
@@ -388,6 +411,9 @@ function renderProfile() {
       <input type="date" id="tripD" value="${esc(S.tripDate || DEFAULT_TRIP)}" style="font-family:inherit;padding:6px;border:2px solid var(--line);border-radius:10px;background:var(--card)"></div></div>`);
   trip.querySelector("#tripD").onchange = e => { S.tripDate = e.target.value; save(); renderProfile(); };
   view.append(trip);
+  const fg = el(`<button class="btn big yellow" style="margin:10px auto;display:block">🍜 Food Gallery — see the real show art</button>`);
+  fg.onclick = renderFoodGallery;
+  view.append(fg);
   renderFriendsInto(view);
   const st = S.stats;
   view.append(el(`<div class="card muted center">answered ${st.quiz} · ${st.quiz ? Math.round(st.correct / st.quiz * 100) : 0}% right · 🎤 ${st.spoken} spoken · ✍️ ${st.written} written</div>`));

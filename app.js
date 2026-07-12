@@ -652,31 +652,37 @@ function renderFriendsInto(view) {
       </button>`);
     cell.onclick = () => {
       if (!n) { toast("win it from a quiz, review or chat! 加油!"); return; }
-      speak(sn.hanzi);
-      const eclip = typeof animGIF === "function" ? animGIF("eat", 120) : "";
-      const foodArt = snackArt(sn, 96);
-      const centerpiece = eclip || foodArt || `<span style="font-size:3rem">${sn.emoji}</span>`;
-      const ov = el(`<div class="unlock-pop"><div class="card yellow bigcard" style="text-align:left">
-          <div class="center">${centerpiece}</div>
-          <h3 class="center">${esc(sn.hanzi)} <span class="pinyin">${esc(sn.pinyin)}</span></h3>
-          <div class="center">${tradChip(sn.hanzi)}</div>
-          <div class="center muted">${esc(sn.en)}</div>
-          ${sn.order ? `<div class="note" style="margin-top:12px">🗣️ <b>how to order it:</b><br>
-            <span class="hz" style="font-size:1.1rem">${esc(sn.order.hanzi)}</span><br>
-            <span class="pinyin">${esc(sn.order.pinyin)}</span><br>
-            <span class="muted">${esc(sn.order.en)}</span></div>` : ""}
-          ${sn.tip ? `<div class="muted" style="margin-top:8px">💡 ${esc(sn.tip)}</div>` : ""}
-          <div class="cardrow">${sn.order ? `<button class="btn small blue" id="sayOrder">🔊 say the order</button>` : ""}
-            <button class="btn small pink" id="closeSnack">yum!</button></div>
-        </div></div>`);
-      ov.querySelector("#closeSnack").onclick = () => ov.remove();
-      const so = ov.querySelector("#sayOrder");
-      if (so) so.onclick = () => speak(sn.order.hanzi, 0.7);
-      document.body.appendChild(ov);
+      snackDetailPopup(sn);
     };
     shelf.appendChild(cell);
   });
   view.append(shelf);
+}
+
+/* shared snack/food detail popup — used by the snack shelf (unlocked items only)
+   and the Food Gallery showcase (every item with real art, unlocked or not) */
+function snackDetailPopup(sn) {
+  speak(sn.hanzi);
+  const eclip = typeof animGIF === "function" ? animGIF("eat", 120) : "";
+  const foodArt = snackArt(sn, 96);
+  const centerpiece = eclip || foodArt || `<span style="font-size:3rem">${sn.emoji}</span>`;
+  const ov = el(`<div class="unlock-pop"><div class="card yellow bigcard" style="text-align:left">
+      <div class="center">${centerpiece}</div>
+      <h3 class="center">${esc(sn.hanzi)} <span class="pinyin">${esc(sn.pinyin)}</span></h3>
+      <div class="center">${tradChip(sn.hanzi)}</div>
+      <div class="center muted">${esc(sn.en)}</div>
+      ${sn.order ? `<div class="note" style="margin-top:12px">🗣️ <b>how to order it:</b><br>
+        <span class="hz" style="font-size:1.1rem">${esc(sn.order.hanzi)}</span><br>
+        <span class="pinyin">${esc(sn.order.pinyin)}</span><br>
+        <span class="muted">${esc(sn.order.en)}</span></div>` : ""}
+      ${sn.tip ? `<div class="muted" style="margin-top:8px">💡 ${esc(sn.tip)}</div>` : ""}
+      <div class="cardrow">${sn.order ? `<button class="btn small blue" id="sayOrder">🔊 say the order</button>` : ""}
+        <button class="btn small pink" id="closeSnack">yum!</button></div>
+    </div></div>`);
+  ov.querySelector("#closeSnack").onclick = () => ov.remove();
+  const so = ov.querySelector("#sayOrder");
+  if (so) so.onclick = () => speak(sn.order.hanzi, 0.7);
+  document.body.appendChild(ov);
 }
 
 /* scene backdrops from the meadow world (local official art can override via manifest "scenes") */
@@ -758,6 +764,13 @@ function monsterSVG(frac) {
     ${eyes}${mood}</svg>`;
 }
 
+/* plain (non-illustrated) quiz progress: a small dot row, filled as you answer */
+function progressDots(total, doneCount) {
+  let s = "";
+  for (let k = 0; k < total; k++) s += `<span class="pdot ${k < doneCount ? "on" : ""}"></span>`;
+  return `<span class="pdots">${s}</span>`;
+}
+
 /* ================= flashcards (SRS) ================= */
 function dueCards() {
   const now = Date.now();
@@ -767,8 +780,7 @@ function dueCards() {
 /* ================= practice hub (quiz/listen/speak/write/tones) ================= */
 function renderPractice() {
   view.innerHTML = "";
-  view.append(el(`<div class="scene">${sceneSVG("arena")}</div>`),
-    el(`<h2>Practice ⭐ <span class="muted">討伐 time!</span></h2>`));
+  view.append(el(`<h2>Practice ⭐ <span class="muted">討伐 time!</span></h2>`));
   const modes = [
     ["quiz", "⭐ Quiz", "hanzi → meaning & pinyin", "pink"],
     ["listen", "👂 Listening", "hear it, pick the hanzi", "blue"],
@@ -869,9 +881,12 @@ function mcRound(kind) {
       const beat = score >= 6;
       if (beat) awardSnack();
       const hero = shuffle(unlockedCast())[0];
+      // on a clean beat, occasionally show a 討伐-hunt scene clip alongside the usual monster art
+      const huntClip = beat && typeof animGIF === "function" && Math.random() < 0.4 ? animGIF("hunt", 130) : "";
       view.innerHTML = "";
       view.append(el(`<div class="card mint bigcard">
-        <div class="cardrow" style="align-items:center">${monsterSVG(beat ? 0 : 1 - score / qs.length)}<span class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</span></div>
+        ${huntClip ? `<div class="done-clip">${huntClip}</div>` : ""}
+        <div class="cardrow" style="align-items:center"><span class="mascot-inline" style="font-size:2.4rem">${beat ? "🎉" : "💪"}</span><span class="mascot-inline wobble">${mascotSVG(hero.id, 72)}</span></div>
         <h3>${beat ? "討伐完了!! monster friend-ified! 🎀" : "it got away… 加油!"} ${score}/${qs.length}</h3>
         <div class="muted">${esc(MASCOT_NAMES[hero.id])} ${beat ? "is so proud of you!" : "says: one more try!"}</div>
         <div class="cardrow"><button class="btn pink" id="ag">again</button><button class="btn ghost" id="bk">back</button></div></div>`));
@@ -892,7 +907,7 @@ function mcRound(kind) {
     const opts = shuffle([w, ...others]);
     view.innerHTML = "";
     view.append(el(`<div class="qmeta"><button class="iconbtn" id="bk">←</button>
-      <span class="monsterbox">${monsterSVG(1 - score / qs.length)}</span>
+      <span class="monsterbox">${progressDots(qs.length, i)}</span>
       <span class="muted">${i + 1}/${qs.length} · ⭐ ${score}</span></div>`));
     if (sub === "listen") {
       view.append(el(`<div class="card blue bigcard"><div class="muted">what do you hear?</div>
@@ -1129,8 +1144,7 @@ function phraseCard(p) {
 
 function renderTravel() {
   view.innerHTML = "";
-  view.append(el(`<div class="scene">${sceneSVG("ramen")}</div>`),
-    el(`<h2>Travel survival 🧳 <span class="muted">Taiwan-real</span></h2>`));
+  view.append(el(`<h2>Travel survival 🧳 <span class="muted">Taiwan-real</span></h2>`));
   const groups = [];
   T.scenarios.forEach(s => groups.push({ key: s.id, label: s.emoji + " " + s.title, phrases: s.phrases, intro: s.intro }));
   const bySc = {};
@@ -1166,7 +1180,6 @@ function renderTravel() {
 /* ================= talk (chats + dialogues) ================= */
 function renderTalk() {
   view.innerHTML = "";
-  view.append(el(`<div class="scene">${sceneSVG("cafe")}</div>`));
   if (CHATS.length) {
     view.append(el(`<h2>Chat with friends 📱</h2>`),
       el(`<div class="muted" style="margin:0 4px 8px">they text you into real Taiwan situations — you pick what to say back!</div>`));

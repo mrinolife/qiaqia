@@ -235,7 +235,12 @@ function runSession(opts) {
       ? (pass ? "討伐完了!! unit cleared!! ⚔️🎀" : "the exam got away… 加油, try again!")
       : "lesson clear! ✨";
     view.innerHTML = "";
-    const clip = animGIF(!pass ? "cry" : (Math.random() < 0.55 ? "usagi" : "celebrate"), 160) || animGIF(pass ? "celebrate" : "cry", 160);
+    // success clips: usual usagi/celebrate rotation carries ~70% of the weight;
+    // spice in ramen/market/group scene-callbacks the other ~30% for variety
+    const successMood = Math.random() < 0.3
+      ? ["ramen", "market", "group"][Math.floor(Math.random() * 3)]
+      : (Math.random() < 0.55 ? "usagi" : "celebrate");
+    const clip = animGIF(!pass ? "cry" : successMood, 160) || animGIF(pass ? "celebrate" : "cry", 160);
     view.append(el(`<div class="sess-done">
         ${clip ? `<div class="done-clip">${clip}</div>` : ""}
         <div class="done-mascot ${pass ? "bounce" : "droop"}" ${clip ? 'style="display:none"' : ""}>${art(host, mood, 110)}</div>
