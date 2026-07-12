@@ -261,4 +261,13 @@ if (!D.vocab.length) {
   renderStreak();
   go("home");
 }
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator) {
+  // when a new sw takes over an already-controlled page, reload once so a
+  // deploy lands on the FIRST open instead of the second
+  const hadController = !!navigator.serviceWorker.controller;
+  let swReloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadController && !swReloaded) { swReloaded = true; location.reload(); }
+  });
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
