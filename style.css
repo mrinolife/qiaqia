@@ -34,10 +34,18 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { scroll-behavior: smooth; overscroll-behavior-y: none; }
+
+/* M PLUS Rounded 1c — Latin-only subset (self-hosted, no CJK glyphs on purpose:
+   hanzi must never render in this font, so Chinese text automatically falls
+   through to the proper CJK fonts below via normal font-family fallback). */
+@font-face { font-family: "MPR"; font-weight: 500; font-display: swap; src: url("fonts/mplus-500.woff2") format("woff2"); }
+@font-face { font-family: "MPR"; font-weight: 700; font-display: swap; src: url("fonts/mplus-700.woff2") format("woff2"); }
+@font-face { font-family: "MPR"; font-weight: 800; font-display: swap; src: url("fonts/mplus-800.woff2") format("woff2"); }
+@font-face { font-family: "MPR"; font-weight: 900; font-display: swap; src: url("fonts/mplus-900.woff2") format("woff2"); }
 body {
   margin: 0;
   color: var(--ink);
-  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic UI", "YuGothic",
+  font-family: "MPR", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "YuGothic",
                "Varela Round", "Quicksand", ui-rounded, "PingFang TC",
                "Microsoft JhengHei", system-ui, sans-serif;
   font-size: 16px;
@@ -53,7 +61,7 @@ body {
   -webkit-user-select: none;
 }
 button { font-family: inherit; color: inherit; cursor: pointer; }
-h1, h2, h3 { line-height: 1.2; margin: 10px 4px 8px; }
+h1, h2, h3 { line-height: 1.2; margin: 10px 4px 8px; font-weight: 900; }
 h2 { font-size: 1.25rem; }
 .page-title { margin: 12px 6px 10px; }
 
@@ -486,12 +494,17 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   flex: 1; max-width: 96px;
   display: flex; flex-direction: column; align-items: center; gap: 1px;
   background: transparent; border: none;
-  font-size: .68rem; font-weight: 800; color: var(--ink-soft);
+  font-size: .68rem; font-weight: 900; color: var(--ink-soft);
   padding: 4px 2px; border-radius: 16px;
   transition: transform .1s;
 }
 .tab span { font-size: 1.35rem; line-height: 1.15; filter: grayscale(.6) opacity(.7); transition: filter .15s, transform .15s; }
 .tab.active { color: var(--ink); }
+.tab[data-tab="home"].active    { color: var(--blue-deep); }
+.tab[data-tab="cards"].active   { color: var(--rose); }
+.tab[data-tab="quiz"].active    { color: #a86e0c; }
+.tab[data-tab="phrases"].active { color: #4a9d63; }
+.tab[data-tab="talk"].active    { color: var(--teal-deep); }
 .tab.active span { filter: none; transform: scale(1.12) translateY(-1px); }
 .tab:active { transform: scale(.92); }
 

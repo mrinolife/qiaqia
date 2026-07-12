@@ -1,12 +1,13 @@
 /* qiaqia sw — stale-while-revalidate: instant load from cache (works offline in
    Taiwan), silently refetches in the background so the next open gets updates.
    No version bumps or reinstalls needed when files change on the server. */
-const CACHE = "qiaqia-v5";
+const CACHE = "qiaqia-v6";
 const ASSETS = ["./", "index.html", "style.css", "app.js", "engine.js", "path.js", "art.js",
                 "data.js", "hsk2.js", "taiwan.js", "chats.js",
                 "trad.js", "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest",
                 "icon-180.png", "icon-512.png",
-                "chars/manifest.json", "chars/chiikawa.png", "chars/hachiware.png", "chars/usagi.png", "chars/momonga.png", "chars/rakko.png", "chars/kurimanju.png", "chars/shisa.png", "chars/yoroi.png", "chars/kani.png", "chars/chimera.png"];
+                "chars/manifest.json", "chars/chiikawa.png", "chars/hachiware.png", "chars/usagi.png", "chars/momonga.png", "chars/rakko.png", "chars/kurimanju.png", "chars/shisa.png", "chars/yoroi.png", "chars/kani.png", "chars/chimera.png",
+                "fonts/mplus-500.woff2", "fonts/mplus-700.woff2", "fonts/mplus-800.woff2", "fonts/mplus-900.woff2"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
