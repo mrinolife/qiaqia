@@ -196,8 +196,7 @@ function checkUnlocks() {
    never pushed) and that character uses the image instead of the drawn SVG */
 const LOCAL_ART = {}, LOCAL_SCENES = {};
 // local-art probe only where it can exist (jzn's machine) — keeps the public site's console clean
-const isLocalHost = /^(localhost|127\.|192\.168\.|10\.|172\.)/.test(location.hostname);
-(isLocalHost ? fetch("chars/manifest.json").then(r => r.ok ? r.json() : null) : Promise.resolve(null)).then(m => {
+fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   if (!m) return;
   (m.chars || []).forEach(k => { LOCAL_ART[k] = `chars/${k}.png`; });
   Object.entries(m.scenes || {}).forEach(([k, f]) => { LOCAL_SCENES[k] = `chars/${f}`; });
