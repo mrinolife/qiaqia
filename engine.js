@@ -480,6 +480,61 @@ const TASK_UI = {
       document.getElementById("skSaid").onclick = () => { S.stats.spoken++; save(); s.hit(null); };
     }
   },
+
+  gintro(task, s) {
+    const g = task.g;
+    document.getElementById("sBody").append(el(`<div class="task">
+      <div class="task-ask">grammar point 🧩</div>
+      <div class="introcard wob" style="text-align:left">
+        <h3 style="margin:0 0 4px">${esc(g.title)}</h3>
+        <div class="gpattern">${esc(g.pattern)}</div>
+        <div style="margin:8px 0">${esc(g.explain)}</div>
+        ${g.examples.map((x, i) => `<button class="gex" data-i="${i}">
+          <span class="hz">${esc(x.hanzi)}</span> <span class="pinyin">${esc(x.pinyin)}</span><br>
+          <span class="muted">${esc(x.en)}</span></button>`).join("")}
+      </div>
+      <button class="btn big yellow" id="gGo">got it! →</button></div>`));
+    document.querySelectorAll("#sBody .gex").forEach(b => b.onclick = () => speak(g.examples[+b.dataset.i].hanzi, 0.8));
+    speak(g.examples[0].hanzi, 0.85);
+    document.getElementById("gGo").onclick = () => { SFX.tap(); s.next(); };
+  },
+
+  gbuild(task, s) {
+    const x = task.x; // {words, answer, en}
+    const distract = shuffle(D.vocab.filter(v => v.hanzi.length <= 2 && !x.words.includes(v.hanzi))).slice(0, 2).map(v => v.hanzi);
+    const bank = shuffle(x.words.concat(distract));
+    const chosen = [];
+    document.getElementById("sBody").append(el(`<div class="task">
+      <div class="task-ask">${task.hint ? esc(task.hint) + " · " : ""}build it! 🧩</div>
+      <div class="task-en">“${esc(x.en)}”</div>
+      <div class="buildline wob" id="gLine"><span class="build-hint">tap the tiles ↓</span></div>
+      <div class="bank" id="gBank">${bank.map((t, i) => `<button class="tile" data-i="${i}">${esc(t)}</button>`).join("")}</div>
+      <button class="btn big blue" id="gCheck" disabled>check ✓</button></div>`));
+    const line = document.getElementById("gLine"), check = document.getElementById("gCheck");
+    const redraw = () => {
+      line.innerHTML = chosen.length ? chosen.map((c, i) => `<button class="tile picked" data-p="${i}">${esc(c.t)}</button>`).join("") : `<span class="build-hint">tap the tiles ↓</span>`;
+      check.disabled = !chosen.length;
+      line.querySelectorAll(".tile").forEach(b => b.onclick = () => {
+        SFX.tap();
+        const c = chosen.splice(+b.dataset.p, 1)[0];
+        document.querySelector(`#gBank .tile[data-i="${c.i}"]`).classList.remove("used");
+        redraw();
+      });
+    };
+    document.querySelectorAll("#gBank .tile").forEach(b => b.onclick = () => {
+      if (b.classList.contains("used")) return;
+      SFX.tap(); speak(bank[+b.dataset.i]);
+      b.classList.add("used");
+      chosen.push({ t: bank[+b.dataset.i], i: +b.dataset.i });
+      redraw();
+    });
+    check.onclick = () => {
+      const got = chosen.map(c => c.t).join("");
+      const right = got === x.answer.replace(PUNCT_RE, "");
+      speak(x.answer, 0.85);
+      right ? s.hit(null) : s.miss(`<b>${esc(x.answer)}</b> — ${esc(x.en)}`);
+    };
+  },
 };
 
 /* ---------- session entry points ---------- */
@@ -491,8 +546,18 @@ function startNode(node, backTo) {
     runSession({ title: node.title, tasks: phraseTasks(node.phrases), nodeId: node.id, kind: "lesson", host, backTo });
   } else if (node.kind === "story") {
     runStory(node, backTo);
+  } else if (node.kind === "grammar") {
+    const tasks = [];
+    node.points.forEach(g => {
+      tasks.push({ t: "gintro", g });
+      shuffle(g.exercises || []).slice(0, 2).forEach(x => tasks.push({ t: "gbuild", x, hint: g.title }));
+    });
+    runSession({ title: node.title, tasks, nodeId: node.id, kind: "lesson", host, backTo });
   } else if (node.kind === "exam") {
-    runSession({ title: node.title, tasks: examTasks(node.unit), nodeId: node.id, kind: "exam", host, backTo });
+    const tasks = node.unit.grammar
+      ? shuffle(node.unit.grammar.flatMap(g => (g.exercises || []).map(x => ({ t: "gbuild", x })))).slice(0, 12)
+      : examTasks(node.unit);
+    runSession({ title: node.title, tasks, nodeId: node.id, kind: "exam", host, backTo });
   }
 }
 

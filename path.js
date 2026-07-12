@@ -46,6 +46,18 @@ const UNITS = (() => {
     nodes.push({ id: `${u.id}-exam`, kind: "exam", unit: { words, phrases }, host: u.host, title: u.title + " · exam", label: "试" });
     return { ...u, words, phrases, nodes };
   });
+  // Grammar Gym unit from T.grammar (14 points -> nodes of ~3)
+  const gpts = T.grammar || [];
+  if (gpts.length) {
+    const gu = { id: "gram", title: "语法 Grammar Gym", emoji: "🧩", host: "hachiware" };
+    const gnodes = chunkBalanced(gpts, 3).map((pts, i) => ({
+      id: `gram-g${i}`, kind: "grammar", points: pts, host: gu.host,
+      title: pts.map(x => x.title.split(" ")[0]).join(" · "), label: "语",
+    }));
+    gnodes.push({ id: "gram-exam", kind: "exam", unit: { grammar: gpts, words: [], phrases: [] }, host: gu.host, title: gu.title + " · exam", label: "试" });
+    units.push({ ...gu, words: [], phrases: [], nodes: gnodes, grammar: gpts });
+  }
+
   // Taiwan-real units from T.scenarios, 4 per unit
   const tScen = T.scenarios || [];
   chunkBalanced(tScen, 4).forEach((group, gi) => {
@@ -60,19 +72,62 @@ const UNITS = (() => {
     nodes.push({ id: `${u.id}-exam`, kind: "exam", unit: { words: [], phrases: allP.slice(0, 14) }, host: u.host, title: u.title + " · exam", label: "试" });
     units.push({ ...u, words: [], phrases: allP, nodes });
   });
+  // HSK 2 expansion units (hsk2.js)
+  const H2 = window.QIAQIA_HSK2 || [];
+  if (H2.length) {
+    H2.forEach((v, i) => v.id = "h" + i);
+    const by2 = {};
+    H2.forEach(v => (by2[v.cat] = by2[v.cat] || []).push(v));
+    const H2_SPEC = [
+      ["h-people", "人 More People", "👥", "chiikawa", ["people"]],
+      ["h-body", "身体 Body & Health", "🫶", "momonga", ["body"]],
+      ["h-time", "时间 More Time", "⏰", "kani", ["time"]],
+      ["h-food", "吃喝 More Food", "🥟", "kurimanju", ["food"]],
+      ["h-places", "地方 More Places", "🏫", "shisa", ["places", "travel"]],
+      ["h-things", "东西 More Things", "📦", "chimera", ["objects", "colors"]],
+      ["h-verbs", "动词 More Verbs", "🏃", "rakko", ["verbs", "activities"]],
+      ["h-adj", "形容 More Describing", "🌦️", "usagi", ["adjectives", "weather"]],
+      ["h-glue", "语法 More Glue", "🧩", "yoroi", ["grammar", "question", "numbers", "measure"]],
+    ];
+    const used2 = new Set();
+    H2_SPEC.forEach(([id, title, emoji, host, cats]) => {
+      const words = cats.flatMap(c => by2[c] || []);
+      words.forEach(w => used2.add(w.id));
+      if (!words.length) return;
+      const nodes = [];
+      chunkBalanced(words, 5).forEach((chunk, i) => nodes.push({
+        id: `${id}-w${i}`, kind: "words", words: chunk, unitWords: words, host,
+        title, label: chunk[0].hanzi,
+      }));
+      nodes.push({ id: `${id}-exam`, kind: "exam", unit: { words, phrases: [] }, host, title: title + " · exam", label: "试" });
+      units.push({ id, title: "HSK2 · " + title, emoji, host, words, phrases: [], nodes, lvl: 2 });
+    });
+    const leftovers = H2.filter(w => !used2.has(w.id));
+    if (leftovers.length) {
+      const nodes = chunkBalanced(leftovers, 5).map((chunk, i) => ({
+        id: `h-misc-w${i}`, kind: "words", words: chunk, unitWords: leftovers, host: "momonga", title: "杂货 Odds & Ends", label: chunk[0].hanzi,
+      }));
+      nodes.push({ id: "h-misc-exam", kind: "exam", unit: { words: leftovers, phrases: [] }, host: "momonga", title: "杂货 · exam", label: "试" });
+      units.push({ id: "h-misc", title: "HSK2 · 杂货 Odds & Ends", emoji: "🎁", host: "momonga", words: leftovers, phrases: [], nodes, lvl: 2 });
+    }
+  }
+
   return units;
 })();
-const ALL_NODES = UNITS.flatMap(u => u.nodes.map(n => ({ ...n, unitRef: u })));
+function activeUnits() { return UNITS.filter(u => u.lvl !== 2 || S.hsk2Open); }
+function allNodes() { return activeUnits().flatMap(u => u.nodes.map(n => ({ ...n, unitRef: u }))); }
+// live getter keeps external references (tests, console) working
+Object.defineProperty(window, "ALL_NODES", { get: allNodes });
 
 /* ---------- progress helpers ---------- */
 function nodeStars(id) { return (S.stars || {})[id] || 0; }
-function nodeUnlocked(idx) {
+function nodeUnlocked(nodes, idx) {
   if (idx === 0) return true;
-  return nodeStars(ALL_NODES[idx - 1].id) > 0;
+  return nodeStars(nodes[idx - 1].id) > 0;
 }
-function currentNodeIdx() {
-  const i = ALL_NODES.findIndex(n => !nodeStars(n.id));
-  return i === -1 ? ALL_NODES.length - 1 : i;
+function currentNodeIdx(nodes) {
+  const i = nodes.findIndex(n => !nodeStars(n.id));
+  return i === -1 ? nodes.length - 1 : i;
 }
 function learnedWordCount() {
   const ids = new Set();
@@ -91,8 +146,9 @@ function tripDays() {
 /* ---------- the path screen ---------- */
 function renderPath() {
   view.innerHTML = "";
-  const curIdx = currentNodeIdx();
-  const cur = ALL_NODES[curIdx];
+  const NODES = allNodes();
+  const curIdx = currentNodeIdx(NODES);
+  const cur = NODES[curIdx];
   const hero = shuffle(unlockedCast())[0] || CAST[0];
   const line = hero.lines[Math.floor(Math.random() * hero.lines.length)];
   const learned = learnedWordCount();
@@ -103,7 +159,7 @@ function renderPath() {
       <div class="hero-bubble wob">${esc(line)}</div>
       <div class="hero-chips">
         <span class="chip">✈️ ${tripDays()}d to Taiwan</span>
-        <span class="chip">📖 ${learned}/${D.vocab.length} words</span>
+        <span class="chip">📖 ${learned}/${D.vocab.length + (S.hsk2Open ? (window.QIAQIA_HSK2 || []).length : 0)} words</span>
         ${due ? `<button class="chip chip-due" id="heroDue">🎴 ${due} due</button>` : ""}
       </div>
       <button class="btn big pink" id="heroGo">▶ ${nodeStars(cur.id) ? "keep going" : curIdx === 0 ? "start your journey!" : "continue"} · ${esc(cur.unitRef.emoji)} ${esc(cur.unitRef.title.split(" ").slice(1).join(" ") || cur.unitRef.title)}</button>
@@ -115,7 +171,7 @@ function renderPath() {
   const map = el(`<div class="path-map"></div>`);
   let gIdx = 0;
   const OFFS = [0, -1, 0, 1]; // winding pattern
-  UNITS.forEach(u => {
+  activeUnits().forEach(u => {
     const uStars = u.nodes.reduce((a, n) => a + nodeStars(n.id), 0);
     const uDone = u.nodes.filter(n => nodeStars(n.id)).length;
     map.append(el(`<div class="unit-banner wob">
@@ -126,8 +182,8 @@ function renderPath() {
     u.nodes.forEach(n => {
       const idx = gIdx++;
       const stars = nodeStars(n.id);
-      const unlocked = nodeUnlocked(idx);
-      const isCur = idx === currentNodeIdx();
+      const unlocked = nodeUnlocked(NODES, idx);
+      const isCur = idx === curIdx;
       const off = OFFS[idx % 4];
       const row = el(`<div class="path-row" style="--off:${off}">
           ${deco(["grass", "flower", "sparkle", "grass", "tree", "weed"][idx % 6], 22) ? `<span class="path-deco ${off === 1 ? "left" : "right"}">${deco(["grass", "flower", "sparkle", "grass", "tree", "weed"][idx % 6], 26)}</span>` : ""}
@@ -141,11 +197,24 @@ function renderPath() {
       btn.onclick = () => {
         if (!unlocked) { SFX.wrong(); toast("finish the node before this one first! 🔒"); return; }
         SFX.tap();
-        nodeSheet(ALL_NODES[idx]);
+        nodeSheet(NODES[idx]);
       };
       map.append(row);
     });
   });
+  if ((window.QIAQIA_HSK2 || []).length && !S.hsk2Open) {
+    const gate = el(`<div class="unit-banner wob" style="background:var(--yellow)">
+        <span class="unit-host">${art("rakko", "think", 46)}</span>
+        <span class="unit-name">🔓 <b>HSK 2 · the next level</b><br>
+        <span class="muted">${(window.QIAQIA_HSK2 || []).length} more words, whole new units — open it when you're ready!</span></span>
+        <button class="btn small pink" id="hsk2Go">open</button></div>`);
+    gate.querySelector("#hsk2Go").onclick = () => { S.hsk2Open = true; save(); confetti(); SFX.fanfare(); toast("HSK 2 unlocked!! 加油!! 🎉"); renderPath(); };
+    map.append(gate);
+  } else if (S.hsk2Open) {
+    const off = el(`<button class="btn small ghost" style="margin:6px auto;display:block;position:relative;z-index:1">fold HSK 2 away for now</button>`);
+    off.onclick = () => { S.hsk2Open = false; save(); renderPath(); };
+    map.append(off);
+  }
   map.append(el(`<div class="path-end">
       <div class="bob">${art("chiikawa", "cheer", 60)}${art("hachiware", "cheer", 60)}${art("usagi", "cheer", 60)}</div>
       <div class="muted">台湾见! see you in Taiwan! 🇹🇼</div></div>`));
@@ -154,7 +223,7 @@ function renderPath() {
   // scroll the current node into view (below the hero card)
   requestAnimationFrame(() => {
     const c = map.querySelector(".path-node.cur");
-    if (c && currentNodeIdx() > 2) c.scrollIntoView({ block: "center" });
+    if (c && curIdx > 2) c.scrollIntoView({ block: "center" });
   });
 }
 
@@ -194,6 +263,9 @@ function renderReview() {
       <p>no cards yet — clear a lesson on the path and words land here for review!</p>
       <button class="btn pink" id="rvGo">to the path 🗺️</button></div>`));
     document.getElementById("rvGo").onclick = () => go("home");
+    const wb0 = el(`<button class="btn big blue">📖 wordbook — browse every word</button>`);
+    wb0.onclick = renderWordbook;
+    view.append(wb0);
     return;
   }
   view.append(el(`<div class="card wob center">
@@ -218,10 +290,46 @@ function renderReview() {
     };
     view.append(wk);
   }
+  const wb = el(`<button class="btn big blue">📖 wordbook — browse every word</button>`);
+  wb.onclick = renderWordbook;
+  view.append(wb);
   // upcoming forecast
   const now = Date.now();
   const soon = Object.values(S.srs || {}).filter(c => c.due > now && c.due < now + 86400e3).length;
   view.append(el(`<div class="card muted center">${soon} more due within 24h · reviews use spaced repetition — a little every day beats a lot at once 🌱</div>`));
+}
+
+/* ---------- wordbook: every word, grouped, with learn status ---------- */
+function renderWordbook() {
+  view.innerHTML = "";
+  const all = D.vocab.concat(window.QIAQIA_HSK2 || []);
+  const learned = w => (S.srs || {})[w.id];
+  const weakSet = new Set(weakWords().map(w => w.hanzi));
+  const nL = all.filter(learned).length;
+  view.append(el(`<div class="backrow"><button class="iconbtn" id="wbBk">←</button>
+    <h3 style="margin:0">📖 Wordbook <span class="muted">${nL}/${all.length} learned</span></h3></div>`));
+  const groups = [["HSK 1", D.vocab]];
+  if ((window.QIAQIA_HSK2 || []).length) groups.push(["HSK 2", window.QIAQIA_HSK2]);
+  groups.forEach(([lvl, words]) => {
+    const byCat = {};
+    words.forEach(w => (byCat[w.cat] = byCat[w.cat] || []).push(w));
+    view.append(el(`<h2 class="page-title">${lvl} <span class="muted">${words.filter(learned).length}/${words.length}</span></h2>`));
+    Object.entries(byCat).forEach(([cat, ws]) => {
+      const box = el(`<div class="card wob" style="padding:10px">
+        <div class="wb-cat">${esc(cat)} <span class="muted">${ws.filter(learned).length}/${ws.length}</span></div>
+        <div class="wb-rows">${ws.map(w => `<button class="wb-row" data-h="${esc(w.hanzi)}">
+          <span class="wb-st">${weakSet.has(w.hanzi) ? "🔥" : learned(w) ? "✅" : "▫️"}</span>
+          <span class="wb-hz">${esc(w.hanzi)}</span>
+          <span class="pinyin">${esc(w.pinyin)}</span>
+          <span class="wb-en muted">${esc(w.en)}</span></button>`).join("")}</div></div>`);
+      box.querySelectorAll(".wb-row").forEach(r => r.onclick = () => {
+        const w = all.find(x => x.hanzi === r.dataset.h);
+        if (w) wordPopup(w);
+      });
+      view.append(box);
+    });
+  });
+  document.getElementById("wbBk").onclick = () => go("cards");
 }
 
 /* ---------- profile (friends, snacks, stats, settings) ---------- */

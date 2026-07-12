@@ -539,3 +539,32 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .hide-pinyin .pinyin:not(button *) { cursor: pointer; }
 .hide-pinyin .pinyin.reveal, .hide-pinyin .ch-pin.reveal { filter: none; opacity: 1; }
 #pinBtn.off { background: var(--paper2); color: var(--ink-soft); text-decoration: line-through; }
+
+/* ---------- grammar tasks ---------- */
+.gpattern {
+  display: inline-block; background: var(--yellow); border: 2px solid var(--ink);
+  border-radius: 10px; padding: 3px 10px; font-weight: 800; font-size: .9rem;
+}
+.gex {
+  display: block; width: 100%; text-align: left; margin-top: 8px;
+  background: var(--paper2); border: 2px solid var(--ink); border-radius: 12px;
+  padding: 8px 10px; font-size: .95rem;
+}
+.gex .hz { font-size: 1.1rem; }
+
+/* ---------- wordbook ---------- */
+.wb-cat { font-weight: 800; margin: 2px 2px 8px; text-transform: capitalize; }
+.wb-rows { display: flex; flex-direction: column; gap: 2px; }
+.wb-row {
+  display: grid; grid-template-columns: 24px 64px 1fr; column-gap: 8px; align-items: center;
+  background: none; border: none; text-align: left; padding: 6px 4px;
+  border-bottom: 1.5px dashed rgba(74, 63, 53, .12); font-size: .95rem;
+}
+.wb-row:last-child { border-bottom: none; }
+.wb-row:active { background: var(--paper2); border-radius: 8px; }
+.wb-hz { font-size: 1.2rem; font-weight: 700; }
+.wb-row .pinyin { font-size: .82rem; }
+.wb-en { grid-column: 3; font-size: .8rem; }
+.wb-row .pinyin { grid-column: 3; grid-row: 1; }
+.wb-hz { grid-row: 1 / span 2; grid-column: 2; }
+.wb-st { grid-row: 1 / span 2; }
