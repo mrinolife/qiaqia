@@ -253,7 +253,7 @@ const TASK_UI = {
     document.getElementById("sBody").append(el(`<div class="task">
       <div class="task-ask">new word ✨</div>
       <div class="introcard wob">
-        <div class="hanzi-xl">${esc(w.hanzi)}</div>${tradChip(w.hanzi)}
+        <div class="hanzi-xl tappable" id="iHz">${esc(w.hanzi)}</div>${tradChip(w.hanzi)}
         <div class="pinyin big">${esc(w.pinyin)}</div>
         <div class="en">${esc(w.en)}</div>
         <div class="cardrow" style="justify-content:center"><button class="iconbtn" id="iS">🔊</button><button class="iconbtn" id="iSl">🐢</button></div>
@@ -261,6 +261,7 @@ const TASK_UI = {
       </div>
       <button class="btn big yellow" id="iGo">got it! →</button></div>`));
     speak(w.hanzi);
+    document.getElementById("iHz").onclick = () => speak(w.hanzi);
     document.getElementById("iS").onclick = () => speak(w.hanzi);
     document.getElementById("iSl").onclick = () => speak(w.hanzi, 0.5);
     document.getElementById("iGo").onclick = () => { SFX.tap(); srsAdd(w.id); s.next(); };
@@ -358,7 +359,7 @@ const TASK_UI = {
     document.getElementById("sBody").append(el(`<div class="task">
       <div class="task-ask">new phrase 💬</div>
       <div class="introcard wob">
-        <div class="hanzi-lg">${esc(p.hanzi)}</div>${tradChip(p.hanzi)}
+        <div class="hanzi-lg tappable" id="pHz">${esc(p.hanzi)}</div>${tradChip(p.hanzi)}
         <div class="pinyin big">${esc(p.pinyin)}</div>
         <div class="en">${esc(p.en)}</div>
         ${p.note ? `<div class="note">💡 ${esc(p.note)}</div>` : ""}
@@ -366,6 +367,7 @@ const TASK_UI = {
       </div>
       <button class="btn big yellow" id="pGo">got it! →</button></div>`));
     speak(p.hanzi);
+    document.getElementById("pHz").onclick = () => speak(p.hanzi);
     document.getElementById("pS").onclick = () => speak(p.hanzi);
     document.getElementById("pSl").onclick = () => speak(p.hanzi, 0.5);
     document.getElementById("pGo").onclick = () => { SFX.tap(); s.next(); };
@@ -438,7 +440,7 @@ const TASK_UI = {
     document.getElementById("sBody").append(el(`<div class="task">
       <div class="task-ask">your turn — say it! 🎤</div>
       <div class="introcard wob">
-        <div class="hanzi-lg">${esc(p.hanzi)}</div>
+        <div class="hanzi-lg tappable" id="skHz">${esc(p.hanzi)}</div>
         <div class="pinyin big">${esc(p.pinyin)}</div>
         <div class="en muted">${esc(p.en)}</div>
         <div class="cardrow" style="justify-content:center"><button class="iconbtn" id="skS">🔊</button><button class="iconbtn" id="skSl">🐢</button></div>
@@ -446,6 +448,7 @@ const TASK_UI = {
       <div id="skZone" class="center"></div>
       <button class="btn small ghost" id="skSkip">skip this one</button></div>`));
     speak(p.hanzi, 0.8);
+    document.getElementById("skHz").onclick = () => speak(p.hanzi);
     document.getElementById("skS").onclick = () => speak(p.hanzi);
     document.getElementById("skSl").onclick = () => speak(p.hanzi, 0.5);
     document.getElementById("skSkip").onclick = () => s.next();

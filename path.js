@@ -158,6 +158,8 @@ function renderPath() {
       <div class="hero-mascot bob">${art(hero.id, "happy", 74)}</div>
       <div class="hero-bubble wob">${esc(line)}</div>
       <div class="hero-chips">
+        <span class="chip">🏅 LV${levelInfo(S.xp).lv}</span>
+        <span class="chip ${todayXP() >= DAY_GOAL ? "chip-done" : ""}">🌟 ${Math.min(todayXP(), DAY_GOAL)}/${DAY_GOAL} today</span>
         <span class="chip">✈️ ${tripDays()}d to Taiwan</span>
         <span class="chip">📖 ${learned}/${D.vocab.length + (S.hsk2Open ? (window.QIAQIA_HSK2 || []).length : 0)} words</span>
         ${due ? `<button class="chip chip-due" id="heroDue">🎴 ${due} due</button>` : ""}
@@ -246,6 +248,7 @@ function nodeSheet(node) {
       <button class="btn small ghost" id="shX">not now</button>
     </div></div>`);
   ov.addEventListener("click", e => { if (e.target === ov) ov.remove(); });
+  ov.querySelectorAll(".pv-word, .pv-phrase").forEach(x => x.onclick = () => speak(x.textContent));
   ov.querySelector("#shX").onclick = () => ov.remove();
   ov.querySelector("#shGo").onclick = () => { ov.remove(); startNode(node, renderPath); };
   document.body.appendChild(ov);
@@ -338,10 +341,27 @@ function renderProfile() {
   const learned = learnedWordCount();
   const starSum = Object.values(S.stars || {}).reduce((a, b) => a + b, 0);
   view.append(el(`<h2 class="page-title">🌸 Rachel's page</h2>`));
+  const li = levelInfo(S.xp);
+  const lic = el(`<div class="license wob">
+      <div class="lic-head"><span class="lic-title">討伐ライセンス · HUNTER LICENSE</span><span class="lic-yaha">ヤハ!</span></div>
+      <div class="lic-body">
+        <div class="lic-photo bob">${art("usagi", "cheer", 92)}</div>
+        <div class="lic-fields">
+          <div class="lic-name">RACHEL <span class="lic-lv">LV${li.lv}</span></div>
+          <div class="lic-rank">${esc(li.title)}<br><span class="muted">${esc(li.titleEn)}</span></div>
+          <div class="lic-xpbar"><div class="lic-xpfill" style="width:${li.pct}%"></div></div>
+          <div class="lic-xptext">✨ ${S.xp} xp${li.need ? ` · ${li.need} to LV${li.lv + 1}` : " · MAX RANK"}</div>
+        </div>
+        <div class="lic-stamp">合<br>格</div>
+      </div>
+      <div class="lic-foot"><span>恰恰学院 QIAQIA ACADEMY</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
+    </div>`);
+  lic.onclick = () => { speak("呀哈"); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
+  view.append(lic);
   view.append(el(`<div class="card wob">
       <div class="cardrow" style="justify-content:space-around;text-align:center">
         <span>🔥<br><b>${S.streak.count}</b><br><span class="muted">streak</span></span>
-        <span>✨<br><b>${S.xp}</b><br><span class="muted">xp</span></span>
+        <span>🌟<br><b>${todayXP()}/${DAY_GOAL}</b><br><span class="muted">today</span></span>
         <span>⭐<br><b>${starSum}</b><br><span class="muted">stars</span></span>
         <span>📖<br><b>${learned}</b><br><span class="muted">words</span></span>
       </div>

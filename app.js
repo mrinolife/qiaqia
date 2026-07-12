@@ -30,7 +30,40 @@ function bumpStreak() {
   S.streak.count = (S.streak.last === y) ? S.streak.count + 1 : 1;
   S.streak.last = t; save(); renderStreak();
 }
-function addXP(n) { S.xp += n; save(); checkUnlocks(); }
+/* hunter-license levels — 草むしり to 討伐, like the manga certifications */
+const LEVELS = [
+  [0, "草むしり見習い", "weed-pulling trainee"],
+  [30, "草むしり検定5級", "weeding cert · level 5"],
+  [80, "草むしり検定3級", "weeding cert · level 3"],
+  [150, "草むしり検定1級", "weeding cert · level 1"],
+  [250, "討伐見習い", "monster-hunt trainee"],
+  [380, "討伐5級", "hunter · rank 5"],
+  [550, "討伐3級", "hunter · rank 3"],
+  [750, "討伐1級", "hunter · rank 1"],
+  [1000, "スーパーアルバイター", "super part-timer"],
+  [1300, "ヤハ級ハンター", "YAHA-class hunter"],
+];
+function levelInfo(xp) {
+  let lv = 1;
+  for (let i = 0; i < LEVELS.length; i++) if (xp >= LEVELS[i][0]) lv = i + 1;
+  const cur = LEVELS[lv - 1], next = LEVELS[lv] || null;
+  const base = cur[0], top = next ? next[0] : cur[0] + 350;
+  return { lv, title: cur[1], titleEn: cur[2], pct: Math.min(100, Math.round((xp - base) / (top - base) * 100)), need: next ? top - xp : 0 };
+}
+const DAY_GOAL = 20;
+function addXP(n) {
+  const before = levelInfo(S.xp).lv;
+  S.xp += n;
+  S.dayXP = S.dayXP || {};
+  S.dayXP[today()] = (S.dayXP[today()] || 0) + n;
+  save(); checkUnlocks();
+  const li = levelInfo(S.xp);
+  if (li.lv > before) {
+    confetti();
+    setTimeout(() => { toast(`呀哈!! LEVEL UP!! LV${li.lv} · ${li.title}`); speak("呀哈"); }, 600);
+  }
+}
+function todayXP() { return (S.dayXP || {})[today()] || 0; }
 
 /* ================= data ================= */
 const D = window.QIAQIA_DATA || { vocab: [], phrases: [], dialogues: [], tones: [] };
