@@ -580,10 +580,6 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   padding: 0; overflow: hidden; margin: 8px 0 12px; cursor: pointer;
   position: relative;
 }
-.license::after { /* laminate shine */
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 42%, transparent 54%);
-}
 .lic-head {
   display: flex; justify-content: space-between; align-items: center;
   background: var(--rose); color: #fff; font-weight: 800; font-size: .74rem;
