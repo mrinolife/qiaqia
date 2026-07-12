@@ -267,8 +267,8 @@ fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   if (document.querySelector(".path-hero")) renderPath();
 }).catch(() => {});
 
-// local-only snack art overrides: drop chars/food/<id>.png next to the app (gitignored,
-// never pushed) and that snack uses the real fan-art image instead of its emoji
+// real show-art snack overrides: chars/food/<id>.png + manifest, shipped publicly —
+// listed foods render their real fan-art image instead of the plain emoji.
 const LOCAL_FOOD = {};
 fetch("chars/food/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   if (!m) return;
@@ -654,8 +654,10 @@ function renderFriendsInto(view) {
       if (!n) { toast("win it from a quiz, review or chat! 加油!"); return; }
       speak(sn.hanzi);
       const eclip = typeof animGIF === "function" ? animGIF("eat", 120) : "";
+      const foodArt = snackArt(sn, 96);
+      const centerpiece = eclip || foodArt || `<span style="font-size:3rem">${sn.emoji}</span>`;
       const ov = el(`<div class="unlock-pop"><div class="card yellow bigcard" style="text-align:left">
-          <div class="center">${eclip || `<span style="font-size:3rem">${sn.emoji}</span>`}</div>
+          <div class="center">${centerpiece}</div>
           <h3 class="center">${esc(sn.hanzi)} <span class="pinyin">${esc(sn.pinyin)}</span></h3>
           <div class="center">${tradChip(sn.hanzi)}</div>
           <div class="center muted">${esc(sn.en)}</div>
