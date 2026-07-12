@@ -45,6 +45,16 @@ function art(kind, mood, size) {
   if (A && A.mascot) { const out = A.mascot(kind, mood || "idle", s); if (out) return out; }
   return mascotSVG(kind, s);
 }
+/* show clips: chars/anim/manifest.json maps moods -> gif files */
+let QQ_ANIM = null;
+fetch("chars/anim/manifest.json").then(r => r.ok ? r.json() : null).then(j => { QQ_ANIM = j; }).catch(() => {});
+function animGIF(mood, h) {
+  const list = QQ_ANIM && QQ_ANIM[mood];
+  if (!list || !list.length) return "";
+  const f = list[Math.floor(Math.random() * list.length)];
+  return `<img class="animclip" src="chars/anim/${f}" style="max-height:${h || 150}px" alt="">`;
+}
+
 function deco(name, size) {
   const A = window.QQ_ART;
   return (A && A.deco && A.deco(name, size || 28)) || "";
@@ -225,8 +235,10 @@ function runSession(opts) {
       ? (pass ? "討伐完了!! unit cleared!! ⚔️🎀" : "the exam got away… 加油, try again!")
       : "lesson clear! ✨";
     view.innerHTML = "";
+    const clip = animGIF(!pass ? "cry" : stars === 3 ? (Math.random() < 0.4 ? "usagi" : "celebrate") : "celebrate", 160);
     view.append(el(`<div class="sess-done">
-        <div class="done-mascot ${pass ? "bounce" : "droop"}">${art(host, mood, 110)}</div>
+        ${clip ? `<div class="done-clip">${clip}</div>` : ""}
+        <div class="done-mascot ${pass ? "bounce" : "droop"}" ${clip ? 'style="display:none"' : ""}>${art(host, mood, 110)}</div>
         <div class="done-stars">${[1, 2, 3].map(n => `<span class="star ${n <= stars ? "on" : ""}" style="animation-delay:${n * 0.18}s">★</span>`).join("")}</div>
         <h2>${msg}</h2>
         <div class="done-statline">${Math.round(acc * 100)}% · best combo 🔥${bestCombo} · +${(pass ? (opts.kind === "exam" ? 20 : 10) : 0) + firstTryRight} ✨xp</div>
@@ -596,6 +608,7 @@ function runStory(node, backTo) {
       opts.forEach(o => {
         const c = el(`<button class="choice">${esc(o.en)}</button>`);
         c.onclick = () => {
+          tray.querySelectorAll(".choice").forEach(x => x.disabled = true);
           const ok = o.en === t.en;
           c.classList.add(ok ? "right" : "wrong");
           if (ok) { right++; SFX.right(); } else SFX.wrong();
@@ -610,14 +623,17 @@ function runStory(node, backTo) {
     }
   };
   const finish = () => {
+    if (!alive) return;
+    alive = false;
     const acc = asked ? right / asked : 1;
     const stars = acc >= 0.9 ? 3 : acc >= 0.6 ? 2 : 1;
     S.stars = S.stars || {};
     if (stars > (S.stars[node.id] || 0)) S.stars[node.id] = stars;
     addXP(10); bumpStreak(); save(); confetti(); SFX.fanfare();
     tray.innerHTML = "";
+    const sclip = animGIF("cheer", 130) || animGIF("celebrate", 130);
     tray.append(el(`<div class="sess-done" style="padding:12px">
-      <div class="done-mascot bounce">${art(node.host || "hachiware", "cheer", 90)}</div>
+      ${sclip ? `<div class="done-clip">${sclip}</div>` : `<div class="done-mascot bounce">${art(node.host || "hachiware", "cheer", 90)}</div>`}
       <div class="done-stars">${[1, 2, 3].map(n => `<span class="star ${n <= stars ? "on" : ""}">★</span>`).join("")}</div>
       <h3>story done! 📖✨</h3>
       <button class="btn yellow" id="stOn">continue →</button></div>`));

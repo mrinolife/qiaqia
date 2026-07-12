@@ -240,8 +240,10 @@ function checkUnlocks() {
   if (fresh.length) {
     const c = fresh[0];
     confetti();
+    const uclip = (typeof animGIF === "function" && animGIF("celebrate", 140)) || "";
     const ov = el(`<div class="unlock-pop"><div class="card pink bigcard">
-        <div class="wobble">${mascotSVG(c.id, 110)}</div>
+        ${uclip ? `<div class="done-clip">${uclip}</div>` : ""}
+        <div class="wobble" ${uclip ? 'style="display:none"' : ""}>${mascotSVG(c.id, 110)}</div>
         <h3>新朋友! new friend!</h3>
         <div><b>${esc(MASCOT_NAMES[c.id])}</b></div>
         <div class="muted">${esc(c.blurb)}</div>
@@ -599,8 +601,9 @@ function renderFriendsInto(view) {
     cell.onclick = () => {
       if (!n) { toast("win it from a quiz, review or chat! 加油!"); return; }
       speak(sn.hanzi);
+      const eclip = typeof animGIF === "function" ? animGIF("eat", 120) : "";
       const ov = el(`<div class="unlock-pop"><div class="card yellow bigcard" style="text-align:left">
-          <div class="center" style="font-size:3rem">${sn.emoji}</div>
+          <div class="center">${eclip || `<span style="font-size:3rem">${sn.emoji}</span>`}</div>
           <h3 class="center">${esc(sn.hanzi)} <span class="pinyin">${esc(sn.pinyin)}</span></h3>
           <div class="center">${tradChip(sn.hanzi)}</div>
           <div class="center muted">${esc(sn.en)}</div>

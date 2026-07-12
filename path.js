@@ -238,8 +238,9 @@ function nodeSheet(node) {
     : node.kind === "phrases" ? node.phrases.slice(0, 3).map(p => `<span class="pv-phrase">${esc(p.hanzi)}</span>`).join("") + (node.phrases.length > 3 ? `<span class="muted"> +${node.phrases.length - 3}</span>` : "")
     : node.kind === "story" ? `<span class="muted">${esc(node.dialogue.title)} · ${node.dialogue.turns.length} lines</span>`
     : `<span class="muted">${(node.unit.words.length ? node.unit.words.length + " words" : "")}${node.unit.words.length && node.unit.phrases.length ? " + " : ""}${node.unit.phrases.length ? node.unit.phrases.length + " phrases" : ""} · pass 60%+</span>`;
+  const shclip = node.kind === "exam" && typeof animGIF === "function" ? animGIF("study", 110) : "";
   const ov = el(`<div class="unlock-pop sheet-pop"><div class="sheet wob">
-      <div class="sheet-mascot">${art(node.host, node.kind === "exam" ? "think" : "happy", 84)}</div>
+      <div class="sheet-mascot">${shclip || art(node.host, node.kind === "exam" ? "think" : "happy", 84)}</div>
       <div class="task-ask">${kindLabel}</div>
       <h3>${esc(node.title)}</h3>
       <div class="sheet-preview">${preview}</div>
@@ -272,7 +273,7 @@ function renderReview() {
     return;
   }
   view.append(el(`<div class="card wob center">
-      <div class="mascot-inline ${due.length ? "bob" : ""}">${art("hachiware", due.length ? "cheer" : "sleep", 84)}</div>
+      <div class="mascot-inline ${due.length ? "bob" : ""}">${(!due.length && typeof animGIF === "function" && animGIF("sleep", 130)) || art("hachiware", due.length ? "cheer" : "sleep", 84)}</div>
       <h3>${due.length ? due.length + " words due!" : "all caught up ✨"}</h3>
       <div class="muted">${deck} words in your deck</div>
       ${due.length ? `<button class="btn big pink" id="rvStart">▶ review now</button>` : `<div class="muted" style="margin-top:6px">哈~ ${art("kurimanju", "sleep", 0) ? "" : ""}come back later — resting makes memory stick!</div>`}

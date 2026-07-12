@@ -1,0 +1,30 @@
+{
+  "celebrate": [
+    "celebrate1.gif",
+    "celebrate2.gif"
+  ],
+  "cry": [
+    "cry1.gif",
+    "cry2.gif"
+  ],
+  "usagi": [
+    "usagi1.gif",
+    "usagi2.gif",
+    "usagi3.gif"
+  ],
+  "eat": [
+    "eat1.gif",
+    "eat2.gif"
+  ],
+  "study": [
+    "study1.gif"
+  ],
+  "cheer": [
+    "cheer1.gif",
+    "cheer2.gif"
+  ],
+  "sleep": [
+    "sleep1.gif",
+    "sleep2.gif"
+  ]
+}
