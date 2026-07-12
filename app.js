@@ -20,7 +20,30 @@ function blankState() {
            activeDays: {}, daily: {}, name: "Rachel", wrong: {} };
 }
 const S = loadState();
-function save() { localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+function save() { S._v = (S._v || 0) + 1; localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+
+/* resync guard: fixes progress "resetting" after backgrounding/resuming the app.
+   S lives in memory for the whole page lifetime; iOS Safari (and any browser's
+   bfcache) can resume a suspended tab WITHOUT re-running this script, leaving S
+   stale. The next save() from that stale tab would silently overwrite anything
+   saved elsewhere in the meantime. _v is a monotonic save counter — on resume we
+   only adopt localStorage's copy if it's strictly newer, so neither side can ever
+   clobber the other. */
+function resyncFromStorage() {
+  let fresh;
+  try { fresh = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch { return; }
+  if ((fresh._v || 0) <= (S._v || 0)) return;
+  for (const k of Object.keys(S)) delete S[k];
+  Object.assign(S, blankState(), fresh);
+  if (typeof go === "function") {
+    const active = document.querySelector("#tabs .tab.active, #sideNav .tab.active");
+    go(active ? active.dataset.tab : "home");
+  }
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resyncFromStorage(); });
+window.addEventListener("pageshow", e => { if (e.persisted) resyncFromStorage(); });
+window.addEventListener("focus", resyncFromStorage);
+window.addEventListener("storage", e => { if (e.key === LS_KEY) resyncFromStorage(); });
 function today() { return new Date().toISOString().slice(0, 10); }
 function bumpStreak() {
   const t = today();

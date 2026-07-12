@@ -422,6 +422,57 @@ function renderProfile() {
       <button class="btn small ${S.showPinyin === false ? "pink" : "mint"}" id="pinToggle" style="margin-top:8px">${S.showPinyin === false ? "hidden — show it" : "shown — hide it"}</button></div>`);
   pin.querySelector("#pinToggle").onclick = () => { togglePinyin(); renderProfile(); };
   view.append(pin);
+  const backup = el(`<div class="card wob">
+      <h3>📤 Backup &amp; progress code</h3>
+      <div class="muted">Her progress lives only on this device's browser. Tap "get code" any time to
+        back it up or move it to another device/browser — and it's the easiest way to show someone
+        exactly what she's done.</div>
+      <div class="cardrow" style="justify-content:flex-start;flex-wrap:wrap">
+        <button class="btn small blue" id="bkGet">get progress code</button>
+        <button class="btn small ghost" id="bkShow">restore from a code</button>
+      </div>
+      <textarea id="bkArea" readonly rows="3" style="display:none;width:100%;margin-top:8px;font-family:monospace;font-size:.72rem;padding:8px;border:2px solid var(--ink);border-radius:10px;background:var(--paper2)"></textarea>
+      <div id="bkMsg" class="muted" style="margin-top:6px"></div>
+    </div>`);
+  backup.querySelector("#bkGet").onclick = () => {
+    const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+    const ta = backup.querySelector("#bkArea");
+    ta.value = code; ta.style.display = "block"; ta.select();
+    navigator.clipboard?.writeText(code).then(
+      () => { backup.querySelector("#bkMsg").textContent = "✅ copied to clipboard — paste it anywhere to save it (text, notes, email to yourself)"; },
+      () => { backup.querySelector("#bkMsg").textContent = "selected below — copy it manually (clipboard blocked here)"; }
+    );
+  };
+  backup.querySelector("#bkShow").onclick = () => {
+    const ta = backup.querySelector("#bkArea");
+    ta.readOnly = false; ta.value = ""; ta.placeholder = "paste a progress code here, then tap restore";
+    ta.style.display = "block"; ta.focus();
+    const btn = el(`<button class="btn small pink" style="margin-top:6px">restore this code</button>`);
+    btn.onclick = () => {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(escape(atob(ta.value.trim()))));
+        parsed._v = (S._v || 0) + 1000; // an explicit restore always wins the freshness check
+        for (const k of Object.keys(S)) delete S[k];
+        Object.assign(S, blankState(), parsed);
+        save();
+        backup.querySelector("#bkMsg").textContent = "✅ restored! reloading…";
+        setTimeout(() => location.reload(), 900);
+      } catch { backup.querySelector("#bkMsg").textContent = "❌ that code didn't look right — check you copied the whole thing"; }
+    };
+    backup.append(btn);
+  };
+  view.append(backup);
+  const statsView = el(`<div class="card wob">
+      <h3>📊 What she's done — plain numbers</h3>
+      <div class="muted" style="font-size:.82rem;line-height:1.7">
+        Level ${levelInfo(S.xp).lv} (${esc(levelInfo(S.xp).title)}) · ${S.xp} total xp<br>
+        ${learned}/${D.vocab.length + (S.hsk2Open ? (window.QIAQIA_HSK2 || []).length : 0)} words learned ·
+        ${starSum} stars earned · ${S.streak.count} day streak<br>
+        ${S.stats.quiz} quiz answers (${S.stats.quiz ? Math.round(S.stats.correct / S.stats.quiz * 100) : 0}% right) ·
+        ${S.stats.spoken} spoken · ${S.stats.written} written<br>
+        ${Object.keys(S.snacks || {}).length} snacks won · ${Object.keys(S.metFriends || {}).length + 3} friends met
+      </div></div>`);
+  view.append(statsView);
   const vc = el(`<button class="btn small ghost" style="margin:4px auto;display:block">🩺 sound & mic check · build ${QQ_BUILD}</button>`);
   vc.onclick = voiceCheck;
   view.append(vc);
