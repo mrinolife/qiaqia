@@ -387,7 +387,9 @@ function renderWordbook() {
 /* ---------- song jukebox: official themes + fan favorites, played via YouTube
    embeds (nothing re-hosted — videos stream from their owners' uploads) ---------- */
 const QQ_SONGS = [
+  { id: "8SoWzkMO1YQ", emoji: "💙", title: "ひとりごつ — the original (2022)", sub: "the first recording, back when Hachiware's voice was little" },
   { id: "G3hW_k2lOzg", emoji: "🎤", title: "ひとりごつ Hitorigotsu", sub: "the ending theme Hachiware sings — with lyrics to sing along" },
+  { id: "0fgXx_-XjPk", emoji: "🥹", title: "Hachiware's voice growing up", sub: "then-vs-now comparison — 声の変化が尊い" },
   { id: "9cEMsmJKvDQ", emoji: "🎼", title: "Opening theme 蛤?", sub: "the show's opening music" },
   { id: "T8C3FbUowUY", emoji: "🐰", title: "Usagi's theme", sub: "呀哈!! energy in song form" },
   { id: "X-EGAILdOG8", emoji: "🎬", title: "ひとりごつ MV (fan MAD)", sub: "fan-made music video of the ending song" },
