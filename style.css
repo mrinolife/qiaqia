@@ -222,19 +222,37 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 }
 .hero-chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
 
+/* chiikawa-pocket meadow world: green grass ground + winding cream footpath,
+   warm-brown outlines (palette sampled from the official game's screenshots) */
 .path-map {
   position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 18px;
-  padding: 8px 0 30px;
+  padding: 18px 8px 34px; margin: 0 -6px;
+  background:
+    radial-gradient(3px 2px at 12% 22%, rgba(122, 148, 88, .35) 98%, transparent),
+    radial-gradient(3px 2px at 78% 14%, rgba(122, 148, 88, .3) 98%, transparent),
+    radial-gradient(3px 2px at 30% 64%, rgba(122, 148, 88, .3) 98%, transparent),
+    radial-gradient(3px 2px at 88% 52%, rgba(122, 148, 88, .3) 98%, transparent),
+    radial-gradient(3px 2px at 55% 86%, rgba(122, 148, 88, .3) 98%, transparent),
+    linear-gradient(180deg, #e3eecb, #d8e7bd);
+  background-size: 340px 300px, 340px 300px, 340px 300px, 340px 300px, 340px 300px, 100% 100%;
+  border-radius: 30px;
+  border: 2.5px solid rgba(123, 95, 60, .25);
+  overflow: hidden;
 }
 .path-map::before {
   content: ""; position: absolute; top: 0; bottom: 0; left: 50%;
-  border-left: 3px dashed rgba(74, 63, 53, .18);
+  width: 34px; transform: translateX(-50%);
+  background: #f7efdb;
+  border-left: 2.5px dashed rgba(123, 95, 60, .3);
+  border-right: 2.5px dashed rgba(123, 95, 60, .3);
 }
 .unit-banner {
   width: 100%; display: flex; align-items: center; gap: 12px;
   padding: 12px 14px; margin: 18px 0 6px;
-  background: var(--card); position: relative; z-index: 1;
+  background: linear-gradient(180deg, #f0dcae, #e8d09a); position: relative; z-index: 1;
+  border-color: #8a6f52;
+  box-shadow: 0 4px 0 rgba(123, 95, 60, .35);
 }
 .unit-banner .unit-host { flex: none; }
 .unit-name { font-size: .95rem; }
@@ -269,13 +287,13 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .path-node {
   width: 78px; height: 78px; flex: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: var(--card); border: 3px solid var(--ink);
+  background: var(--card); border: 2.5px solid #7b5f4b;
   border-radius: 50%;
-  box-shadow: 0 5px 0 var(--ink);
+  box-shadow: 0 5px 0 rgba(123, 95, 75, .5), inset 0 0 0 3px rgba(255, 255, 255, .85);
   transition: transform .07s, box-shadow .07s;
   position: relative;
 }
-.path-node:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.path-node:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(123, 95, 75, .5), inset 0 0 0 3px rgba(255, 255, 255, .85); }
 .path-node .node-face { font-size: 1.7rem; font-weight: 700; line-height: 1; }
 .path-node.words .node-face { color: var(--ink); }
 .path-node.phrases { background: var(--blue); }
@@ -284,7 +302,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .path-node.exam .node-face { color: var(--rose); font-size: 1.9rem; }
 .path-node.done { background: var(--pink); }
 .path-node.done.exam { background: var(--yellow); }
-.path-node.locked { background: var(--paper2); box-shadow: 0 3px 0 rgba(74, 63, 53, .35); border-color: rgba(74, 63, 53, .45); }
+.path-node.locked { background: #efe6cf; box-shadow: 0 3px 0 rgba(123, 95, 75, .35), inset 0 0 0 3px rgba(255, 255, 255, .5); border-color: rgba(123, 95, 75, .4); }
 .path-node.locked .node-face { opacity: .35; }
 .path-node.locked .node-peek { filter: grayscale(1) opacity(.5); }
 /* candy-button sheen on every node */
