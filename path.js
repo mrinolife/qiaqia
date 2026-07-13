@@ -329,7 +329,7 @@ function renderReview() {
   const rs = document.getElementById("rvStart");
   if (rs) rs.onclick = () => startReview(renderReview);
   if (weak.length) {
-    const wk = el(`<div class="card yellow wob"><h3>🔥 tricky words</h3>
+    const wk = el(`<div class="card yellow wob"><h3>🔥 Tricky words</h3>
       <div class="bank" style="justify-content:flex-start">${weak.slice(0, 10).map(w => `<button class="tile" data-h="${esc(w.hanzi)}">${esc(w.hanzi)}</button>`).join("")}</div>
       <button class="btn small blue" id="wkDrill" style="margin-top:8px">drill these 💪</button></div>`);
     wk.querySelectorAll(".tile").forEach(t => t.onclick = () => {
@@ -523,7 +523,7 @@ function renderProfile() {
   renderFriendsInto(view);
   const st = S.stats;
   view.append(el(`<div class="card center">
-      <h3 style="margin:0 0 8px">📊 quiz record</h3>
+      <h3 style="margin:0 0 8px">📊 Quiz record</h3>
       <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center">
         <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">📝 ${st.quiz} answered</span>
         <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">✅ ${st.quiz ? Math.round(st.correct / st.quiz * 100) : 0}% right</span>
@@ -600,7 +600,7 @@ function renderProfile() {
 if (!D.vocab.length) {
   view.innerHTML = "";
   view.append(el(`<div class="card yellow center"><div class="mascot-inline">${art("chiikawa", "sad", 72)}</div>
-    <h3>content pack missing!</h3><div class="muted">data.js didn't load — refresh once online.</div></div>`));
+    <h3>Content pack missing!</h3><div class="muted">data.js didn't load — refresh once online.</div></div>`));
 } else {
   renderStreak();
   go("home");

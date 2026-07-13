@@ -634,7 +634,7 @@ function renderFriendsInto(view) {
     const n = (S.snacks || {})[sn.id] || 0;
     const art = n ? snackArt(sn, 46) : null;
     const cell = el(`<button class="card friendcell ${n ? "" : "locked"}">
-        ${art ? art : `<span style="font-size:2.2rem;filter:grayscale(1);opacity:.45">${sn.emoji}</span>`}
+        ${art ? art : `<span style="font-size:2.2rem${n ? "" : ";filter:grayscale(1);opacity:.45"}">${sn.emoji}</span>`}
         <div class="fname">${n ? esc(sn.hanzi) : "???"}</div>
         <div class="muted" style="font-size:.72rem">${n ? esc(sn.pinyin) + (n > 1 ? " ×" + n : "") : esc(sn.name)}</div>
       </button>`);
@@ -1155,9 +1155,9 @@ function renderTravel() {
   const bySc = {};
   D.phrases.forEach(p => { (bySc[p.scenario] = bySc[p.scenario] || []).push(p); });
   Object.entries(bySc).forEach(([sc, ps]) => {
-    if (!groups.some(g => g.label.toLowerCase().includes(sc))) groups.push({ key: "d-" + sc, label: "📖 " + sc, phrases: ps });
+    if (!groups.some(g => g.label.toLowerCase().includes(sc))) groups.push({ key: "d-" + sc, label: "📖 " + sc.charAt(0).toUpperCase() + sc.slice(1), phrases: ps });
   });
-  groups.push({ key: "culture", label: "🏮 culture tips", culture: true });
+  groups.push({ key: "culture", label: "🏮 Culture tips", culture: true });
   if (!groups.length) { view.append(el(`<div class="card">content loading…</div>`)); return; }
   const chips = el(`<div class="chips"></div>`);
   const body = el(`<div></div>`);

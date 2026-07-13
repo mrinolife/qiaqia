@@ -91,12 +91,12 @@ window.YAHA_TAIWAN = {
       pattern: "Owner + 的 + Thing",
       explain: "的 (de) works like an apostrophe-s. Put the owner first, add 的, then the thing they own. \"我的\" is simply \"my/mine\".",
       examples: [
-        { hanzi: "我的手机", pinyin: "wǒ de shǒujī", en: "my phone" },
-        { hanzi: "他的名字", pinyin: "tā de míngzi", en: "his name" },
+        { hanzi: "我的手机", pinyin: "wǒ de shǒujī", en: "My phone" },
+        { hanzi: "他的名字", pinyin: "tā de míngzi", en: "His name" },
         { hanzi: "这是我的杯子", pinyin: "zhè shì wǒ de bēizi", en: "This is my cup." }
       ],
       exercises: [
-        { words: ["我", "的", "手机"], answer: "我的手机", en: "my phone" },
+        { words: ["我", "的", "手机"], answer: "我的手机", en: "My phone" },
         { words: ["这", "是", "她", "的", "包"], answer: "这是她的包", en: "This is her bag." },
         { words: ["他", "的", "朋友", "很", "好"], answer: "他的朋友很好", en: "His friend is very nice." }
       ]
@@ -107,14 +107,14 @@ window.YAHA_TAIWAN = {
       pattern: "Number + Measure word + Noun",
       explain: "You can't put a number straight onto a noun in Chinese — you need a measure word in between. 个 (gè) is the all-purpose one; for drinks, use 杯 (bēi, a cup of) or 瓶 (píng, a bottle of) instead.",
       examples: [
-        { hanzi: "一个人", pinyin: "yí gè rén", en: "one person" },
-        { hanzi: "一杯奶茶", pinyin: "yì bēi nǎichá", en: "one cup of milk tea" },
-        { hanzi: "两瓶水", pinyin: "liǎng píng shuǐ", en: "two bottles of water" }
+        { hanzi: "一个人", pinyin: "yí gè rén", en: "One person" },
+        { hanzi: "一杯奶茶", pinyin: "yì bēi nǎichá", en: "One cup of milk tea" },
+        { hanzi: "两瓶水", pinyin: "liǎng píng shuǐ", en: "Two bottles of water" }
       ],
       exercises: [
-        { words: ["一", "个", "人"], answer: "一个人", en: "one person" },
+        { words: ["一", "个", "人"], answer: "一个人", en: "One person" },
         { words: ["我", "要", "一", "杯", "奶茶"], answer: "我要一杯奶茶", en: "I want one milk tea." },
-        { words: ["两", "瓶", "水"], answer: "两瓶水", en: "two bottles of water" }
+        { words: ["两", "瓶", "水"], answer: "两瓶水", en: "Two bottles of water" }
       ]
     },
     {
@@ -269,16 +269,16 @@ window.YAHA_TAIWAN = {
       emoji: "🧋",
       intro: "This is the essential Taiwan experience — but ordering bubble tea means answering a rapid checklist: sugar level, ice level, and size, sometimes all before you've even picked your drink. Knowing these words in advance makes ordering painless.",
       phrases: [
-        { hanzi: "珍珠奶茶", pinyin: "zhēnzhū nǎichá", en: "pearl (bubble) milk tea", note: "The classic. 珍珠 means \"pearls\" (the tapioca balls), 奶茶 means milk tea." },
-        { hanzi: "全糖", pinyin: "quán táng", en: "full sugar", note: "One of four standard sugar levels — order exactly as sweet as the name says." },
-        { hanzi: "半糖", pinyin: "bàn táng", en: "half sugar", note: "A popular middle-ground choice if full sugar feels like too much." },
-        { hanzi: "微糖", pinyin: "wēi táng", en: "a little sugar", note: "Lightly sweet — a common default for many locals." },
-        { hanzi: "无糖", pinyin: "wú táng", en: "no sugar", note: "Zero added sugar — good if you want just the tea flavor." },
-        { hanzi: "去冰", pinyin: "qù bīng", en: "no ice", note: "One of four ice levels; useful in winter or if you don't want a watered-down drink." },
-        { hanzi: "少冰", pinyin: "shǎo bīng", en: "less ice", note: "A common choice — full flavor with a bit less dilution than normal ice." },
-        { hanzi: "正常冰", pinyin: "zhèngcháng bīng", en: "normal ice", note: "The default amount of ice if you don't ask for anything special." },
-        { hanzi: "大杯", pinyin: "dà bēi", en: "large size", note: "Ask this along with 中杯 (medium) — sizes and prices are usually posted on the menu board." },
-        { hanzi: "中杯", pinyin: "zhōng bēi", en: "medium size", note: "The other common size option; small is less common at most chains." }
+        { hanzi: "珍珠奶茶", pinyin: "zhēnzhū nǎichá", en: "Pearl (bubble) milk tea", note: "The classic. 珍珠 means \"pearls\" (the tapioca balls), 奶茶 means milk tea." },
+        { hanzi: "全糖", pinyin: "quán táng", en: "Full sugar", note: "One of four standard sugar levels — order exactly as sweet as the name says." },
+        { hanzi: "半糖", pinyin: "bàn táng", en: "Half sugar", note: "A popular middle-ground choice if full sugar feels like too much." },
+        { hanzi: "微糖", pinyin: "wēi táng", en: "A little sugar", note: "Lightly sweet — a common default for many locals." },
+        { hanzi: "无糖", pinyin: "wú táng", en: "No sugar", note: "Zero added sugar — good if you want just the tea flavor." },
+        { hanzi: "去冰", pinyin: "qù bīng", en: "No ice", note: "One of four ice levels; useful in winter or if you don't want a watered-down drink." },
+        { hanzi: "少冰", pinyin: "shǎo bīng", en: "Less ice", note: "A common choice — full flavor with a bit less dilution than normal ice." },
+        { hanzi: "正常冰", pinyin: "zhèngcháng bīng", en: "Normal ice", note: "The default amount of ice if you don't ask for anything special." },
+        { hanzi: "大杯", pinyin: "dà bēi", en: "Large size", note: "Ask this along with 中杯 (medium) — sizes and prices are usually posted on the menu board." },
+        { hanzi: "中杯", pinyin: "zhōng bēi", en: "Medium size", note: "The other common size option; small is less common at most chains." }
       ]
     },
     {
@@ -288,11 +288,11 @@ window.YAHA_TAIWAN = {
       intro: "Taipei's MRT is clean, fast, and easy once you have an EasyCard (悠游卡) to tap in and out. Just remember: no eating or drinking once you're past the gates.",
       phrases: [
         { hanzi: "悠游卡", pinyin: "yōuyóukǎ", en: "EasyCard", note: "The rechargeable transit card — works on MRT, buses, and even some convenience store purchases." },
-        { hanzi: "加值", pinyin: "jiāzhí", en: "top up (add value)", note: "Say this at a machine or counter when your EasyCard balance runs low." },
+        { hanzi: "加值", pinyin: "jiāzhí", en: "Top up (add value)", note: "Say this at a machine or counter when your EasyCard balance runs low." },
         { hanzi: "几号出口", pinyin: "jǐ hào chūkǒu", en: "Which exit number?", note: "MRT stations have numbered exits — knowing the right one saves a lot of walking." },
         { hanzi: "这班车去哪里", pinyin: "zhè bān chē qù nǎlǐ", en: "Where does this train go?", note: "Handy if you're unsure of the direction on the platform." },
         { hanzi: "在哪里换车", pinyin: "zài nǎlǐ huàn chē", en: "Where do I transfer?", note: "Useful for lines that require switching trains, like Red to Blue at Taipei Main Station." },
-        { hanzi: "车站", pinyin: "chēzhàn", en: "train/subway station", note: "General word for station, useful when asking directions on the street." },
+        { hanzi: "车站", pinyin: "chēzhàn", en: "Train/subway station", note: "General word for station, useful when asking directions on the street." },
         { hanzi: "不可以在捷运上吃东西", pinyin: "bù kěyǐ zài jiéyùn shàng chī dōngxi", en: "No eating on the MRT.", note: "This is a strictly enforced rule with fines — finish your bubble tea before tapping in!" }
       ]
     },
@@ -302,7 +302,7 @@ window.YAHA_TAIWAN = {
       emoji: "🚕",
       intro: "Taxis are metered and easy to flag down, and drivers are commonly addressed with a respectful title rather than a direct \"you\". A short address or landmark name usually gets you where you're going.",
       phrases: [
-        { hanzi: "师傅", pinyin: "shīfu", en: "driver (polite term)", note: "A respectful way to address a taxi driver, like \"sir\" — much more natural than saying nothing." },
+        { hanzi: "师傅", pinyin: "shīfu", en: "Driver (polite term)", note: "A respectful way to address a taxi driver, like \"sir\" — much more natural than saying nothing." },
         { hanzi: "到...多少钱", pinyin: "dào... duōshǎo qián", en: "How much to get to...?", note: "Fill in the blank with your destination; most rides use the meter, but this is good to confirm." },
         { hanzi: "在这里停", pinyin: "zài zhèlǐ tíng", en: "Stop here, please.", note: "Say this when you've reached your destination or want to get out early." },
         { hanzi: "请开到这里", pinyin: "qǐng kāi dào zhèlǐ", en: "Please drive to here.", note: "Good paired with showing an address or map pin on your phone." },
@@ -318,13 +318,13 @@ window.YAHA_TAIWAN = {
       intro: "Ordering food goes beyond the menu — you'll often be asked eat-in or takeout right away, and paying works a bit differently than back home.",
       phrases: [
         { hanzi: "内用还是外带", pinyin: "nèiyòng háishì wàidài", en: "Eat in or takeout?", note: "One of the first questions you'll hear at counters — answer with 内用 (eat in) or 外带 (takeout)." },
-        { hanzi: "内用", pinyin: "nèiyòng", en: "eat in / dine in", note: "Say this if you plan to sit and eat at the restaurant." },
-        { hanzi: "外带", pinyin: "wàidài", en: "takeout / to go", note: "Say this if you want your food packaged to go." },
+        { hanzi: "内用", pinyin: "nèiyòng", en: "Eat in / dine in", note: "Say this if you plan to sit and eat at the restaurant." },
+        { hanzi: "外带", pinyin: "wàidài", en: "Takeout / to go", note: "Say this if you want your food packaged to go." },
         { hanzi: "我要加点", pinyin: "wǒ yào jiā diǎn", en: "I'd like to order more.", note: "Useful at hot pot or shared-plate places where you add dishes as you go." },
-        { hanzi: "买单", pinyin: "mǎidān", en: "the bill, please", note: "The everyday phrase to ask for the check; 结账 (jiézhàng) means the same thing and is equally common." },
-        { hanzi: "结账", pinyin: "jiézhàng", en: "to settle the bill", note: "Interchangeable with 买单 — either works when you're ready to pay." },
-        { hanzi: "服务费", pinyin: "fúwùfèi", en: "service charge", note: "Some restaurants add a 10% service charge automatically — check the menu or receipt; extra tipping is not expected." },
-        { hanzi: "好吃", pinyin: "hǎochī", en: "delicious", note: "A simple, genuine compliment that staff and cooks always appreciate hearing." }
+        { hanzi: "买单", pinyin: "mǎidān", en: "The bill, please", note: "The everyday phrase to ask for the check; 结账 (jiézhàng) means the same thing and is equally common." },
+        { hanzi: "结账", pinyin: "jiézhàng", en: "To settle the bill", note: "Interchangeable with 买单 — either works when you're ready to pay." },
+        { hanzi: "服务费", pinyin: "fúwùfèi", en: "Service charge", note: "Some restaurants add a 10% service charge automatically — check the menu or receipt; extra tipping is not expected." },
+        { hanzi: "好吃", pinyin: "hǎochī", en: "Delicious", note: "A simple, genuine compliment that staff and cooks always appreciate hearing." }
       ]
     },
     {
@@ -353,7 +353,7 @@ window.YAHA_TAIWAN = {
         { hanzi: "我的名字是...", pinyin: "wǒ de míngzi shì...", en: "My name is...", note: "Fill in your name — staff will look up your reservation from this." },
         { hanzi: "几点退房", pinyin: "jǐ diǎn tuìfáng", en: "What time is checkout?", note: "退房 (tuìfáng) means \"check out\" — good to confirm on arrival." },
         { hanzi: "有早餐吗", pinyin: "yǒu zǎocān ma", en: "Is there breakfast?", note: "Worth asking, since breakfast inclusion varies a lot between hotels." },
-        { hanzi: "钥匙", pinyin: "yàoshi", en: "key", note: "Useful word if you're asking about a room key or key card." },
+        { hanzi: "钥匙", pinyin: "yàoshi", en: "Key", note: "Useful word if you're asking about a room key or key card." },
         { hanzi: "可以寄放行李吗", pinyin: "kěyǐ jìfàng xíngli ma", en: "Can I store my luggage?", note: "Handy for early arrivals or late departures when your room isn't ready yet." }
       ]
     }
