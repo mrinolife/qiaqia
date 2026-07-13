@@ -384,6 +384,49 @@ function renderWordbook() {
 
 /* ---------- food gallery: showcase every real show-art food image large,
    whether or not it's been won yet from the snack shelf ---------- */
+/* ---------- song jukebox: official themes + fan favorites, played via YouTube
+   embeds (nothing re-hosted — videos stream from their owners' uploads) ---------- */
+const QQ_SONGS = [
+  { id: "G3hW_k2lOzg", emoji: "🎤", title: "ひとりごつ Hitorigotsu", sub: "the ending theme Hachiware sings — with lyrics to sing along" },
+  { id: "9cEMsmJKvDQ", emoji: "🎼", title: "Opening theme 蛤?", sub: "the show's opening music" },
+  { id: "T8C3FbUowUY", emoji: "🐰", title: "Usagi's theme", sub: "呀哈!! energy in song form" },
+  { id: "X-EGAILdOG8", emoji: "🎬", title: "ひとりごつ MV (fan MAD)", sub: "fan-made music video of the ending song" },
+  { id: "CcUjUp_Ft80", emoji: "🎹", title: "ひとりごつ cover", sub: "a lovely fan cover" },
+  { id: "oSlaD3GcM9k", emoji: "😂", title: "Usagi moments", sub: "the funniest usagi clips in one video" },
+  { id: "PNaW83w8spQ", emoji: "🗯️", title: "蛤?/哈? — 250 episodes of Usagi yelling", sub: "the legendary scream compilation" },
+];
+function renderSongs() {
+  view.innerHTML = "";
+  view.append(el(`<div class="backrow"><button class="iconbtn" id="sgBk">←</button>
+    <h3 style="margin:0">🎵 Song corner <span class="muted">themes & fan bangers</span></h3></div>`));
+  view.append(el(`<div class="muted" style="margin:0 4px 12px">the real theme songs plus the fan songs everyone memes —
+    they play right here through YouTube. tap a card to load the player. 🧋</div>`));
+  QQ_SONGS.forEach(s => {
+    const card = el(`<div class="card wob" style="margin-bottom:12px;overflow:hidden">
+        <button class="songrow" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;padding:2px">
+          <span style="font-size:1.5rem">${s.emoji}</span>
+          <span><b>${esc(s.title)}</b><br><span class="muted" style="font-size:.78rem">${esc(s.sub)}</span></span>
+          <span style="margin-left:auto;font-size:1.2rem">▾</span>
+        </button>
+        <div class="songplayer" style="display:none;margin-top:10px"></div>
+      </div>`);
+    card.querySelector(".songrow").onclick = () => {
+      const box = card.querySelector(".songplayer");
+      if (box.style.display === "none") {
+        if (!box.firstChild) box.innerHTML =
+          `<iframe width="100%" height="220" style="border:0;border-radius:14px"
+             src="https://www.youtube-nocookie.com/embed/${s.id}" title="${esc(s.title)}"
+             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+             allowfullscreen loading="lazy"></iframe>`;
+        box.style.display = "block";
+      } else box.style.display = "none";
+      SFX.tap();
+    };
+    view.append(card);
+  });
+  document.getElementById("sgBk").onclick = renderProfile;
+}
+
 function renderFoodGallery() {
   view.innerHTML = "";
   view.append(el(`<div class="backrow"><button class="iconbtn" id="fgBk">←</button>
@@ -463,6 +506,9 @@ function renderProfile() {
   const fg = el(`<button class="btn big yellow" style="margin:10px auto;display:block">🍜 Food Gallery — see the real show art</button>`);
   fg.onclick = renderFoodGallery;
   view.append(fg);
+  const sg = el(`<button class="btn big pink" style="margin:10px auto;display:block">🎵 Song corner — themes & fan bangers</button>`);
+  sg.onclick = renderSongs;
+  view.append(sg);
   renderFriendsInto(view);
   const st = S.stats;
   view.append(el(`<div class="card center">
