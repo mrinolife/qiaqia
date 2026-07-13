@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QiaQia — refresh</title>
+<body style="font-family:sans-serif;padding:2em;text-align:center">
+<p id="s">Clearing old caches…</p>
+<script>
+(async () => {
+  const out = [];
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const r of regs) { await r.unregister(); out.push("sw unregistered"); }
+  } catch (e) { out.push("sw: " + e.message); }
+  try {
+    const keys = await caches.keys();
+    for (const k of keys) { await caches.delete(k); out.push("cache " + k + " deleted"); }
+  } catch (e) { out.push("cache: " + e.message); }
+  document.getElementById("s").textContent = (out.join(", ") || "nothing to clear") + " — reloading app…";
+  setTimeout(() => location.replace("./index.html?fresh=" + Math.floor(performance.now())), 1200);
+})();
+</script>
+</body>
