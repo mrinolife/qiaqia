@@ -382,8 +382,8 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 
 .choices { display: flex; flex-direction: column; gap: 10px; margin: 6px 0; }
 .choice {
-  background: var(--card); border: 2.5px solid var(--ink);
-  border-radius: 18px;
+  background: #fffaf2; border: 2.5px solid var(--ink);
+  border-radius: 22px;
   box-shadow: 0 4px 0 var(--ink);
   padding: 13px 14px; font-size: 1.02rem; font-weight: 700; text-align: center;
   transition: transform .06s, box-shadow .06s, background .12s;
@@ -417,8 +417,8 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .build-hint { color: var(--ink-soft); font-size: .84rem; }
 .bank { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 12px; }
 .tile {
-  background: var(--card); border: 2.5px solid var(--ink);
-  border-radius: 13px; box-shadow: 0 3px 0 var(--ink);
+  background: #fffaf2; border: 2.5px solid var(--ink);
+  border-radius: 16px; box-shadow: 0 3px 0 var(--ink);
   padding: 9px 13px; font-size: 1.25rem; font-weight: 700;
   transition: transform .06s, opacity .12s;
 }
@@ -518,7 +518,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   background: linear-gradient(180deg, transparent, var(--paper) 22%);
   padding: 14px 0 6px;
 }
-.chatchoice { display: flex; flex-direction: column; gap: 2px; background: var(--card); }
+.chatchoice { display: flex; flex-direction: column; gap: 2px; background: var(--pink); border-radius: 20px; }
 .chatchoice .hz { font-size: 1.05rem; }
 .chatchoice .pinyin { font-size: .78rem; }
 
@@ -552,8 +552,9 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 #toast {
   position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom));
   transform: translateX(-50%) translateY(20px);
-  background: var(--ink); color: var(--paper);
-  padding: 10px 18px; border-radius: 18px; font-weight: 700; font-size: .9rem;
+  background: #fff; color: var(--ink);
+  border: 2.5px solid var(--ink); box-shadow: 0 4px 0 rgba(74, 63, 53, .25);
+  padding: 10px 18px; border-radius: 18px; font-weight: 800; font-size: .9rem;
   max-width: 86vw; text-align: center;
   opacity: 0; pointer-events: none; transition: all .25s; z-index: 60;
 }
@@ -804,9 +805,16 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 /* ============================================================
    PATH PIZZAZZ — biome zones + ambient world + scene banners
    ============================================================ */
-.path-ambient {
+.path-ambient, .sess-ambient {
   position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
 }
+.sess-ambient .amb { opacity: .3; }
+.sess-buddy {
+  position: fixed; left: 12px; bottom: calc(96px + env(safe-area-inset-bottom));
+  z-index: 5; pointer-events: none; line-height: 0;
+  filter: drop-shadow(0 2px 2px rgba(74, 63, 53, .2));
+}
+.sess-buddy .droop { display: inline-block; animation: droop .5s ease; filter: saturate(.8); }
 .amb {
   position: absolute; font-size: 1.4rem; opacity: .55; filter: drop-shadow(0 2px 2px rgba(0,0,0,.06));
   animation: drift 14s ease-in-out infinite;

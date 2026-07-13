@@ -590,7 +590,7 @@ function renderFriendsInto(view) {
     const n = (S.snacks || {})[sn.id] || 0;
     const art = n ? snackArt(sn, 46) : null;
     const cell = el(`<button class="card friendcell ${n ? "" : "locked"}">
-        ${art ? art : `<span style="font-size:2.2rem">${n ? sn.emoji : "❓"}</span>`}
+        ${art ? art : `<span style="font-size:2.2rem;filter:grayscale(1);opacity:.45">${sn.emoji}</span>`}
         <div class="fname">${n ? esc(sn.hanzi) : "???"}</div>
         <div class="muted" style="font-size:.72rem">${n ? esc(sn.pinyin) + (n > 1 ? " ×" + n : "") : esc(sn.name)}</div>
       </button>`);
@@ -721,14 +721,23 @@ function renderPractice() {
     ["tones", "🎵 Tones", "the 4 tones + quiz", ""],
     ["voice", "🩺 Voice check", "is audio & the mic working?", "blue"],
   ];
+  const badgeChar = { quiz: "chiikawa", listen: "usagi", speak: "hachiware" };
   modes.forEach(([id, title, sub, color]) => {
-    const c = el(`<button class="lesson"><span class="lemoji" style="background:var(--${color || "card"},#fff)">${title.split(" ")[0]}</span>
+    const badgeInner = badgeChar[id]
+      ? `<img src="chars/${badgeChar[id]}.png" width="30" height="30" style="object-fit:contain" alt="">`
+      : title.split(" ")[0];
+    const c = el(`<button class="lesson"><span class="lemoji" style="background:var(--${color || "card"},#fff)">${badgeInner}</span>
       <span class="linfo"><span class="ltitle">${title.slice(title.indexOf(" ") + 1)}</span><br><span class="lsub">${sub}</span></span><span class="lstate">→</span></button>`);
     c.onclick = () => startPractice(id);
     view.append(c);
   });
   const st = S.stats;
-  view.append(el(`<div class="card muted center">answered ${st.quiz} · ${st.quiz ? Math.round(st.correct / st.quiz * 100) : 0}% right · 🎤 ${st.spoken} spoken · ✍️ ${st.written} written</div>`));
+  view.append(el(`<div class="card center" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center">
+      <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">📝 ${st.quiz} answered</span>
+      <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">✅ ${st.quiz ? Math.round(st.correct / st.quiz * 100) : 0}% right</span>
+      <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">🎤 ${st.spoken} spoken</span>
+      <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">✍️ ${st.written} written</span>
+    </div>`));
 }
 function startPractice(mode) {
   ({ quiz: () => mcRound("mixed"), listen: () => mcRound("listen"), speak: speakPractice,
@@ -1090,9 +1099,15 @@ function phraseCard(p) {
 
 function renderTravel() {
   view.innerHTML = "";
-  view.append(el(`<h2>Travel survival 🧳 <span class="muted">Taiwan-real</span></h2>`));
+  view.append(el(`<h2 style="display:flex;align-items:center;gap:8px">Travel survival 🧳 <span class="muted">Taiwan-real</span>
+      <span style="margin-left:auto">${art("rakko", "idle", 40)}</span></h2>`));
   const groups = [];
-  T.scenarios.forEach(s => groups.push({ key: s.id, label: s.emoji + " " + s.title, phrases: s.phrases, intro: s.intro }));
+  const scChipFood = { s1: "jipai", s2: "pancake" };
+  T.scenarios.forEach(s => groups.push({
+    key: s.id,
+    label: (scChipFood[s.id] ? `<img src="chars/food/${scChipFood[s.id]}.png" width="16" height="16" style="object-fit:contain;vertical-align:-3px;margin-right:2px">` : "") + s.emoji + " " + s.title,
+    phrases: s.phrases, intro: s.intro
+  }));
   const bySc = {};
   D.phrases.forEach(p => { (bySc[p.scenario] = bySc[p.scenario] || []).push(p); });
   Object.entries(bySc).forEach(([sc, ps]) => {
@@ -1115,7 +1130,7 @@ function renderTravel() {
     g.phrases.forEach(p => body.append(phraseCard(p)));
   };
   groups.forEach(g => {
-    const c = el(`<button class="scChip ${g.key === active ? "active" : ""}">${esc(g.label)}</button>`);
+    const c = el(`<button class="scChip ${g.key === active ? "active" : ""}">${g.label}</button>`);
     c.onclick = () => { active = g.key; chips.querySelectorAll(".scChip").forEach(x => x.classList.remove("active")); c.classList.add("active"); renderGroup(); };
     chips.appendChild(c);
   });

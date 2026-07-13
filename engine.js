@@ -155,7 +155,14 @@ function runSession(opts) {
     </div>`);
   const body = el(`<div class="sess-body" id="sBody"></div>`);
   const foot = el(`<div class="sess-foot" id="sFoot"></div>`);
-  view.append(bar, body, foot);
+  // ambient sprinkles + a persistent host buddy who reacts to answers (mood sticks)
+  const amb = el(`<div class="sess-ambient"><span class="amb a2">✨</span><span class="amb a4">🌸</span><span class="amb a7">⭐</span></div>`);
+  const buddy = el(`<div class="sess-buddy" id="sBuddy"><span class="bob">${art(host, "idle", 54)}</span></div>`);
+  view.append(bar, body, foot, amb, buddy);
+  const buddyMood = (mood, right) => {
+    const b = document.getElementById("sBuddy");
+    if (b) b.innerHTML = `<span class="${right ? "bounce" : "droop"}">${art(host, mood, 54)}</span>`;
+  };
   bar.querySelector("#sQuit").onclick = () => {
     alive = false;
     speechSynthesis && speechSynthesis.cancel();
@@ -178,6 +185,7 @@ function runSession(opts) {
     setBar();
     foot.innerHTML = "";
     const mood = right ? (combo >= 4 ? "cheer" : "happy") : "sad";
+    buddyMood(mood, right);
     const lines = right
       ? (combo >= 4 ? ["ワァ!! " + combo + " in a row!!", "太棒了!! on fire!!", "呀哈!! unstoppable!!"] : ["对了! 🌸", "太好了!", "没错!", "哇, nice!"])
       : ["呜呜… almost!", "うぅ… not quite!", "没关系, look:"];

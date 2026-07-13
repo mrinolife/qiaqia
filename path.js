@@ -165,7 +165,7 @@ function renderPath() {
         <span class="chip">📖 ${learned}/${D.vocab.length + (S.hsk2Open ? (window.QIAQIA_HSK2 || []).length : 0)} words</span>
         ${due ? `<button class="chip chip-due" id="heroDue">🎴 ${due} due</button>` : ""}
       </div>
-      <button class="btn big pink" id="heroGo">▶ ${nodeStars(cur.id) ? "keep going" : curIdx === 0 ? "start your journey!" : "continue"} · ${esc(cur.unitRef.emoji)} ${esc(cur.unitRef.title.split(" ").slice(1).join(" ") || cur.unitRef.title)}</button>
+      <button class="btn big pink" id="heroGo">🐾 ${nodeStars(cur.id) ? "keep going" : curIdx === 0 ? "start your journey!" : "continue"} · ${esc(cur.unitRef.emoji)} ${esc(cur.unitRef.title.split(" ").slice(1).join(" ") || cur.unitRef.title)}</button>
     </div>`));
   document.getElementById("heroGo").onclick = () => startNode(cur, renderPath);
   const hd = document.getElementById("heroDue");
@@ -312,7 +312,7 @@ function renderReview() {
       <div class="mascot-inline ${due.length ? "bob" : ""}">${(!due.length && typeof animGIF === "function" && animGIF("sleep", 130)) || art("hachiware", due.length ? "cheer" : "sleep", 84)}</div>
       <h3>${due.length ? due.length + " words due!" : "all caught up ✨"}</h3>
       <div class="muted">${deck} words in your deck</div>
-      ${due.length ? `<button class="btn big pink" id="rvStart">▶ review now</button>` : `<div class="muted" style="margin-top:6px">哈~ ${art("kurimanju", "sleep", 0) ? "" : ""}come back later — resting makes memory stick!</div>`}
+      ${due.length ? `<button class="btn big pink" id="rvStart">🎴 review now</button>` : `<div class="muted" style="margin-top:6px">哈~ ${art("kurimanju", "sleep", 0) ? "" : ""}come back later — resting makes memory stick!</div>`}
     </div>`));
   const rs = document.getElementById("rvStart");
   if (rs) rs.onclick = () => startReview(renderReview);
@@ -347,7 +347,7 @@ function renderWordbook() {
   const weakSet = new Set(weakWords().map(w => w.hanzi));
   const nL = all.filter(learned).length;
   view.append(el(`<div class="backrow"><button class="iconbtn" id="wbBk">←</button>
-    <h3 style="margin:0">📖 Wordbook <span class="muted">${nL}/${all.length} learned</span></h3></div>`));
+    <h3 style="margin:0;display:flex;align-items:center;gap:6px">📖 Wordbook <span class="muted">${nL}/${all.length} learned</span> ${art("hachiware", "idle", 34)}</h3></div>`));
   const groups = [["HSK 1", D.vocab]];
   if ((window.QIAQIA_HSK2 || []).length) groups.push(["HSK 2", window.QIAQIA_HSK2]);
   groups.forEach(([lvl, words]) => {
@@ -358,7 +358,7 @@ function renderWordbook() {
       const box = el(`<div class="card wob" style="padding:10px">
         <div class="wb-cat">${esc(cat)} <span class="muted">${ws.filter(learned).length}/${ws.length}</span></div>
         <div class="wb-rows">${ws.map(w => `<button class="wb-row" data-h="${esc(w.hanzi)}">
-          <span class="wb-st">${weakSet.has(w.hanzi) ? "🔥" : learned(w) ? "✅" : "▫️"}</span>
+          <span class="wb-st">${weakSet.has(w.hanzi) ? "🔥" : learned(w) ? "✅" : "🌱"}</span>
           <span class="wb-hz">${esc(w.hanzi)}</span>
           <span class="pinyin">${esc(w.pinyin)}</span>
           <span class="wb-en muted">${esc(w.en)}</span></button>`).join("")}</div></div>`);
@@ -455,7 +455,14 @@ function renderProfile() {
   view.append(fg);
   renderFriendsInto(view);
   const st = S.stats;
-  view.append(el(`<div class="card muted center">answered ${st.quiz} · ${st.quiz ? Math.round(st.correct / st.quiz * 100) : 0}% right · 🎤 ${st.spoken} spoken · ✍️ ${st.written} written</div>`));
+  view.append(el(`<div class="card center">
+      <h3 style="margin:0 0 8px">📊 quiz record</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center">
+        <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">📝 ${st.quiz} answered</span>
+        <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">✅ ${st.quiz ? Math.round(st.correct / st.quiz * 100) : 0}% right</span>
+        <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">🎤 ${st.spoken} spoken</span>
+        <span style="background:#fff;border:2px solid #4a3f35;border-radius:14px;padding:3px 10px;font-weight:700;display:inline-flex;gap:4px;align-items:center">✍️ ${st.written} written</span>
+      </div></div>`));
   const pin = el(`<div class="card wob"><h3>拼 Pinyin</h3>
       <div class="muted">hide pinyin to practice reading real characters — tap any blurred pinyin to peek</div>
       <button class="btn small ${S.showPinyin === false ? "pink" : "mint"}" id="pinToggle" style="margin-top:8px">${S.showPinyin === false ? "hidden — show it" : "shown — hide it"}</button></div>`);
@@ -473,9 +480,9 @@ function renderProfile() {
         exactly what she's done.</div>
       <div class="cardrow" style="justify-content:flex-start;flex-wrap:wrap">
         <button class="btn small blue" id="bkGet">get progress code</button>
-        <button class="btn small ghost" id="bkShow">restore from a code</button>
+        <button class="btn small mint" id="bkShow">restore from a code</button>
       </div>
-      <textarea id="bkArea" readonly rows="3" style="display:none;width:100%;margin-top:8px;font-family:monospace;font-size:.72rem;padding:8px;border:2px solid var(--ink);border-radius:10px;background:var(--paper2)"></textarea>
+      <textarea id="bkArea" readonly rows="3" style="display:none;width:100%;margin-top:8px;font-size:.72rem;padding:8px;border:2px solid var(--ink);border-radius:10px;background:var(--paper2)"></textarea>
       <div id="bkMsg" class="muted" style="margin-top:6px"></div>
     </div>`);
   backup.querySelector("#bkGet").onclick = () => {
@@ -517,7 +524,7 @@ function renderProfile() {
         ${Object.keys(S.snacks || {}).length} snacks won · ${Object.keys(S.metFriends || {}).length + 3} friends met
       </div></div>`);
   view.append(statsView);
-  const vc = el(`<button class="btn small ghost" style="margin:4px auto;display:block">🩺 sound & mic check · build ${QQ_BUILD}</button>`);
+  const vc = el(`<button class="btn small ghost" style="margin:4px auto;display:block">🩺 sound & mic check</button>`);
   vc.onclick = voiceCheck;
   view.append(vc);
 }
