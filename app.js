@@ -1100,7 +1100,7 @@ function phraseCard(p) {
 function renderTravel() {
   view.innerHTML = "";
   view.append(el(`<h2 style="display:flex;align-items:center;gap:8px">Travel survival 🧳 <span class="muted">Taiwan-real</span>
-      <span style="margin-left:auto">${art("rakko", "idle", 40)}</span></h2>`));
+      </h2>`));
   const groups = [];
   const scChipFood = { s1: "jipai", s2: "pancake" };
   T.scenarios.forEach(s => groups.push({

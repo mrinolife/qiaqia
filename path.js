@@ -224,7 +224,6 @@ function renderPath() {
       const row = el(`<div class="path-row" style="--off:${off}">
           <button class="path-node ${n.kind} ${stars ? "done" : ""} ${!unlocked ? "locked" : ""} ${isCur ? "cur" : ""}" data-i="${idx}">
             <span class="node-face">${n.kind === "exam" ? "试" : esc(n.label)}</span>
-            <span class="node-peek">${art(n.kind === "exam" ? "yoroi" : n.host, "idle", 34)}</span>
             ${!unlocked ? `<span class="node-lock">🔒</span>` : ""}
             ${stars ? `<span class="node-stars">${"★".repeat(stars)}</span>` : ""}
           </button>
@@ -347,7 +346,7 @@ function renderWordbook() {
   const weakSet = new Set(weakWords().map(w => w.hanzi));
   const nL = all.filter(learned).length;
   view.append(el(`<div class="backrow"><button class="iconbtn" id="wbBk">←</button>
-    <h3 style="margin:0;display:flex;align-items:center;gap:6px">📖 Wordbook <span class="muted">${nL}/${all.length} learned</span> ${art("hachiware", "idle", 34)}</h3></div>`));
+    <h3 style="margin:0;display:flex;align-items:center;gap:6px">📖 Wordbook <span class="muted">${nL}/${all.length} learned</span></h3></div>`));
   const groups = [["HSK 1", D.vocab]];
   if ((window.QIAQIA_HSK2 || []).length) groups.push(["HSK 2", window.QIAQIA_HSK2]);
   groups.forEach(([lvl, words]) => {
