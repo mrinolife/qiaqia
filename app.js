@@ -455,7 +455,7 @@ fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   Object.entries(m.scenes || {}).forEach(([k, f]) => { LOCAL_SCENES[k] = `chars/${f}`; });
   // wallpaper override removed — the path map needs the clean meadow background
   const brand = document.getElementById("brandMascot");
-  if (brand) brand.innerHTML = mascotSVG("usagi", 38);
+  if (brand) brand.innerHTML = mascotSVG(S.theme === "doraemon" ? "hachiware" : "usagi", 38);
   if (document.querySelector(".path-hero")) renderPath();
 }).catch(() => {});
 
@@ -478,7 +478,7 @@ function mascotSVG(kind, size) {
   if (LOCAL_ART[themeKind]) return `<img src="${LOCAL_ART[themeKind]}" width="${s}" height="${s}" class="mascot-${kind}" style="object-fit:contain" alt="">`;
   return "";
 }
-document.getElementById("brandMascot").innerHTML = mascotSVG("usagi", 38);
+document.getElementById("brandMascot").innerHTML = mascotSVG(S.theme === "doraemon" ? "hachiware" : "usagi", 38);
 
 /* ================= router ================= */
 const tabs = document.querySelectorAll("#tabs .tab, #sideNav .tab");
@@ -505,7 +505,9 @@ function applyTheme() {
     btn.title = isDoraemon ? "switch to Chiikawa world" : "switch to Doraemon world";
   }
   const brand = document.getElementById("brandMascot");
-  if (brand) brand.innerHTML = mascotSVG("usagi", 38);
+  if (brand) brand.innerHTML = mascotSVG(S.theme === "doraemon" ? "hachiware" : "usagi", 38);
+  const profileBtn = document.getElementById("profileBtn");
+  if (profileBtn) profileBtn.textContent = S.theme === "doraemon" ? "🚪" : "🌸";
   // renderPath/etc live in path.js, loaded after app.js — on the very first
   // applyTheme() call (right after S loads) path.js hasn't run yet, so skip
   // the redraw here; path.js's own initial go("home") picks up the dataset
@@ -533,7 +535,7 @@ function renderSideStats() {
     const total = (D.vocab && D.vocab.length) || 1;
     rail.append(el(`<div class="card wob sidebar-card">
         <div class="sidebar-id">
-          <span class="sidebar-avatar">${art("usagi", "happy", 64)}</span>
+          <span class="sidebar-avatar">${art(S.theme === "doraemon" ? "hachiware" : "usagi", "happy", 64)}</span>
           <div class="sidebar-idtext">
             <div class="lic-lv" style="margin-left:0">LV${li.lv}</div>
             <div class="lic-rank" style="margin:2px 0 0">${esc(li.title)}<br><span class="muted">${esc(li.titleEn)}</span></div>
@@ -702,8 +704,11 @@ document.addEventListener("click", e => {
 
 /* ================= friends & snacks ================= */
 function renderFriendsInto(view) {
-  view.append(el(`<h3 style="margin:16px 4px 4px">Friends 🧺 <span class="muted">${unlockedCast().length}/${activeCast().length}</span></h3>`),
-    el(`<div class="muted" style="margin:0 4px 8px">everyone from the meadow — keep learning to meet them all!</div>`));
+  // Doraemon world: reskins both the Friends header/blurb below and the
+  // Snack Shelf → 4D Pocket header further down, both gated on this flag.
+  const isPocket = S.theme === "doraemon";
+  view.append(el(`<h3 style="margin:16px 4px 4px">${isPocket ? "Nobita's Neighborhood 🔔" : "Friends 🧺"} <span class="muted">${unlockedCast().length}/${activeCast().length}</span></h3>`),
+    el(`<div class="muted" style="margin:0 4px 8px">${isPocket ? "everyone from the 22nd century (and next door) — keep learning to meet them all!" : "everyone from the meadow — keep learning to meet them all!"}</div>`));
   const grid = el(`<div class="friendgrid"></div>`);
   activeCast().forEach(c => {
     const got = S.xp >= c.unlock;
@@ -724,8 +729,7 @@ function renderFriendsInto(view) {
   view.append(grid);
   // Doraemon world: the collectible-snack shelf reskins as the 4D Pocket
   // (四次元ポケット) — header copy + a scalloped pocket-mouth border on the
-  // shelf container, both gated on S.theme==="doraemon".
-  const isPocket = S.theme === "doraemon";
+  // shelf container, both gated on S.theme==="doraemon" (isPocket, set above).
   view.append(el(`<h3 style="margin:16px 4px 4px">${isPocket ? "Doraemon's Pocket 🎒" : "Snack shelf 🍱"} <span class="muted">${Object.keys(S.snacks || {}).length}/${SNACKS.length}</span></h3>`),
     el(`<div class="muted" style="margin:0 4px 8px">${isPocket ? "reach in and pull out a treat — win one from quizzes & reviews, then tap it to learn its Chinese name!" : "win snacks from quizzes & reviews — tap one to learn its Chinese name!"}</div>`));
   const shelf = el(`<div class="friendgrid snacks${isPocket ? " pocket-shelf" : ""}"></div>`);
@@ -866,8 +870,16 @@ function renderPractice() {
   ];
   const badgeChar = { quiz: "chiikawa", listen: "usagi", speak: "hachiware" };
   modes.forEach(([id, title, sub, color]) => {
+    // plain image, no art()/mascotSVG() class — those attach mascot-<id> CSS
+    // (glow + idle wiggle) meant for big cameos, not this tiny 30px badge
     const badgeInner = badgeChar[id]
-      ? `<img src="chars/${badgeChar[id]}.png" width="30" height="30" style="object-fit:contain" alt="">`
+      ? (() => {
+          const bk = badgeChar[id];
+          const themeKind = (S.theme === "doraemon" && THEME_ART_DORAEMON[bk]) ? THEME_ART_DORAEMON[bk] : bk;
+          return LOCAL_ART[themeKind]
+            ? `<img src="${LOCAL_ART[themeKind]}" width="30" height="30" style="object-fit:contain" alt="">`
+            : title.split(" ")[0];
+        })()
       : title.split(" ")[0];
     const c = el(`<button class="lesson"><span class="lemoji" style="background:var(--${color || "card"},#fff)">${badgeInner}</span>
       <span class="linfo"><span class="ltitle">${title.slice(title.indexOf(" ") + 1)}</span><br><span class="lsub">${sub}</span></span><span class="lstate">→</span></button>`);

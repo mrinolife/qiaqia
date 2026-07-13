@@ -180,7 +180,14 @@ function renderPath() {
   if (hd) hd.onclick = () => startReview(renderPath);
 
   const map = el(`<div class="path-map"></div>`);
-  map.append(el(`<div class="path-ambient">
+  // Doraemon world: ambient sprites reskin from Chiikawa meadow flavor (sakura/
+  // bubble tea/dumplings) to Doraemon-world icons — distinct from DORAEMON_CONFETTI
+  // (app.js) so level-up confetti doesn't feel repeated here.
+  const isDoraemonAmb = S.theme === "doraemon";
+  map.append(el(isDoraemonAmb ? `<div class="path-ambient">
+      <span class="amb a1">💠</span><span class="amb a2">🌟</span><span class="amb a3">🍡</span>
+      <span class="amb a4">🧭</span><span class="amb a5">💠</span><span class="amb a6">🚁</span>
+      <span class="amb a7">🎐</span><span class="amb a8">🌟</span><span class="amb a9">⏳</span></div>` : `<div class="path-ambient">
       <span class="amb a1">🌸</span><span class="amb a2">✨</span><span class="amb a3">🍃</span>
       <span class="amb a4">⭐</span><span class="amb a5">🌸</span><span class="amb a6">🧋</span>
       <span class="amb a7">🌼</span><span class="amb a8">✨</span><span class="amb a9">🍡</span></div>`));
