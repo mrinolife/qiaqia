@@ -200,7 +200,7 @@ function renderPath() {
     const bits = BIOME_BITS[biome];
     const who = SIDE_CAST[(uidx * 7 + 3) % SIDE_CAST.length];
     const food = SIDE_FOOD[(uidx * 5 + 1) % SIDE_FOOD.length];
-    const mk = (s, inner) => `<span class="gdeco" style="left:${s.x}%;top:${s.y}%"><span class="gfloat">${inner}</span></span>`;
+    const mk = (s, inner) => `<span class="gdeco" style="--gx:${s.x}%;--gy:${s.y}%"><span class="gfloat">${inner}</span></span>`;
     return mk(spots[0], art(who, "idle", 44))
       + mk(spots[1], `<span class="gbit">${bits[uidx % bits.length]}</span>`)
       + mk(spots[2], `<img src="chars/food/${food}.png" width="36" height="36" style="object-fit:contain" alt="">`)
@@ -263,6 +263,13 @@ function renderPath() {
 
   // scroll the current node into view (below the hero card)
   requestAnimationFrame(() => {
+    // decor must never touch a node, banner, or the start badge — measure and cull
+    const solids = [...map.querySelectorAll(".path-node,.unit-banner,.node-start,.node-buddy")].map(e => e.getBoundingClientRect());
+    map.querySelectorAll(".gdeco").forEach(g => {
+      const r = g.getBoundingClientRect(), pad = 8;
+      if (solids.some(s => r.left < s.right + pad && r.right > s.left - pad && r.top < s.bottom + pad && r.bottom > s.top - pad))
+        g.style.display = "none";
+    });
     const c = map.querySelector(".path-node.cur");
     if (c && curIdx > 2) c.scrollIntoView({ block: "center" });
   });
