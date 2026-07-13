@@ -140,6 +140,15 @@ const LEVELUP_LINES = [
   li => `哇!! LV${li.lv} achieved — ${li.title}, official!`,
   li => `✨ rank up! LV${li.lv} · ${li.title} — the meadow's proud of you!`,
 ];
+/* Doraemon-world variant — a Memory Bread (アンキパン) gag on the level-up line,
+   swapped in via addXP() only when S.theme==="doraemon"; the plain-Chiikawa
+   LEVELUP_LINES above are untouched and still used for the default theme. */
+const LEVELUP_LINES_DORAEMON = [
+  li => `🍞 memory bread, digested! LV${li.lv} · ${li.title}`,
+  li => `🔔 叮!! LV${li.lv} ${li.title} — pocket-approved!`,
+  li => `🎉 LV${li.lv}!! ${li.title} — gadget-tier unlocked!`,
+  li => `🚪 LV${li.lv} achieved — ${li.title}, straight through the door!`,
+];
 const DAY_GOAL_LINES = [
   "🌟 today's goal, done! 今天的目标达成!",
   "🌟 daily goal cleared — go enjoy the rest of your day!",
@@ -156,7 +165,8 @@ function addXP(n) {
   const li = levelInfo(S.xp);
   if (li.lv > before) {
     confetti();
-    setTimeout(() => { toast(shuffle(LEVELUP_LINES)[0](li)); speakAs("呀哈", "usagi"); }, 600);
+    const lines = S.theme === "doraemon" ? LEVELUP_LINES_DORAEMON : LEVELUP_LINES;
+    setTimeout(() => { toast(shuffle(lines)[0](li)); speakAs("呀哈", "usagi"); }, 600);
   } else if (dayBefore < DAY_GOAL && S.dayXP[today()] >= DAY_GOAL) {
     confetti();
     setTimeout(() => toast(shuffle(DAY_GOAL_LINES)[0]), 500);
@@ -272,9 +282,12 @@ function toast(msg) {
   t.textContent = msg; t.classList.add("show");
   clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200);
 }
+/* Doraemon-world confetti sprites — gadget + character emoji, used by confetti()
+   in place of the Chiikawa sprite set only when S.theme==="doraemon". */
+const DORAEMON_CONFETTI = ["🔔", "🚪", "🍞", "⏰", "🔦", "🐱", "✨"];
 function confetti() {
   const box = document.getElementById("confetti");
-  const em = ["🌸", "⭐", "💮", "✨", "🎀", "🍡"];
+  const em = S.theme === "doraemon" ? DORAEMON_CONFETTI : ["🌸", "⭐", "💮", "✨", "🎀", "🍡"];
   for (let i = 0; i < 18; i++) {
     const c = el(`<div class="confetto">${em[i % em.length]}</div>`);
     c.style.left = Math.random() * 100 + "vw";
@@ -670,7 +683,14 @@ function applyPinyinPref() {
 function togglePinyin() {
   S.showPinyin = S.showPinyin === false ? true : false;
   save(); applyPinyinPref();
-  toast(S.showPinyin === false ? "拼音 hidden — tap any blurred pinyin to peek 👀" : "拼音 shown");
+  // Doraemon world: hiding pinyin frames the reveal-on-tap as the Small Light
+  // (スモールライト) / Translation Konnyaku (ほんやくコンニャク) gag instead of
+  // the plain Chiikawa copy — toast text only, gated on S.theme.
+  if (S.theme === "doraemon") {
+    toast(S.showPinyin === false ? "🔦 small light on — tap any blurred pinyin to shrink the mystery!" : "🍡 konnyaku translated — 拼音 shown");
+  } else {
+    toast(S.showPinyin === false ? "拼音 hidden — tap any blurred pinyin to peek 👀" : "拼音 shown");
+  }
 }
 document.getElementById("pinBtn").onclick = togglePinyin;
 applyPinyinPref();
@@ -702,9 +722,13 @@ function renderFriendsInto(view) {
     grid.appendChild(cell);
   });
   view.append(grid);
-  view.append(el(`<h3 style="margin:16px 4px 4px">Snack shelf 🍱 <span class="muted">${Object.keys(S.snacks || {}).length}/${SNACKS.length}</span></h3>`),
-    el(`<div class="muted" style="margin:0 4px 8px">win snacks from quizzes & reviews — tap one to learn its Chinese name!</div>`));
-  const shelf = el(`<div class="friendgrid snacks"></div>`);
+  // Doraemon world: the collectible-snack shelf reskins as the 4D Pocket
+  // (四次元ポケット) — header copy + a scalloped pocket-mouth border on the
+  // shelf container, both gated on S.theme==="doraemon".
+  const isPocket = S.theme === "doraemon";
+  view.append(el(`<h3 style="margin:16px 4px 4px">${isPocket ? "Doraemon's Pocket 🎒" : "Snack shelf 🍱"} <span class="muted">${Object.keys(S.snacks || {}).length}/${SNACKS.length}</span></h3>`),
+    el(`<div class="muted" style="margin:0 4px 8px">${isPocket ? "reach in and pull out a treat — win one from quizzes & reviews, then tap it to learn its Chinese name!" : "win snacks from quizzes & reviews — tap one to learn its Chinese name!"}</div>`));
+  const shelf = el(`<div class="friendgrid snacks${isPocket ? " pocket-shelf" : ""}"></div>`);
   SNACKS.forEach(sn => {
     const n = (S.snacks || {})[sn.id] || 0;
     const art = n ? snackArt(sn, 46) : null;

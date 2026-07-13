@@ -156,8 +156,15 @@ function renderPath() {
   const learned = learnedWordCount();
   const due = dueCards().length;
 
+  // Doraemon world: Take-copter (タケコプター) spins on the hero mascot's head
+  // when the on-path "Doraemon" character (hachiware in the chiikawa cast) is
+  // headlining, and the "start lesson" button becomes an Anywhere Door (どこでも
+  // ドア) instead of the paw print — both purely decorative, doraemon-gated.
+  const isDoraemon = S.theme === "doraemon";
+  const copter = isDoraemon && hero.id === "hachiware" ? " copter" : "";
+  const startIcon = isDoraemon ? "🚪" : "🐾";
   view.append(el(`<div class="path-hero wob">
-      <div class="hero-mascot bob">${art(hero.id, "happy", 74)}</div>
+      <div class="hero-mascot bob${copter}">${art(hero.id, "happy", 74)}</div>
       <div class="hero-bubble wob">${esc(line)}</div>
       <div class="hero-chips">
         <span class="chip">🏅 LV${levelInfo(S.xp).lv}</span>
@@ -166,7 +173,7 @@ function renderPath() {
         <span class="chip">📖 ${learned}/${D.vocab.length + (S.hsk2Open ? (window.YAHA_HSK2 || []).length : 0)} words</span>
         ${due ? `<button class="chip chip-due" id="heroDue">🎴 ${due} due</button>` : ""}
       </div>
-      <button class="btn big pink" id="heroGo">🐾 ${nodeStars(cur.id) ? "keep going" : curIdx === 0 ? "start your journey!" : "continue"} · ${esc(cur.unitRef.emoji)} ${esc(cur.unitRef.title.split(" ").slice(1).join(" ") || cur.unitRef.title)}</button>
+      <button class="btn big pink" id="heroGo">${startIcon} ${nodeStars(cur.id) ? "keep going" : curIdx === 0 ? "start your journey!" : "continue"} · ${esc(cur.unitRef.emoji)} ${esc(cur.unitRef.title.split(" ").slice(1).join(" ") || cur.unitRef.title)}</button>
     </div>`));
   document.getElementById("heroGo").onclick = () => startNode(cur, renderPath);
   const hd = document.getElementById("heroDue");
@@ -286,14 +293,18 @@ function nodeSheet(node) {
     : node.kind === "story" ? `<span class="muted">${esc(node.dialogue.title)} · ${node.dialogue.turns.length} lines</span>`
     : `<span class="muted">${(node.unit.words.length ? node.unit.words.length + " words" : "")}${node.unit.words.length && node.unit.phrases.length ? " + " : ""}${node.unit.phrases.length ? node.unit.phrases.length + " phrases" : ""} · pass 60%+</span>`;
   const shclip = node.kind === "exam" && typeof animGIF === "function" ? animGIF("study", 110) : "";
+  // Doraemon world: the lesson-entry mascot slot frames itself as an Anywhere
+  // Door (どこでもドア) — CSS-only door shape behind the mascot, doraemon-gated.
+  const doorClass = S.theme === "doraemon" ? " anywhere-door" : "";
+  const startLabel = S.theme === "doraemon" ? "🚪 open the door!" : "start! →";
   const ov = el(`<div class="unlock-pop sheet-pop"><div class="sheet wob">
-      <div class="sheet-mascot">${shclip || art(node.host, node.kind === "exam" ? "think" : "happy", 84)}</div>
+      <div class="sheet-mascot${doorClass}">${shclip || art(node.host, node.kind === "exam" ? "think" : "happy", 84)}</div>
       <div class="task-ask">${kindLabel}</div>
       <h3>${esc(node.title)}</h3>
       ${(typeof activeCastSpeak === "function" && activeCastSpeak()[node.host]) ? `<div class="muted small">${esc(shuffle(activeCastSpeak()[node.host])[0])}</div>` : ""}
       <div class="sheet-preview">${preview}</div>
       <div class="done-stars small">${[1, 2, 3].map(n => `<span class="star ${n <= stars ? "on" : ""}">★</span>`).join("")}</div>
-      <button class="btn big pink" id="shGo">${stars ? (stars < 3 ? "replay for ★★★" : "replay ✨") : node.kind === "exam" ? "⚔️ take the exam!" : "start! →"}</button>
+      <button class="btn big pink" id="shGo">${stars ? (stars < 3 ? "replay for ★★★" : "replay ✨") : node.kind === "exam" ? "⚔️ take the exam!" : startLabel}</button>
       <button class="btn small ghost" id="shX">not now</button>
     </div></div>`);
   ov.addEventListener("click", e => { if (e.target === ov) ov.remove(); });
@@ -325,6 +336,7 @@ function renderReview() {
       <h3>${due.length ? due.length + " words due!" : "all caught up ✨"}</h3>
       <div class="muted">${deck} words in your deck</div>
       ${due.length ? `<button class="btn big pink" id="rvStart">🎴 review now</button>` : `<div class="muted" style="margin-top:6px">哈~ ${art("kurimanju", "sleep", 0) ? "" : ""}come back later — resting makes memory stick!</div>`}
+      ${S.theme === "doraemon" && due.length ? `<div class="muted small" style="margin-top:6px">⏰🌀 time machine says: hop back before these fade!</div>` : ""}
     </div>`));
   const rs = document.getElementById("rvStart");
   if (rs) rs.onclick = () => startReview(renderReview);

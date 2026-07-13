@@ -88,6 +88,56 @@
   border-color: #3ea1e8;
 }
 
+/* ---------- Take-copter (タケコプター): a small spinning-propeller accent on
+   the path-hero mascot's head when the on-path "Doraemon" character (hachiware
+   in the chiikawa cast) is headlining. Doraemon-theme + .copter class both
+   required, so this never touches the default Chiikawa hero-mascot. ---------- */
+:root[data-theme="doraemon"] .hero-mascot.copter { position: relative; }
+:root[data-theme="doraemon"] .hero-mascot.copter::before {
+  content: ""; position: absolute; top: -6px; left: 50%; width: 34px; height: 6px;
+  margin-left: -17px; border-radius: 50%;
+  background: linear-gradient(90deg, transparent 0%, #3ea1e8 20%, #3ea1e8 80%, transparent 100%);
+  box-shadow: 0 8px 0 -2px rgba(62,161,232,.55);
+  animation: copter-spin .32s linear infinite;
+  transform-origin: 50% 50%;
+  z-index: 2;
+}
+@keyframes copter-spin {
+  0%   { transform: rotate(0deg) scaleX(1); }
+  50%  { transform: rotate(90deg) scaleX(.16); }
+  100% { transform: rotate(180deg) scaleX(1); }
+}
+
+/* ---------- Anywhere Door (どこでもドア): a CSS-drawn door frames the lesson-
+   entry mascot when a lesson sheet opens, under the Doraemon theme only. ---------- */
+:root[data-theme="doraemon"] .sheet-mascot.anywhere-door {
+  position: relative; display: inline-block; padding: 10px 22px 4px;
+}
+:root[data-theme="doraemon"] .sheet-mascot.anywhere-door::before {
+  content: ""; position: absolute; inset: 0 6px 2px;
+  background: linear-gradient(180deg, #ff6fa5, #f2503f);
+  border: 3px solid #21456e;
+  border-radius: 44% 44% 6px 6px / 30% 30% 6px 6px;
+  z-index: 0;
+}
+:root[data-theme="doraemon"] .sheet-mascot.anywhere-door::after {
+  content: ""; position: absolute; right: 16px; top: 52%; width: 8px; height: 8px;
+  background: #ffcb2b; border: 2px solid #21456e; border-radius: 50%; z-index: 1;
+}
+:root[data-theme="doraemon"] .sheet-mascot.anywhere-door > * { position: relative; z-index: 1; }
+
+/* ---------- 4D Pocket (四次元ポケット): scalloped pocket-mouth border across
+   the top of the snack shelf when it's reskinned as Doraemon's pocket. ---------- */
+:root[data-theme="doraemon"] .pocket-shelf {
+  position: relative; padding-top: 14px; margin-top: 4px;
+}
+:root[data-theme="doraemon"] .pocket-shelf::before {
+  content: ""; position: absolute; top: -4px; left: 0; right: 0; height: 16px;
+  background-image: radial-gradient(circle at 10px 0, transparent 9px, #bfe3fb 10px);
+  background-size: 20px 16px; background-repeat: repeat-x;
+  border-top: 3px solid #21456e;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { scroll-behavior: smooth; overscroll-behavior-y: none; }
 
