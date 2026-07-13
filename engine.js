@@ -49,7 +49,24 @@ function art(kind, mood, size) {
 /* show clips: chars/anim/manifest.json maps moods -> gif files */
 let QQ_ANIM = null;
 fetch("chars/anim/manifest.json").then(r => r.ok ? r.json() : null).then(j => { QQ_ANIM = j; }).catch(() => {});
+const DORAEMON_ANIM_MOOD = {
+  celebrate: "doraemon_hachiware", cry: "doraemon_nobita", eat: "doraemon_hachiware",
+  study: "doraemon_nobita", cheer: "doraemon_dorami", sleep: "doraemon_nobita",
+  hunt: "doraemon_hachiware", market: "doraemon_suneo", group: "doraemon_hachiware",
+  usagi: "doraemon_gian",
+};
+const DORAEMON_ANIM_CLASS = {
+  celebrate: "clip-celebrate", cry: "clip-cry", eat: "clip-eat", study: "clip-study",
+  cheer: "clip-cheer", sleep: "clip-sleep", hunt: "clip-gadget", market: "clip-shopping",
+  group: "clip-group", usagi: "clip-yell",
+};
 function animGIF(mood, h) {
+  if (typeof S !== "undefined" && S.theme === "doraemon") {
+    const id = DORAEMON_ANIM_MOOD[mood];
+    const cls = DORAEMON_ANIM_CLASS[mood];
+    if (!id || !cls || typeof LOCAL_ART === "undefined" || !LOCAL_ART[id]) return "";
+    return `<div class="animclip-static"><img src="${LOCAL_ART[id]}" class="${cls}" style="max-height:${h || 150}px" alt=""></div>`;
+  }
   const list = QQ_ANIM && QQ_ANIM[mood];
   if (!list || !list.length) return "";
   const f = list[Math.floor(Math.random() * list.length)];

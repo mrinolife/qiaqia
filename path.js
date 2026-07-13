@@ -418,13 +418,32 @@ const QQ_SONGS = [
   { id: "oSlaD3GcM9k", emoji: "😂", title: "Usagi moments", sub: "the funniest usagi clips in one video" },
   { id: "PNaW83w8spQ", emoji: "🗯️", title: "蛤?/哈? — 250 episodes of Usagi yelling", sub: "the legendary scream compilation" },
 ];
+const QQ_SONGS_DORAEMON = [
+  { id: "T9R-NPhRi1M", emoji: "🌈", title: "夢をかなえてドラえもん — the 12-year OP (2007–2019)", sub: "mao's opening ran so long it basically raised a generation" },
+  { id: "bJNk3yMvHmw", emoji: "📼", title: "ドラえもんのうた — the ORIGINAL (1979)", sub: "the very first OP, decades before Chiikawa existed — this is ancient history" },
+  { id: "0SNOvS_1M9w", emoji: "🎁", title: "THE GIFT — 平井大", sub: "the movie theme for のび太の月面探査記, warm falsetto included" },
+  { id: "NCOy7Z2TnOY", emoji: "🎤", title: "ジャイアンのリサイタル", sub: "Gian's theme in song form — a concert nobody asked to attend" },
+  { id: "jVPWZwY-Aks", emoji: "🌙", title: "ぼくドラえもん2112", sub: "the ending theme that closed out the whole Ōyama era (1995–2002)" },
+  { id: "Dy-c6mxIe-w", emoji: "🎹", title: "夢をかなえてドラえもん — piano cover", sub: "CANACANA's lovely fan piano arrangement, sheet music and all" },
+  { id: "3CEjncTfaOA", emoji: "😂", title: "ジャイアンはどれだけ音痴なのか？", sub: "an entirely too-serious investigation into exactly how bad that singing voice is" },
+  { id: "JWVaQNXOqcI", emoji: "🕰️", title: "大山ドラ VS わさドラ — voice compared", sub: "Ōyama-era vs Mizuta-era, side by side — 45+ years, same blue robot" },
+  { id: "9UdbUXH-J4Q", emoji: "😭", title: "感動シーン総集編 (fan MAD)", sub: "fan-cut emotional scenes with dialogue — bring tissues, 神回 warning" },
+];
 function renderSongs() {
   view.innerHTML = "";
-  view.append(el(`<div class="backrow"><button class="iconbtn" id="sgBk">←</button>
+  const isDoraemon = S.theme === "doraemon";
+  const list = isDoraemon ? QQ_SONGS_DORAEMON : QQ_SONGS;
+  view.append(el(isDoraemon
+    ? `<div class="backrow"><button class="iconbtn" id="sgBk">←</button>
+    <h3 style="margin:0">🔔 Doraemon Songbook <span class="muted">decades of theme songs</span></h3></div>`
+    : `<div class="backrow"><button class="iconbtn" id="sgBk">←</button>
     <h3 style="margin:0">🎵 Song corner <span class="muted">themes & fan bangers</span></h3></div>`));
-  view.append(el(`<div class="muted" style="margin:0 4px 12px">the real theme songs plus the fan songs everyone memes —
+  view.append(el(isDoraemon
+    ? `<div class="muted" style="margin:0 4px 12px">the real theme songs, from the 1979 original all the way to the modern OPs —
+    they play right here through YouTube. tap a card to load the player. 🔵</div>`
+    : `<div class="muted" style="margin:0 4px 12px">the real theme songs plus the fan songs everyone memes —
     they play right here through YouTube. tap a card to load the player. 🧋</div>`));
-  QQ_SONGS.forEach(s => {
+  list.forEach(s => {
     const card = el(`<div class="card wob" style="margin-bottom:12px;overflow:hidden">
         <button class="songrow" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;padding:2px">
           <span style="font-size:1.5rem">${s.emoji}</span>
@@ -442,8 +461,15 @@ function renderSongs() {
              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
              allowfullscreen loading="lazy"></iframe>`;
         box.style.display = "block";
-        // extra Usagi moment: opening one of her own songs earns a random scream + a bigger bounce
-        if (/usagi/i.test(s.title)) {
+        // extra mascot moment: opening the flagship theme song earns a random line + a bigger bounce
+        if (isDoraemon) {
+          if (/夢をかなえてドラえもん/.test(s.title) && !/cover/i.test(s.title)) {
+            const hachiwareLines = activeCastSpeak().hachiware || [];
+            const l = hachiwareLines[Math.floor(Math.random() * hachiwareLines.length)];
+            if (l) speakAs(l, "hachiware");
+            card.classList.remove("bounce"); void card.offsetWidth; card.classList.add("bounce");
+          }
+        } else if (/usagi/i.test(s.title)) {
           const usagiLines = activeCastSpeak().usagi || [];
           const l = usagiLines[Math.floor(Math.random() * usagiLines.length)];
           if (l) speakAs(l, "usagi");

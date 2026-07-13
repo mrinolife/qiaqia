@@ -1057,6 +1057,45 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   object-fit: cover;
 }
 
+/* ---------- Doraemon-world static clip (no GIF footage sourced —
+   still character art + CSS animation standing in for .animclip) ---------- */
+.animclip-static {
+  max-width: min(320px, 86%); border: 3px solid var(--ink);
+  border-radius: var(--wob-r); box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+  background: #fff3cf;
+  padding: 18px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.animclip-static img {
+  max-height: 130px; max-width: 100%;
+  object-fit: contain;
+}
+@keyframes snooze {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.02) rotate(1.5deg); }
+}
+@keyframes shopflex {
+  0% { transform: scale(.7) rotate(0deg); }
+  55% { transform: scale(1.15) rotate(-6deg); }
+  100% { transform: scale(1) rotate(-3deg); }
+}
+@keyframes huddle {
+  0%, 100% { transform: translateX(0) rotate(-2deg); }
+  50% { transform: translateX(4px) rotate(2deg); }
+}
+.clip-celebrate { animation: pop .7s ease-in-out infinite; }
+.clip-cry { animation: shake .8s ease-in-out infinite; }
+.clip-eat { animation: bounce .9s ease-in-out infinite; }
+.clip-study { animation: nodepulse 2.8s ease-in-out infinite; }
+.clip-cheer { animation: wobble .6s ease-in-out infinite; }
+.clip-sleep { animation: snooze 3s ease-in-out infinite; }
+.clip-gadget { animation: copter-spin 1s linear infinite; }
+.clip-shopping { animation: shopflex 1s ease-in-out infinite; }
+.clip-group { animation: huddle 2.5s ease-in-out infinite; }
+.clip-yell { animation: shake .6s ease-in-out infinite; }
+
 /* ============================================================
    PATH PIZZAZZ — biome zones + ambient world + scene banners
    ============================================================ */
