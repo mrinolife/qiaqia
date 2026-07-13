@@ -79,7 +79,7 @@ h2 { font-size: 1.25rem; }
   padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
   background: rgba(251, 243, 226, .92);
   backdrop-filter: blur(6px);
-  border-bottom: 2.5px solid var(--ink);
+  border-bottom: 2.5px solid rgba(123, 95, 60, .45);
 }
 #topbarInner {
   max-width: 560px; margin: 0 auto;
@@ -127,12 +127,12 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 
 .iconbtn {
   width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--card); border: 2.5px solid var(--ink);
+  background: var(--card); border: 2.5px solid #8a6f52;
   border-radius: 14px;
-  font-size: 1.15rem; box-shadow: 0 3px 0 var(--ink);
+  font-size: 1.15rem; box-shadow: 0 3px 0 rgba(123, 95, 75, .45), inset 0 0 0 2px rgba(255, 255, 255, .75);
   transition: transform .06s, box-shadow .06s;
 }
-.iconbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.iconbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(123, 95, 75, .45), inset 0 0 0 2px rgba(255, 255, 255, .75); }
 .iconbtn.xl { width: 72px; height: 72px; font-size: 1.9rem; background: var(--blue); }
 
 /* ---------- cards & text ---------- */
@@ -546,7 +546,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
   display: flex; justify-content: space-around;
   background: var(--card);
-  border-top: 2.5px solid var(--ink);
+  border-top: 2.5px solid rgba(123, 95, 60, .45);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
 }
 .tab {
@@ -558,7 +558,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   transition: transform .1s;
 }
 .tab span { font-size: 1.35rem; line-height: 1.15; filter: grayscale(.6) opacity(.7); transition: filter .15s, transform .15s; }
-.tab.active { color: var(--ink); }
+.tab.active { color: var(--ink); background: linear-gradient(180deg, #f4e5c0, #eeda9f); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .6), 0 2px 0 rgba(123, 95, 60, .3); }
 .tab[data-tab="home"].active    { color: var(--blue-deep); }
 .tab[data-tab="cards"].active   { color: var(--rose); }
 .tab[data-tab="quiz"].active    { color: #a86e0c; }
@@ -725,9 +725,9 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
     left: 50%; right: auto; bottom: 12px;
     transform: translateX(-50%);
     width: min(560px, calc(100vw - 24px));
-    border: 2.5px solid var(--ink);
+    border: 2.5px solid #8a6f52;
     border-radius: var(--wob-r);
-    box-shadow: 0 4px 0 rgba(74, 63, 53, .3);
+    box-shadow: 0 4px 0 rgba(123, 95, 60, .35), inset 0 0 0 2px rgba(255, 255, 255, .6);
     padding: 6px 8px;
   }
   body { padding-bottom: 96px; }
