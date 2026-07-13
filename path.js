@@ -188,26 +188,30 @@ function renderPath() {
     town:   ["🏮", "⭐", "🎏", "🧋", "✨"],
     market: ["🍡", "🧋", "🍜", "🛍️", "✨"],
   };
-  const sideDecor = (idx, biome) => {
-    const side = idx % 2 ? "L" : "R";
-    const kind = idx % 5;
-    if (kind === 1) { // character cameo peeking by the trail
-      const who = SIDE_CAST[(idx * 7 + 3) % SIDE_CAST.length];
-      return `<span class="path-side ${side} sway">${art(who, "idle", 46)}</span>`;
-    }
-    if (kind === 3) { // snack on the trail
-      const f = SIDE_FOOD[(idx * 5 + 1) % SIDE_FOOD.length];
-      return `<span class="path-side ${side} sway"><img src="chars/food/${f}.png" width="38" height="38" style="object-fit:contain" alt=""></span>`;
-    }
+  // curated per-unit decor: fixed %-based spots inside the meadow (never clipped,
+  // never on the footpath), one character + one snack + nature bits per unit
+  const DECO_SPOTS = [
+    [{ x: 6, y: 36 }, { x: 94, y: 30 }, { x: 7, y: 74 }, { x: 93, y: 64 }],
+    [{ x: 94, y: 40 }, { x: 6, y: 30 }, { x: 93, y: 78 }, { x: 7, y: 62 }],
+    [{ x: 6, y: 44 }, { x: 94, y: 34 }, { x: 7, y: 68 }, { x: 93, y: 82 }],
+  ];
+  const groupDecor = (uidx, biome) => {
+    const spots = DECO_SPOTS[uidx % DECO_SPOTS.length];
     const bits = BIOME_BITS[biome];
-    const b1 = bits[(idx * 3) % bits.length], b2 = bits[(idx * 3 + 2) % bits.length];
-    return `<span class="path-side ${side} bits sway">${b1}<small>${b2}</small></span>`;
+    const who = SIDE_CAST[(uidx * 7 + 3) % SIDE_CAST.length];
+    const food = SIDE_FOOD[(uidx * 5 + 1) % SIDE_FOOD.length];
+    const mk = (s, inner) => `<span class="gdeco" style="left:${s.x}%;top:${s.y}%"><span class="gfloat">${inner}</span></span>`;
+    return mk(spots[0], art(who, "idle", 44))
+      + mk(spots[1], `<span class="gbit">${bits[uidx % bits.length]}</span>`)
+      + mk(spots[2], `<img src="chars/food/${food}.png" width="36" height="36" style="object-fit:contain" alt="">`)
+      + mk(spots[3], `<span class="gbit">${bits[(uidx + 2) % bits.length]}</span>`);
   };
   activeUnits().forEach((u, uidx) => {
     const biome = BIOMES[uidx % BIOMES.length];
     const uStars = u.nodes.reduce((a, n) => a + nodeStars(n.id), 0);
     const uDone = u.nodes.filter(n => nodeStars(n.id)).length;
     const group = el(`<div class="unit-group biome-${biome}"></div>`);
+    group.insertAdjacentHTML("beforeend", groupDecor(uidx, biome));
     group.append(el(`<div class="unit-banner card">
         <div class="unit-overlay">
           <span class="unit-host">${art(u.host, uDone === u.nodes.length ? "cheer" : "idle", 46)}</span>
@@ -223,11 +227,11 @@ function renderPath() {
       const off = OFFS[idx % 4];
       const row = el(`<div class="path-row" style="--off:${off}">
           <button class="path-node ${n.kind} ${stars ? "done" : ""} ${!unlocked ? "locked" : ""} ${isCur ? "cur" : ""}" data-i="${idx}">
-            <span class="node-face">${n.kind === "exam" ? "试" : esc(n.label)}</span>
+            <span class="node-face${[...(n.label || "")].length > 1 && n.kind !== "exam" ? " small" : ""}">${n.kind === "exam" ? "试" : esc(n.label)}</span>
             ${!unlocked ? `<span class="node-lock">🔒</span>` : ""}
             ${stars ? `<span class="node-stars">${"★".repeat(stars)}</span>` : ""}
           </button>
-          ${isCur ? `<span class="node-buddy bob">${art(n.host, "idle", 52)}</span><span class="node-start">开始!</span>` : sideDecor(idx, biome)}
+          ${isCur ? `<span class="node-buddy bob">${art(n.host, "idle", 52)}</span><span class="node-start">开始!</span>` : ""}
         </div>`);
       const btn = row.querySelector(".path-node");
       btn.onclick = () => {

@@ -249,11 +249,12 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 }
 .unit-banner {
   width: 100%; display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; margin: 18px 0 6px;
-  background: linear-gradient(180deg, #f0dcae, #e8d09a); position: relative; z-index: 1;
-  border-color: #8a6f52;
-  box-shadow: 0 4px 0 rgba(123, 95, 60, .35);
+  padding: 13px 15px; margin: 18px 0 6px;
+  background: linear-gradient(180deg, #fdf7e6, #f7ecce); position: relative; z-index: 1;
+  border: 3px solid #6f5335; border-radius: 22px;
+  box-shadow: 0 5px 0 rgba(111, 83, 53, .45), inset 0 0 0 3px rgba(255, 255, 255, .8);
 }
+.unit-banner .unit-name b { color: #6f5335; }
 .unit-banner .unit-host { flex: none; }
 .unit-name { font-size: .95rem; }
 .unit-name .muted { font-size: .76rem; }
@@ -272,10 +273,22 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 }
 .path-side.L { right: calc(50% + var(--sideoff, 104px)); }
 .path-side.R { left: calc(50% + var(--sideoff, 104px)); }
-.path-side img {
+/* curated per-unit meadow decor: %-anchored inside the map, so never clipped */
+.gdeco {
+  position: absolute; pointer-events: none; line-height: 0; z-index: 0;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 2px rgba(74, 63, 53, .12));
+}
+.gdeco img, .path-side img {
   border-radius: 50%; background: #fff;
-  border: 2.5px solid var(--ink); box-shadow: 0 3px 0 rgba(74, 63, 53, .25);
+  border: 2.5px solid #8a6f52; box-shadow: 0 3px 0 rgba(123, 95, 60, .3);
   object-fit: cover; padding: 2px;
+}
+.gdeco .gbit { font-size: 1.3rem; line-height: 1; opacity: .85; }
+.gfloat { display: inline-block; animation: gfloat 6s ease-in-out infinite; }
+@keyframes gfloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(4deg); }
 }
 .path-side.bits { font-size: 1.35rem; line-height: 1; opacity: .85; }
 .path-side.bits small { font-size: .8em; margin-left: 3px; opacity: .8; }
@@ -294,7 +307,12 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   position: relative;
 }
 .path-node:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(123, 95, 75, .5), inset 0 0 0 3px rgba(255, 255, 255, .85); }
-.path-node .node-face { font-size: 1.7rem; font-weight: 700; line-height: 1; }
+.path-node .node-face {
+  font-size: 1.65rem; font-weight: 900; line-height: 1; color: #7b5f4b;
+  max-width: 82%; overflow: hidden; text-align: center; white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
+}
+.path-node .node-face.small { font-size: 1.05rem; }
 .path-node.words .node-face { color: var(--ink); }
 .path-node.phrases { background: var(--blue); }
 .path-node.story { background: var(--mint); }
