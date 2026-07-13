@@ -174,10 +174,35 @@ function renderPath() {
   const map = el(`<div class="path-map"></div>`);
   map.append(el(`<div class="path-ambient">
       <span class="amb a1">🌸</span><span class="amb a2">✨</span><span class="amb a3">🍃</span>
-      <span class="amb a4">⭐</span><span class="amb a5">🌸</span></div>`));
+      <span class="amb a4">⭐</span><span class="amb a5">🌸</span><span class="amb a6">🧋</span>
+      <span class="amb a7">🌼</span><span class="amb a8">✨</span><span class="amb a9">🍡</span></div>`));
   let gIdx = 0;
   const OFFS = [0, -1, 0, 1]; // winding pattern
   const BIOMES = ["meadow", "forest", "town", "market"];
+  // trailside decor: REAL art only (official character/food PNGs) + emoji nature bits
+  const SIDE_CAST = ["chiikawa", "hachiware", "usagi", "momonga", "kani", "shisa", "rakko", "kurimanju", "yoroi", "chimera"];
+  const SIDE_FOOD = ["ramen", "hamburg", "parfait", "pancake", "mangoice", "jipai", "beer"];
+  const BIOME_BITS = {
+    meadow: ["🌸", "🌼", "🍀", "🌷", "✨"],
+    forest: ["🍄", "🍃", "🌰", "🐿️", "✨"],
+    town:   ["🏮", "⭐", "🎏", "🧋", "✨"],
+    market: ["🍡", "🧋", "🍜", "🛍️", "✨"],
+  };
+  const sideDecor = (idx, biome) => {
+    const side = idx % 2 ? "L" : "R";
+    const kind = idx % 5;
+    if (kind === 1) { // character cameo peeking by the trail
+      const who = SIDE_CAST[(idx * 7 + 3) % SIDE_CAST.length];
+      return `<span class="path-side ${side} sway">${art(who, "idle", 46)}</span>`;
+    }
+    if (kind === 3) { // snack on the trail
+      const f = SIDE_FOOD[(idx * 5 + 1) % SIDE_FOOD.length];
+      return `<span class="path-side ${side} sway"><img src="chars/food/${f}.png" width="38" height="38" style="object-fit:contain" alt=""></span>`;
+    }
+    const bits = BIOME_BITS[biome];
+    const b1 = bits[(idx * 3) % bits.length], b2 = bits[(idx * 3 + 2) % bits.length];
+    return `<span class="path-side ${side} bits sway">${b1}<small>${b2}</small></span>`;
+  };
   activeUnits().forEach((u, uidx) => {
     const biome = BIOMES[uidx % BIOMES.length];
     const uStars = u.nodes.reduce((a, n) => a + nodeStars(n.id), 0);
@@ -201,7 +226,7 @@ function renderPath() {
             <span class="node-face">${!unlocked ? "🔒" : n.kind === "exam" ? "试" : esc(n.label)}</span>
             ${stars ? `<span class="node-stars">${"★".repeat(stars)}</span>` : ""}
           </button>
-          ${isCur ? `<span class="node-buddy bob">${art(n.host, "idle", 52)}</span><span class="node-start">开始!</span>` : ""}
+          ${isCur ? `<span class="node-buddy bob">${art(n.host, "idle", 52)}</span><span class="node-start">开始!</span>` : sideDecor(idx, biome)}
         </div>`);
       const btn = row.querySelector(".path-node");
       btn.onclick = () => {
@@ -388,6 +413,7 @@ function renderProfile() {
   view.querySelectorAll("[data-switch]").forEach(b => b.onclick = () => switchProfile(b.dataset.switch));
   view.append(el(`<h2 class="page-title">🌸 ${esc(activeProfileName())}'s page</h2>`));
   const li = levelInfo(S.xp);
+  const usagiLines = CAST_SPEAK.usagi || [];
   const lic = el(`<div class="license wob">
       <div class="lic-head"><span class="lic-title">討伐ライセンス · HUNTER LICENSE</span><span class="lic-yaha">ヤハ!</span></div>
       <div class="lic-body">
@@ -402,8 +428,10 @@ function renderProfile() {
       </div>
       <div class="lic-foot"><span>恰恰学院 QIAQIA ACADEMY</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
     </div>`);
-  lic.onclick = () => { speakAs("呀哈", "usagi"); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
+  lic.onclick = () => { const l = usagiLines[Math.floor(Math.random() * usagiLines.length)]; if (l) speakAs(l, "usagi"); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
   view.append(lic);
+  // usagi welcomes on profile — random scream
+  setTimeout(() => { const l = usagiLines[Math.floor(Math.random() * usagiLines.length)]; if (l) speakAs(l, "usagi"); }, 400);
   view.append(el(`<div class="card wob">
       <div class="cardrow" style="justify-content:space-around;text-align:center">
         <span>🔥<br><b>${S.streak.count}</b><br><span class="muted">streak</span></span>
@@ -418,6 +446,7 @@ function renderProfile() {
   const trip = el(`<div class="card yellow wob"><h3>✈️ Taiwan trip</h3>
       <div class="cardrow" style="align-items:center"><b style="font-size:1.6rem">${tripDays()}</b> days to go ·
       <span style="font-weight:800">${esc(tripFmt)}</span></div></div>`);
+  trip.onclick = () => { const l = usagiLines[Math.floor(Math.random() * usagiLines.length)]; if (l) speakAs(l, "usagi"); trip.classList.remove("bounce"); void trip.offsetWidth; trip.classList.add("bounce"); };
   view.append(trip);
   const fg = el(`<button class="btn big yellow" style="margin:10px auto;display:block">🍜 Food Gallery — see the real show art</button>`);
   fg.onclick = renderFoodGallery;

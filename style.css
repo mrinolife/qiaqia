@@ -244,7 +244,27 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .path-row {
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: center;
-  transform: translateX(calc(var(--off, 0) * 74px));
+  transform: translateX(calc(var(--off, 0) * var(--wind, 74px)));
+}
+/* trailside decor: real character/food PNGs + biome bits beside the path */
+.path-side {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  pointer-events: none; line-height: 0; z-index: 0;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .08));
+}
+.path-side.L { right: calc(50% + var(--sideoff, 104px)); }
+.path-side.R { left: calc(50% + var(--sideoff, 104px)); }
+.path-side img {
+  border-radius: 50%; background: #fff;
+  border: 2.5px solid var(--ink); box-shadow: 0 3px 0 rgba(74, 63, 53, .25);
+  object-fit: cover; padding: 2px;
+}
+.path-side.bits { font-size: 1.35rem; line-height: 1; opacity: .85; }
+.path-side.bits small { font-size: .8em; margin-left: 3px; opacity: .8; }
+.sway { animation: sway 5s ease-in-out infinite; }
+@keyframes sway {
+  0%, 100% { transform: translateY(-50%) rotate(-4deg); }
+  50% { transform: translateY(-46%) rotate(5deg); }
 }
 .path-node {
   width: 78px; height: 78px; flex: none;
@@ -687,20 +707,33 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 
 /* ---------- real desktop shell: sidebar nav + main + stats rail ---------- */
 @media (min-width: 900px) {
-  #topbarInner { max-width: 1200px; }
+  #topbarInner { max-width: 1360px; }
 
   #tabs { display: none; }
 
   #appShell {
     display: grid;
-    grid-template-columns: 200px minmax(0, 700px) 260px;
-    gap: 28px;
+    grid-template-columns: 210px minmax(0, 840px) 280px;
+    gap: 32px;
     justify-content: center;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px 20px 40px;
     align-items: start;
   }
+
+  /* the path becomes a real world map on desktop: wider winding, bigger nodes,
+     decor pushed further out from the trail */
+  .path-row { --wind: 150px; --sideoff: 220px; }
+  .path-node { width: 92px; height: 92px; }
+  .path-node .node-face { font-size: 2rem; }
+  .path-side img { transform: scale(1.3); transform-origin: center; }
+  .path-side.bits { font-size: 1.7rem; }
+  .path-hero { max-width: 680px; margin-left: auto; margin-right: auto; }
+  .unit-banner { max-width: 560px; margin-left: auto; margin-right: auto; }
+  .node-buddy { left: calc(50% + 58px); }
+  .node-start { right: calc(50% + 58px); }
+  .path-map { gap: 26px; }
 
   #sideNav, #sideStats { display: flex; flex-direction: column; }
 
@@ -763,6 +796,10 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .a3 { left: 20%; top: 55%; animation-duration: 18s; animation-delay: 3s; font-size: 1.1rem; }
 .a4 { right: 8%; top: 68%; animation-duration: 15s; animation-delay: .8s; }
 .a5 { left: 45%; top: 8%;  animation-duration: 20s; animation-delay: 2.2s; font-size: 1rem; }
+.a6 { right: 20%; top: 12%; animation-duration: 17s; animation-delay: 4s; }
+.a7 { left: 6%;  top: 78%; animation-duration: 14s; animation-delay: 2.8s; }
+.a8 { right: 6%;  top: 88%; animation-duration: 19s; animation-delay: 1.2s; font-size: 1rem; }
+.a9 { left: 32%; top: 34%; animation-duration: 16s; animation-delay: 5s; font-size: 1.1rem; }
 @keyframes drift {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
   50% { transform: translate(14px, -22px) rotate(12deg); }

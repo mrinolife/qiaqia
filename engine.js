@@ -38,12 +38,10 @@ const SFX = (() => {
 /* ---------- art helper: agent pack first, legacy fallback ---------- */
 function art(kind, mood, size) {
   const s = size || 64;
-  // official art (local chars/*.png) wins for authenticity; motion classes carry the mood
+  // official art (local chars/*.png) only for authenticity; motion classes carry the mood
   if (typeof LOCAL_ART !== "undefined" && LOCAL_ART[kind])
     return `<img src="${LOCAL_ART[kind]}" width="${s}" height="${s}" style="object-fit:contain" alt="">`;
-  const A = window.QQ_ART;
-  if (A && A.mascot) { const out = A.mascot(kind, mood || "idle", s); if (out) return out; }
-  return mascotSVG(kind, s);
+  return "";
 }
 /* show clips: chars/anim/manifest.json maps moods -> gif files */
 let QQ_ANIM = null;
@@ -56,8 +54,7 @@ function animGIF(mood, h) {
 }
 
 function deco(name, size) {
-  const A = window.QQ_ART;
-  return (A && A.deco && A.deco(name, size || 28)) || "";
+  return "";
 }
 
 /* ---------- SRS (per word id) ---------- */

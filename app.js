@@ -6,7 +6,7 @@
 "use strict";
 
 /* ================= state ================= */
-const QQ_BUILD = "b12-audio-check";
+const QQ_BUILD = "b13-chibi-voices";
 const LS_KEY = "qq_state_v1";
 const PROFILES_KEY = "qq_profiles_v1";
 const DEFAULT_TRIP = "2026-08-25";
@@ -253,7 +253,7 @@ const MASCOT_NAMES = { chiikawa: "ちいかわ Chiikawa", hachiware: "ハチワ�
 const CAST_SPEAK = {
   chiikawa:  ["今天也加油!", "小小的努力也是努力!", "呜呜…我们一起学吧"],
   hachiware: ["太好了!", "没关系, 慢慢来~", "能学会的!"],
-  usagi:     ["呀哈——!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈!"],
+  usagi:     ["呀哈——!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈!", "呀哈", "呜哇哇哇!!", "呀哈!! 好耶!!"],
   momonga:   ["夸我!!", "看我看我!"],
   kani:      ["加油加油!", "好耶!"],
   kurimanju: ["哈~ 学完喝一杯奶茶吧", "慢慢学, 慢慢吃~"],
@@ -285,7 +285,7 @@ function speakAs(text, castId, rate, onend) {
 const CAST = [
   { id: "chiikawa",  unlock: 0,    blurb: "small, brave, tries so hard 🥺", lines: ["今天也加油! (jiāyóu — you got this!)", "小小的努力也是努力! tiny effort still counts!", "呜呜…我们一起学吧 — let's learn together!"] },
   { id: "hachiware", unlock: 0,    blurb: "the optimist — 'we can do it!'", lines: ["太好了! ready for a tiny lesson?", "没关系, 慢慢来~ no rush, we'll get there!", "能学会的! we can totally do this!"] },
-  { id: "usagi",     unlock: 0,    blurb: "pure chaos. pure joy. 呀哈!!", lines: ["呀哈——!! LESSON TIME!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈! quiz? QUIZ!!"] },
+  { id: "usagi",     unlock: 0,    blurb: "pure chaos. pure joy. 呀哈!!", lines: ["呀哈——!! LESSON TIME!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈! quiz? QUIZ!!", "呀哈!! 好耶!!", "呜哇哇哇!! chaos mode!!", "乌拉!!"] },
   { id: "momonga",   unlock: 100,  blurb: "wants ALL the praise", lines: ["夸我!! praise me!! …and yourself too!", "看我看我! now look at your streak!!"] },
   { id: "kani",      unlock: 220,  blurb: "snip snip! your cheeriest senpai", lines: ["加油加油! ✂️ snip those flashcards!", "好耶! another lesson down!"] },
   { id: "kurimanju", unlock: 360,  blurb: "sleepy gourmet elder. 哈~", lines: ["哈~ 学完喝一杯奶茶吧 (milk tea after this)", "慢慢学, 慢慢吃~ learn slow, eat slow"] },
@@ -371,152 +371,7 @@ function snackArt(sn, size) {
 function mascotSVG(kind, size) {
   const s = size || 96;
   if (LOCAL_ART[kind]) return `<img src="${LOCAL_ART[kind]}" width="${s}" height="${s}" style="object-fit:contain" alt="">`;
-  const ink = "#4a3b30";
-  const blush = `<circle cx="19" cy="38" r="3.6" fill="#ffc4d0" opacity=".85"/><circle cx="45" cy="38" r="3.6" fill="#ffc4d0" opacity=".85"/>`;
-  let body = "";
-  if (kind === "chiikawa") {
-    // small white bear-hamster: round ears on a round head, wide-set dot eyes, tiny ω mouth
-    body = `
-      <circle cx="17" cy="14" r="6.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="47" cy="14" r="6.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="17" cy="14" r="3" fill="#ffe3ec"/><circle cx="47" cy="14" r="3" fill="#ffe3ec"/>
-      <path d="M10 32 a22 21 0 1 0 44 0 a22 21 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
-      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="14" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="50" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="23" cy="31" r="2.5" fill="${ink}"/><circle cx="41" cy="31" r="2.5" fill="${ink}"/>
-      ${blush}
-      <path d="M29 38.5 q1.5 2 3 0 q1.5 2 3 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
-  } else if (kind === "hachiware") {
-    // white cat, blue-grey cap split by a white blaze down the forehead, big happy open smile, tail
-    body = `
-      <path d="M46 52 q10 2 8 -8" stroke="${ink}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <path d="M12 24 L14 7 L26 15 Z" fill="#6c92b4" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M52 24 L50 7 L38 15 Z" fill="#6c92b4" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M10 32 a22 21 0 1 0 44 0 a22 21 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
-      <path d="M10.5 30 Q13 13 32 11.5 Q51 13 53.5 30 Q44 26.5 37.5 27.5 Q33.5 28 32 30.5 Q30.5 28 26.5 27.5 Q20 26.5 10.5 30 Z" fill="#6c92b4" stroke="none"/>
-      <path d="M32 28 L28.8 12.2 Q32 11.6 35.2 12.2 Z" fill="#fff" stroke="none"/>
-      <path d="M10 32 a22 21 0 1 0 44 0 a22 21 0 1 0 -44 0" fill="none" stroke="${ink}" stroke-width="2.4"/>
-      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="14" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="50" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="23" cy="32" r="2.5" fill="${ink}"/><circle cx="41" cy="32" r="2.5" fill="${ink}"/>
-      ${blush}
-      <path d="M26 38 q6 6.5 12 0 z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>`;
-  } else if (kind === "usagi") {
-    // pale-yellow rabbit: very long upright ears, round wide eyes, big open ヤハ mouth
-    body = `
-      <ellipse cx="23" cy="8" rx="4.6" ry="13" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
-      <ellipse cx="41" cy="8" rx="4.6" ry="13" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
-      <ellipse cx="23" cy="9" rx="2" ry="8" fill="#ffe3ec"/><ellipse cx="41" cy="9" rx="2" ry="8" fill="#ffe3ec"/>
-      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#f6ecc0" stroke="${ink}" stroke-width="2.4"/>
-      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#f6ecc0" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="13" cy="48" r="4" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
-      <circle cx="51" cy="48" r="4" fill="#f6ecc0" stroke="${ink}" stroke-width="2"/>
-      <circle cx="23" cy="31" r="3" fill="${ink}"/><circle cx="41" cy="31" r="3" fill="${ink}"/>
-      <circle cx="24" cy="30" r="1" fill="#fff"/><circle cx="42" cy="30" r="1" fill="#fff"/>
-      ${blush}
-      <ellipse cx="32" cy="40" rx="4.5" ry="5" fill="#e0526e" stroke="${ink}" stroke-width="1.8"/>`;
-  } else if (kind === "momonga") {
-    // little white flying squirrel: giant sparkly eyes, big grey tail curling up behind
-    body = `
-      <path d="M44 54 q16 -2 12 -26 q-3 -10 -10 -12 q6 12 2 24 q-2 8 -4 14z" fill="#cfd6de" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <circle cx="18" cy="15" r="5.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="46" cy="15" r="5.5" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="18" cy="15" r="2.4" fill="#ffe3ec"/><circle cx="46" cy="15" r="2.4" fill="#ffe3ec"/>
-      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
-      <ellipse cx="32" cy="56" rx="11" ry="6.5" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="14" cy="49" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="50" cy="49" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="23" cy="31" r="4.6" fill="${ink}"/><circle cx="41" cy="31" r="4.6" fill="${ink}"/>
-      <circle cx="24.6" cy="29.3" r="1.7" fill="#fff"/><circle cx="42.6" cy="29.3" r="1.7" fill="#fff"/>
-      <circle cx="21.8" cy="32.8" r=".9" fill="#fff"/><circle cx="39.8" cy="32.8" r=".9" fill="#fff"/>
-      ${blush}
-      <path d="M29.5 39 q2.5 2.6 5 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
-  } else if (kind === "kurimanju") {
-    // the chestnut-bun elder: brown dome on cream bun, sleepy half-lidded eyes
-    body = `
-      <path d="M10 34 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#fdf3dd" stroke="${ink}" stroke-width="2.4"/>
-      <path d="M11.5 29 Q14 12.5 32 12 Q50 12.5 52.5 29 Q47 33.5 32 33.5 Q17 33.5 11.5 29 Z" fill="#a9724b" stroke="${ink}" stroke-width="1.6"/>
-      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fdf3dd" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="14" cy="50" r="4" fill="#fdf3dd" stroke="${ink}" stroke-width="2"/>
-      <circle cx="50" cy="50" r="4" fill="#fdf3dd" stroke="${ink}" stroke-width="2"/>
-      <path d="M20.5 38 q2.5 1.6 5 0" stroke="${ink}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <path d="M38.5 38 q2.5 1.6 5 0" stroke="${ink}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      ${blush.replace(/cy="38"/g, 'cy="43"')}
-      <path d="M30 44.5 q2 1.6 4 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
-  } else if (kind === "rakko") {
-    // sea-otter senpai: brown coat, pale face, small round ears, cool calm eyes
-    body = `
-      <circle cx="15" cy="16" r="5" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
-      <circle cx="49" cy="16" r="5" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
-      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#8b6748" stroke="${ink}" stroke-width="2.4"/>
-      <path d="M15 30 Q17 17.5 32 17 Q47 17.5 49 30 Q49 44 32 45 Q15 44 15 30 Z" fill="#f3e6cf" stroke="none"/>
-      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#8b6748" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="14" cy="50" r="4" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
-      <circle cx="50" cy="50" r="4" fill="#8b6748" stroke="${ink}" stroke-width="2"/>
-      <circle cx="24" cy="30" r="2.4" fill="${ink}"/><circle cx="40" cy="30" r="2.4" fill="${ink}"/>
-      <path d="M22 25.5 l4.5 -1" stroke="${ink}" stroke-width="1.6" stroke-linecap="round"/>
-      <path d="M42 25.5 l-4.5 -1" stroke="${ink}" stroke-width="1.6" stroke-linecap="round"/>
-      ${blush}
-      <ellipse cx="32" cy="36.5" rx="2" ry="1.4" fill="${ink}"/>
-      <path d="M32 38 q0 2 0 2 M32 40 q-2.5 2 -5 .6 M32 40 q2.5 2 5 .6" stroke="${ink}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
-  } else if (kind === "kani") {
-    // kani-chan: cheery red crab, big claws up, eyes on top
-    body = `
-      <circle cx="20" cy="13" r="3.4" fill="#ef7d67" stroke="${ink}" stroke-width="1.8"/>
-      <circle cx="44" cy="13" r="3.4" fill="#ef7d67" stroke="${ink}" stroke-width="1.8"/>
-      <path d="M20 16 l0 6 M44 16 l0 6" stroke="${ink}" stroke-width="1.8"/>
-      <path d="M6 30 q-4 -10 6 -12 q9 -2 8 8 q-1 6 -6 7 Z" fill="#ef7d67" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M58 30 q4 -10 -6 -12 q-9 -2 -8 8 q1 6 6 7 Z" fill="#ef7d67" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M12 38 a20 17 0 1 0 40 0 a20 17 0 1 0 -40 0" fill="#ef7d67" stroke="${ink}" stroke-width="2.4"/>
-      <path d="M18 55 l-3 5 M26 57 l-1 5 M38 57 l1 5 M46 55 l3 5" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>
-      <circle cx="25" cy="35" r="2.4" fill="${ink}"/><circle cx="39" cy="35" r="2.4" fill="${ink}"/>
-      <circle cx="20" cy="41" r="3.4" fill="#ffc4d0" opacity=".9"/><circle cx="44" cy="41" r="3.4" fill="#ffc4d0" opacity=".9"/>
-      <path d="M28.5 41.5 q3.5 3.4 7 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
-  } else if (kind === "yoroi") {
-    // yoroi-san: kind knight in grey armor, gentle eyes in the visor slit
-    body = `
-      <path d="M13 30 q0 -20 19 -20 q19 0 19 20 l0 8 q0 6 -6 6 l-26 0 q-6 0 -6 -6 Z" fill="#b9c0c9" stroke="${ink}" stroke-width="2.4"/>
-      <path d="M28 4 l8 0 l-1.5 7 l-5 0 Z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>
-      <path d="M17 27 l30 0 l0 9 q-15 4 -30 0 Z" fill="#4e5560" stroke="${ink}" stroke-width="2"/>
-      <circle cx="25" cy="31.5" r="2.2" fill="#fff"/><circle cx="39" cy="31.5" r="2.2" fill="#fff"/>
-      <path d="M13 33 q-6 1 -5 8 M51 33 q6 1 5 8" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <ellipse cx="32" cy="55" rx="13" ry="7" fill="#b9c0c9" stroke="${ink}" stroke-width="2.2"/>
-      <path d="M22 50 l20 0" stroke="${ink}" stroke-width="1.6"/>`;
-  } else if (kind === "chimera") {
-    // the winged one: white cat-ish with tiny horn and little wings
-    body = `
-      <path d="M8 30 q-7 -6 -2 -12 q6 -5 10 2 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M56 30 q7 -6 2 -12 q-6 -5 -10 2 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M15 21 L18 9 L27 16 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M49 21 L46 9 L37 16 Z" fill="#fff" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M30 8 q2 -6 5 -1 l-2 5 Z" fill="#ffe9a8" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#fff" stroke="${ink}" stroke-width="2.4"/>
-      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#fff" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="14" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="50" cy="50" r="4" fill="#fff" stroke="${ink}" stroke-width="2"/>
-      <circle cx="23" cy="31" r="2.7" fill="${ink}"/><circle cx="41" cy="31" r="2.7" fill="${ink}"/>
-      <circle cx="24" cy="30" r="1" fill="#fff"/><circle cx="42" cy="30" r="1" fill="#fff"/>
-      ${blush}
-      <path d="M26 38 q6 5 12 0 z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>`;
-  } else { // shisa
-    // the little lion-dog: tan coat, curly mane bumps, pointy ears, happy fangy grin
-    body = `
-      <path d="M14 22 L15 8 L26 15 Z" fill="#e8a75f" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M50 22 L49 8 L38 15 Z" fill="#e8a75f" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M10 33 a22 20 0 1 0 44 0 a22 20 0 1 0 -44 0" fill="#e8a75f" stroke="${ink}" stroke-width="2.4"/>
-      <path d="M17 17 q3 -4 6 0 q3 -4 6 0 q3 -4 6 0 q3 -4 6 0 q3 -4 6 0 l-2 6 q-13 -4 -26 0 Z" fill="#c77f3d" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/>
-      <ellipse cx="32" cy="56" rx="12" ry="7" fill="#e8a75f" stroke="${ink}" stroke-width="2.2"/>
-      <circle cx="14" cy="50" r="4" fill="#e8a75f" stroke="${ink}" stroke-width="2"/>
-      <circle cx="50" cy="50" r="4" fill="#e8a75f" stroke="${ink}" stroke-width="2"/>
-      <circle cx="23" cy="31" r="2.6" fill="${ink}"/><circle cx="41" cy="31" r="2.6" fill="${ink}"/>
-      ${blush}
-      <path d="M25 38 q7 6 14 0 z" fill="#e0526e" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/>
-      <path d="M27.5 38.6 l1.6 2.6 l1.6 -2.4 Z" fill="#fff" stroke="${ink}" stroke-width="1"/>
-      <path d="M33.3 38.8 l1.6 2.4 l1.6 -2.6 Z" fill="#fff" stroke="${ink}" stroke-width="1"/>`;
-  }
-  return `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true">${body}</svg>`;
+  return "";
 }
 document.getElementById("brandMascot").innerHTML = mascotSVG("usagi", 38);
 
@@ -840,19 +695,6 @@ function sceneSVG(name) {
     <rect x="157" y="34" width="6" height="10" fill="#c99e6a" stroke="#4a3b30" stroke-width="1.2"/></svg>`;
 }
 
-/* the 討伐 target: a wobbly little monster that shrinks as you answer right */
-function monsterSVG(frac) {
-  const sc = (0.45 + 0.55 * frac).toFixed(2);
-  const mood = frac > 0.6 ? `<path d="M24 40 q4 -3 8 0" stroke="#4a3b30" stroke-width="2" fill="none" stroke-linecap="round"/>`
-    : frac > 0.01 ? `<path d="M24 41 q4 3 8 0" stroke="#4a3b30" stroke-width="2" fill="none" stroke-linecap="round"/>`
-    : `<path d="M22 36 l5 5 m0 -5 l-5 5 M36 36 l5 5 m0 -5 l-5 5" stroke="#4a3b30" stroke-width="2" stroke-linecap="round"/>`;
-  const eyes = frac > 0.01 ? `<circle cx="24" cy="30" r="2.6" fill="#4a3b30"/><circle cx="40" cy="30" r="2.6" fill="#4a3b30"/>` : "";
-  return `<svg viewBox="0 0 64 64" width="92" height="92" style="transform:scale(${sc});transition:transform .3s">
-    <path d="M18 12 q-3 -8 4 -6 l3 4 M46 12 q3 -8 -4 -6 l-3 4" stroke="#4a3b30" stroke-width="2" fill="#b7a6d9" stroke-linejoin="round"/>
-    <path d="M10 36 q-2 -24 22 -24 q24 0 22 24 q1 16 -10 14 q-4 -1 -5 3 q-4 3 -7 -1 q-3 4 -7 1 q-1 -4 -5 -3 q-11 2 -10 -14 Z"
-      fill="#b7a6d9" stroke="#4a3b30" stroke-width="2.4" stroke-linejoin="round"/>
-    ${eyes}${mood}</svg>`;
-}
 
 /* plain (non-illustrated) quiz progress: a small dot row, filled as you answer */
 function progressDots(total, doneCount) {
