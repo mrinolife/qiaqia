@@ -32,6 +32,62 @@
   --wob-r:  20px;
 }
 
+/* ============================================================
+   Doraemon world theme — switchable via the #themeToggle button
+   (app.js sets <html data-theme="doraemon">). Chiikawa stays the
+   default (no data-theme attr). Palette: pocket-blue body + bell-
+   gold accents + collar-red highlight — recolor only, no new art.
+   ============================================================ */
+:root[data-theme="doraemon"] {
+  --paper:  #eaf6ff;
+  --paper2: #dcf0fd;
+  --card:   #fffef6;
+  --ink:    #21456e;
+  --ink-soft: #3d6089;
+  --line:   #21456e;
+  --pink:   #ffe0d6;
+  --pink-deep: #f2503f;   /* doraemon's collar red */
+  --rose:   #f2503f;
+  --blue:   #bfe3fb;
+  --blue-deep: #3ea1e8;   /* doraemon body blue */
+  --mint:   #d8f2ec;
+  --mint-deep: #3ea1e8;
+  --yellow: #fff2c2;
+  --yellow-deep: #ffcb2b;  /* the bell */
+  --teal:   #c9ecec;
+  --teal-deep: #2fb6c7;
+  --lav:    #eaf1ff;
+  --lav-deep: #7fb8ee;
+  --sky:    #a9d8f7;
+}
+:root[data-theme="doraemon"] body {
+  background: linear-gradient(180deg, var(--sky) 0px, #d6ecfb 130px, var(--paper) 300px, var(--paper) 100%);
+  background-attachment: fixed;
+}
+:root[data-theme="doraemon"] .path-map {
+  background:
+    radial-gradient(3px 2px at 12% 22%, rgba(62, 161, 232, .3) 98%, transparent),
+    radial-gradient(3px 2px at 78% 14%, rgba(62, 161, 232, .28) 98%, transparent),
+    radial-gradient(3px 2px at 30% 64%, rgba(62, 161, 232, .28) 98%, transparent),
+    radial-gradient(3px 2px at 88% 52%, rgba(62, 161, 232, .28) 98%, transparent),
+    radial-gradient(3px 2px at 55% 86%, rgba(62, 161, 232, .28) 98%, transparent),
+    linear-gradient(180deg, #d3edfd, #bfe3fb);
+  background-size: 340px 300px, 340px 300px, 340px 300px, 340px 300px, 340px 300px, 100% 100%;
+  border-color: rgba(33, 69, 110, .25);
+}
+:root[data-theme="doraemon"] .path-map::before { background: #eaf6ff; border-color: rgba(33, 69, 110, .3); }
+:root[data-theme="doraemon"] .unit-banner {
+  background: linear-gradient(180deg, #fffef0, #fff2c2);
+  border-color: #ffcb2b;
+}
+:root[data-theme="doraemon"] .unit-banner .unit-name b { color: #21456e; }
+:root[data-theme="doraemon"] .path-node { border-color: #3ea1e8; }
+:root[data-theme="doraemon"] .path-node .node-face { color: #21456e; }
+:root[data-theme="doraemon"] .path-node.locked { background: #dcecf9; border-color: rgba(62, 161, 232, .4); }
+:root[data-theme="doraemon"] .gdeco img, :root[data-theme="doraemon"] .path-side img {
+  border-color: #3ea1e8;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { scroll-behavior: smooth; overscroll-behavior-y: none; }
 

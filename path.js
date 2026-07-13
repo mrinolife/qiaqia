@@ -151,7 +151,7 @@ function renderPath() {
   const curIdx = currentNodeIdx(NODES);
   const cur = NODES[curIdx];
   // usagi is the namesake mascot — she headlines the path most of the time
-  const hero = (Math.random() < 0.62 ? CAST.find(c => c.id === "usagi") : shuffle(unlockedCast())[0]) || CAST[0];
+  const hero = (Math.random() < 0.62 ? activeCast().find(c => c.id === "usagi") : shuffle(unlockedCast())[0]) || activeCast()[0];
   const line = hero.lines[Math.floor(Math.random() * hero.lines.length)];
   const learned = learnedWordCount();
   const due = dueCards().length;
@@ -290,7 +290,7 @@ function nodeSheet(node) {
       <div class="sheet-mascot">${shclip || art(node.host, node.kind === "exam" ? "think" : "happy", 84)}</div>
       <div class="task-ask">${kindLabel}</div>
       <h3>${esc(node.title)}</h3>
-      ${(typeof CAST_SPEAK !== "undefined" && CAST_SPEAK[node.host]) ? `<div class="muted small">${esc(shuffle(CAST_SPEAK[node.host])[0])}</div>` : ""}
+      ${(typeof activeCastSpeak === "function" && activeCastSpeak()[node.host]) ? `<div class="muted small">${esc(shuffle(activeCastSpeak()[node.host])[0])}</div>` : ""}
       <div class="sheet-preview">${preview}</div>
       <div class="done-stars small">${[1, 2, 3].map(n => `<span class="star ${n <= stars ? "on" : ""}">★</span>`).join("")}</div>
       <button class="btn big pink" id="shGo">${stars ? (stars < 3 ? "replay for ★★★" : "replay ✨") : node.kind === "exam" ? "⚔️ take the exam!" : "start! →"}</button>
@@ -425,7 +425,7 @@ function renderSongs() {
         box.style.display = "block";
         // extra Usagi moment: opening one of her own songs earns a random scream + a bigger bounce
         if (/usagi/i.test(s.title)) {
-          const usagiLines = CAST_SPEAK.usagi || [];
+          const usagiLines = activeCastSpeak().usagi || [];
           const l = usagiLines[Math.floor(Math.random() * usagiLines.length)];
           if (l) speakAs(l, "usagi");
           card.classList.remove("bounce"); void card.offsetWidth; card.classList.add("bounce");
@@ -479,7 +479,7 @@ function renderProfile() {
   view.querySelectorAll("[data-switch]").forEach(b => b.onclick = () => switchProfile(b.dataset.switch));
   view.append(el(`<h2 class="page-title">🌸 ${esc(activeProfileName())}'s page</h2>`));
   const li = levelInfo(S.xp);
-  const usagiLines = CAST_SPEAK.usagi || [];
+  const usagiLines = activeCastSpeak().usagi || [];
   const lic = el(`<div class="license wob">
       <div class="lic-head"><span class="lic-title">討伐ライセンス · HUNTER LICENSE</span><span class="lic-yaha">ヤハ!</span></div>
       <div class="lic-body">

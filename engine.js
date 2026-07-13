@@ -39,8 +39,11 @@ const SFX = (() => {
 function art(kind, mood, size) {
   const s = size || 64;
   // official art (local chars/*.png) only for authenticity; motion classes carry the mood
-  if (typeof LOCAL_ART !== "undefined" && LOCAL_ART[kind])
-    return `<img src="${LOCAL_ART[kind]}" width="${s}" height="${s}" class="mascot-${kind}" style="object-fit:contain" alt="">`;
+  const themeKind = (typeof S !== "undefined" && S.theme === "doraemon" &&
+                      typeof THEME_ART_DORAEMON !== "undefined" && THEME_ART_DORAEMON[kind])
+                     ? THEME_ART_DORAEMON[kind] : kind;
+  if (typeof LOCAL_ART !== "undefined" && LOCAL_ART[themeKind])
+    return `<img src="${LOCAL_ART[themeKind]}" width="${s}" height="${s}" class="mascot-${kind}" style="object-fit:contain" alt="">`;
   return "";
 }
 /* show clips: chars/anim/manifest.json maps moods -> gif files */
