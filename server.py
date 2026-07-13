@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""qiaqia — Chiikawa-themed HSK1 Chinese learning PWA. Python 3 stdlib only.
+"""yaha — Chiikawa-themed HSK1 Chinese learning PWA. Python 3 stdlib only.
 
 Pure static app (all learning data ships in data.js, progress in localStorage).
 Serves its own directory + /healthz. Binds 127.0.0.1 by default; HOST=0.0.0.0
@@ -31,7 +31,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/healthz":
-            body = b'{"ok": true, "app": "qiaqia"}'
+            body = b'{"ok": true, "app": "yaha"}'
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
@@ -45,5 +45,5 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"qiaqia listening on http://{HOST}:{PORT}")
+    print(f"yaha listening on http://{HOST}:{PORT}")
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()

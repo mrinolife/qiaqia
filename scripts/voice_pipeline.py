@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""QiaQia voice pipeline — regenerate all cast voice clips with edge-tts + rubberband.
+"""YaHa voice pipeline — regenerate all cast voice clips with edge-tts + rubberband.
    Uses per-character TTS voice assignments + aggressive Chiikawa-style pitch/tempo curves."""
 
 import asyncio, json, os, subprocess, sys, shutil, tempfile
@@ -203,7 +203,7 @@ async def process_character(char_id, config):
     print(f"  Pitch: {config['pitch']:+d} semitones, Tempo: {config['tempo']:.2f}")
     print(f"  Lines: {lines}")
     
-    temp_dir = tempfile.mkdtemp(prefix=f"qiaqia_{char_id}_")
+    temp_dir = tempfile.mkdtemp(prefix=f"yaha_{char_id}_")
     
     index_entries = {}
     
@@ -255,7 +255,7 @@ async def process_character(char_id, config):
 
 async def main():
     print("=" * 60)
-    print("QiaQia Voice Pipeline — edge-tts + chiikawa rubberband")
+    print("YaHa Voice Pipeline — edge-tts + chiikawa rubberband")
     print("=" * 60)
     
     # Check deps

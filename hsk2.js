@@ -1,10 +1,10 @@
-/* QiaQia — HSK2 vocabulary (classic 150-word HSK level 2 list, old HSK words 151-300).
+/* YaHa — HSK2 vocabulary (classic 150-word HSK level 2 list, old HSK words 151-300).
    Excludes all HSK1 words (those live in data.js). 虽然…但是… and 因为…所以… are split
    into their four component conjunctions, matching the official 2012 word file.
-   Plain script (no modules). Assigns window.QIAQIA_HSK2.
+   Plain script (no modules). Assigns window.YAHA_HSK2.
    Cross-checked against hsk.academy and the official 2012 list (hskhsk.com data). */
 
-window.QIAQIA_HSK2 = [
+window.YAHA_HSK2 = [
   { hanzi: "吧", pinyin: "ba", en: "suggestion particle (let's...)", pos: "particle", cat: "grammar" },
   { hanzi: "白", pinyin: "bái", en: "white", pos: "adj", cat: "colors" },
   { hanzi: "百", pinyin: "bǎi", en: "hundred", pos: "num", cat: "numbers" },

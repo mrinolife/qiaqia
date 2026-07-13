@@ -1,4 +1,4 @@
-/* QiaQia engine — Super-Chinese-style lesson sessions.
+/* YaHa engine — Super-Chinese-style lesson sessions.
    Task types: intro, mc (meaning/pinyin/reverse/listen), pairs, tone,
    build (word-bank sentence), pintro/plisten/speak (phrases), story line-outs.
    Wrong answers requeue once; first-try accuracy → 1-3 stars.
@@ -40,7 +40,7 @@ function art(kind, mood, size) {
   const s = size || 64;
   // official art (local chars/*.png) only for authenticity; motion classes carry the mood
   if (typeof LOCAL_ART !== "undefined" && LOCAL_ART[kind])
-    return `<img src="${LOCAL_ART[kind]}" width="${s}" height="${s}" style="object-fit:contain" alt="">`;
+    return `<img src="${LOCAL_ART[kind]}" width="${s}" height="${s}" class="mascot-${kind}" style="object-fit:contain" alt="">`;
   return "";
 }
 /* show clips: chars/anim/manifest.json maps moods -> gif files */

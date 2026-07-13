@@ -1,5 +1,5 @@
 /* ============================================================
-   QiaQia 恰恰 — chiikawa storybook design system
+   YaHa 呀哈 — chiikawa storybook design system
    cream paper, warm ink outlines, wobbly hand-drawn shapes,
    chunky game buttons. Super-Chinese structure, Nagano soul.
    ============================================================ */
@@ -631,7 +631,73 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 @keyframes pop { 0% { transform: scale(.7); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
 
+/* ---------- CHAOS MODE (呀哈!! easter egg — 5x rapid-tap the brand mascot) ---------- */
+#brandMascot { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.chaos-shake { animation: chaosShake .5s cubic-bezier(.36, .07, .19, .97) 3; }
+@keyframes chaosShake {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  15% { transform: translate(-6px, 2px) rotate(-8deg) scale(1.15); }
+  30% { transform: translate(5px, -3px) rotate(7deg) scale(1.2); }
+  45% { transform: translate(-4px, 3px) rotate(-6deg) scale(1.15); }
+  60% { transform: translate(6px, -2px) rotate(8deg) scale(1.2); }
+  75% { transform: translate(-3px, 1px) rotate(-4deg) scale(1.1); }
+  90% { transform: translate(2px, -1px) rotate(3deg) scale(1.05); }
+}
+#chaosOverlay {
+  position: fixed; inset: 0; z-index: 90; pointer-events: none;
+  display: flex; align-items: flex-start; justify-content: center;
+  opacity: 0; transition: opacity .25s;
+}
+#chaosOverlay.show { opacity: 1; }
+#chaosOverlay .chaos-rainbow {
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, #ffb3c6, #ffe08a, #b8f2c9, #a9e2ff, #d8b3ff, #ffb3c6);
+  background-size: 400% 400%;
+  mix-blend-mode: multiply; opacity: .38;
+  animation: chaosRainbow 1.1s linear infinite;
+}
+:root[data-theme="dark"] #chaosOverlay .chaos-rainbow, .dark #chaosOverlay .chaos-rainbow { mix-blend-mode: screen; opacity: .3; }
+@keyframes chaosRainbow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+#chaosOverlay .chaos-banner {
+  position: relative; margin-top: 14vh;
+  background: #fff; color: var(--ink);
+  border: 3px solid var(--ink); box-shadow: 0 6px 0 rgba(74, 63, 53, .3);
+  border-radius: 22px; padding: 14px 26px;
+  font-weight: 900; font-size: 1.4rem; text-align: center; letter-spacing: .5px;
+  animation: chaosBannerIn .45s cubic-bezier(.2, .9, .3, 1.4);
+}
+@keyframes chaosBannerIn {
+  0% { transform: scale(.4) rotate(-6deg) translateY(-30px); opacity: 0; }
+  60% { transform: scale(1.15) rotate(3deg) translateY(4px); opacity: 1; }
+  100% { transform: scale(1) rotate(0) translateY(0); opacity: 1; }
+}
+#chaosOverlay .chaos-sprites { position: absolute; inset: 0; overflow: hidden; }
+#chaosOverlay .chaos-sprite {
+  position: absolute; top: -70px; animation: chaosFall 1.8s ease-in forwards;
+}
+@keyframes chaosFall {
+  0% { transform: translateY(0) rotate(0) scale(.6); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(115vh) rotate(360deg) scale(1); opacity: .85; }
+}
+
 .mascot-inline { display: inline-block; }
+
+/* ---------- usagi fluff: she's the app's namesake, so her art gets a
+   little extra fuzziness + a permanent gentle chaos-wiggle wherever she
+   appears (fur-glow via layered drop-shadows, no new assets) ---------- */
+.mascot-usagi {
+  filter: drop-shadow(0 0 3px rgba(244, 209, 102, .55)) drop-shadow(0 0 7px rgba(244, 209, 102, .3))
+          drop-shadow(0 2px 0 rgba(74, 63, 53, .12));
+  animation: usagi-wiggle 3.1s ease-in-out infinite;
+  transform-origin: 50% 88%;
+}
+@keyframes usagi-wiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  22% { transform: rotate(-3.5deg) scale(1.015); }
+  50% { transform: rotate(0deg) scale(1); }
+  76% { transform: rotate(3.5deg) scale(1.015); }
+}
 
 /* HanziWriter target */
 #hwTarget {
@@ -705,7 +771,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .lic-yaha { font-size: .9rem; }
 .lic-body { display: flex; gap: 12px; align-items: center; padding: 12px; }
 .lic-photo {
-  flex: none; width: 104px; height: 104px; background: #fff;
+  flex: none; width: 112px; height: 112px; background: #fff;
   border: 2.5px solid var(--ink); border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   box-shadow: var(--shadow);

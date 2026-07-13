@@ -1,4 +1,4 @@
-/* QiaQia path — Super-Chinese-style unit/lesson map over the HSK1 + Taiwan content.
+/* YaHa path — Super-Chinese-style unit/lesson map over the HSK1 + Taiwan content.
    Loads last; owns boot. Plain script, shares globals with app.js/engine.js. */
 
 /* ---------- build units ---------- */
@@ -73,7 +73,7 @@ const UNITS = (() => {
     units.push({ ...u, words: [], phrases: allP, nodes });
   });
   // HSK 2 expansion units (hsk2.js)
-  const H2 = window.QIAQIA_HSK2 || [];
+  const H2 = window.YAHA_HSK2 || [];
   if (H2.length) {
     H2.forEach((v, i) => v.id = "h" + i);
     const by2 = {};
@@ -150,7 +150,8 @@ function renderPath() {
   const NODES = allNodes();
   const curIdx = currentNodeIdx(NODES);
   const cur = NODES[curIdx];
-  const hero = (Math.random() < 0.5 ? CAST.find(c => c.id === "usagi") : shuffle(unlockedCast())[0]) || CAST[0];
+  // usagi is the namesake mascot — she headlines the path most of the time
+  const hero = (Math.random() < 0.62 ? CAST.find(c => c.id === "usagi") : shuffle(unlockedCast())[0]) || CAST[0];
   const line = hero.lines[Math.floor(Math.random() * hero.lines.length)];
   const learned = learnedWordCount();
   const due = dueCards().length;
@@ -162,7 +163,7 @@ function renderPath() {
         <span class="chip">🏅 LV${levelInfo(S.xp).lv}</span>
         <span class="chip ${todayXP() >= DAY_GOAL ? "chip-done" : ""}">🌟 ${Math.min(todayXP(), DAY_GOAL)}/${DAY_GOAL} today</span>
         <span class="chip">✈️ ${tripDays()}d to Taiwan</span>
-        <span class="chip">📖 ${learned}/${D.vocab.length + (S.hsk2Open ? (window.QIAQIA_HSK2 || []).length : 0)} words</span>
+        <span class="chip">📖 ${learned}/${D.vocab.length + (S.hsk2Open ? (window.YAHA_HSK2 || []).length : 0)} words</span>
         ${due ? `<button class="chip chip-due" id="heroDue">🎴 ${due} due</button>` : ""}
       </div>
       <button class="btn big pink" id="heroGo">🐾 ${nodeStars(cur.id) ? "keep going" : curIdx === 0 ? "start your journey!" : "continue"} · ${esc(cur.unitRef.emoji)} ${esc(cur.unitRef.title.split(" ").slice(1).join(" ") || cur.unitRef.title)}</button>
@@ -243,11 +244,11 @@ function renderPath() {
     });
     map.append(group);
   });
-  if ((window.QIAQIA_HSK2 || []).length && !S.hsk2Open) {
+  if ((window.YAHA_HSK2 || []).length && !S.hsk2Open) {
     const gate = el(`<div class="unit-banner wob" style="background:var(--yellow)">
         <span class="unit-host">${art("rakko", "think", 46)}</span>
         <span class="unit-name">🔓 <b>HSK 2 · the next level</b><br>
-        <span class="muted">${(window.QIAQIA_HSK2 || []).length} more words, whole new units — open it when you're ready!</span></span>
+        <span class="muted">${(window.YAHA_HSK2 || []).length} more words, whole new units — open it when you're ready!</span></span>
         <button class="btn small pink" id="hsk2Go">open</button></div>`);
     gate.querySelector("#hsk2Go").onclick = () => { S.hsk2Open = true; save(); confetti(); SFX.fanfare(); toast("HSK 2 unlocked!! 加油!! 🎉"); renderPath(); };
     map.append(gate);
@@ -289,6 +290,7 @@ function nodeSheet(node) {
       <div class="sheet-mascot">${shclip || art(node.host, node.kind === "exam" ? "think" : "happy", 84)}</div>
       <div class="task-ask">${kindLabel}</div>
       <h3>${esc(node.title)}</h3>
+      ${(typeof CAST_SPEAK !== "undefined" && CAST_SPEAK[node.host]) ? `<div class="muted small">${esc(shuffle(CAST_SPEAK[node.host])[0])}</div>` : ""}
       <div class="sheet-preview">${preview}</div>
       <div class="done-stars small">${[1, 2, 3].map(n => `<span class="star ${n <= stars ? "on" : ""}">★</span>`).join("")}</div>
       <button class="btn big pink" id="shGo">${stars ? (stars < 3 ? "replay for ★★★" : "replay ✨") : node.kind === "exam" ? "⚔️ take the exam!" : "start! →"}</button>
@@ -352,14 +354,14 @@ function renderReview() {
 /* ---------- wordbook: every word, grouped, with learn status ---------- */
 function renderWordbook() {
   view.innerHTML = "";
-  const all = D.vocab.concat(window.QIAQIA_HSK2 || []);
+  const all = D.vocab.concat(window.YAHA_HSK2 || []);
   const learned = w => (S.srs || {})[w.id];
   const weakSet = new Set(weakWords().map(w => w.hanzi));
   const nL = all.filter(learned).length;
   view.append(el(`<div class="backrow"><button class="iconbtn" id="wbBk">←</button>
     <h3 style="margin:0;display:flex;align-items:center;gap:6px">📖 Wordbook <span class="muted">${nL}/${all.length} learned</span></h3></div>`));
   const groups = [["HSK 1", D.vocab]];
-  if ((window.QIAQIA_HSK2 || []).length) groups.push(["HSK 2", window.QIAQIA_HSK2]);
+  if ((window.YAHA_HSK2 || []).length) groups.push(["HSK 2", window.YAHA_HSK2]);
   groups.forEach(([lvl, words]) => {
     const byCat = {};
     words.forEach(w => (byCat[w.cat] = byCat[w.cat] || []).push(w));
@@ -421,6 +423,13 @@ function renderSongs() {
              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
              allowfullscreen loading="lazy"></iframe>`;
         box.style.display = "block";
+        // extra Usagi moment: opening one of her own songs earns a random scream + a bigger bounce
+        if (/usagi/i.test(s.title)) {
+          const usagiLines = CAST_SPEAK.usagi || [];
+          const l = usagiLines[Math.floor(Math.random() * usagiLines.length)];
+          if (l) speakAs(l, "usagi");
+          card.classList.remove("bounce"); void card.offsetWidth; card.classList.add("bounce");
+        }
       } else box.style.display = "none";
       SFX.tap();
     };
@@ -474,7 +483,7 @@ function renderProfile() {
   const lic = el(`<div class="license wob">
       <div class="lic-head"><span class="lic-title">討伐ライセンス · HUNTER LICENSE</span><span class="lic-yaha">ヤハ!</span></div>
       <div class="lic-body">
-        <div class="lic-photo bob">${art("usagi", "cheer", 92)}</div>
+        <div class="lic-photo bob">${art("usagi", "cheer", 100)}</div>
         <div class="lic-fields">
           <div class="lic-name">${esc(activeProfileName().toUpperCase())} <span class="lic-lv">LV${li.lv}</span></div>
           <div class="lic-rank">${esc(li.title)}<br><span class="muted">${esc(li.titleEn)}</span></div>
@@ -483,7 +492,7 @@ function renderProfile() {
         </div>
         <div class="lic-stamp">合<br>格</div>
       </div>
-      <div class="lic-foot"><span>恰恰学院 QIAQIA ACADEMY</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
+      <div class="lic-foot"><span>呀哈学院 YAHA ACADEMY</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
     </div>`);
   lic.onclick = () => { const l = usagiLines[Math.floor(Math.random() * usagiLines.length)]; if (l) speakAs(l, "usagi"); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
   view.append(lic);
@@ -575,7 +584,7 @@ function renderProfile() {
       <h3>📊 What she's done — plain numbers</h3>
       <div class="muted" style="font-size:.82rem;line-height:1.7">
         Level ${levelInfo(S.xp).lv} (${esc(levelInfo(S.xp).title)}) · ${S.xp} total xp<br>
-        ${learned}/${D.vocab.length + (S.hsk2Open ? (window.QIAQIA_HSK2 || []).length : 0)} words learned ·
+        ${learned}/${D.vocab.length + (S.hsk2Open ? (window.YAHA_HSK2 || []).length : 0)} words learned ·
         ${starSum} stars earned · ${S.streak.count} day streak<br>
         ${S.stats.quiz} quiz answers (${S.stats.quiz ? Math.round(S.stats.correct / S.stats.quiz * 100) : 0}% right) ·
         ${S.stats.spoken} spoken · ${S.stats.written} written<br>

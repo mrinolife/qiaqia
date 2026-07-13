@@ -1,4 +1,4 @@
-# QiaQia 恰恰 🌸 — Chinese for the Trip
+# YaHa 呀哈 🌸 — Chinese for the Trip
 
 Chiikawa-themed HSK 1 Chinese learning PWA, built for a first trip to Taiwan.
 Simplified characters + pinyin tone marks. Local-first: all progress in

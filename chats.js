@@ -1,4 +1,4 @@
-window.QIAQIA_CHATS = [
+window.YAHA_CHATS = [
 { id:"c1", host:"usagi", title:"Night market run!!", emoji:"🍢", place:"士林夜市",
   script:[
     { npc:{ hanzi:"呀哈!! 欢迎来夜市!!", pinyin:"Yǎhā!! Huānyíng lái yèshì!!", en:"Yahoo!! Welcome to the night market!!", note:"" } },
@@ -337,7 +337,7 @@ window.QIAQIA_CHATS = [
 }
 ];
 
-window.QIAQIA_FOODS = [
+window.YAHA_FOODS = [
   { id:"ramen", emoji:"🍜", name:"Ramen", hanzi:"拉面", pinyin:"lāmiàn", en:"ramen noodle soup",
     order:{ hanzi:"老板, 我要一碗拉面。", pinyin:"Lǎobǎn, wǒ yào yì wǎn lāmiàn.", en:"Boss, I want a bowl of ramen." },
     tip:"Order by the bowl (碗) — many shops let you add toppings like egg for a few extra kuai." },

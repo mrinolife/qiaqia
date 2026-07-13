@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotent starter for QiaQia (port 8807). Safe from cron.
+# Idempotent starter for YaHa (port 8807). Safe from cron.
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT="${PORT:-8807}"
@@ -8,5 +8,5 @@ if curl -s -o /dev/null --max-time 3 "http://127.0.0.1:$PORT/healthz" 2>/dev/nul
 fi
 cd "$DIR"
 export HOST="${HOST:-0.0.0.0}"   # phone access over Tailscale
-nohup python3 server.py >> "$DIR/qiaqia.log" 2>&1 &
-echo "[qiaqia] started pid $! on :$PORT ($(date -Is))" >> "$DIR/qiaqia.log"
+nohup python3 server.py >> "$DIR/yaha.log" 2>&1 &
+echo "[yaha] started pid $! on :$PORT ($(date -Is))" >> "$DIR/yaha.log"

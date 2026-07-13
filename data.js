@@ -1,7 +1,7 @@
-/* QiaQia — HSK1 vocabulary, survival phrases, and mini dialogues.
-   Plain script (no modules). Assigns window.QIAQIA_DATA. */
+/* YaHa — HSK1 vocabulary, survival phrases, and mini dialogues.
+   Plain script (no modules). Assigns window.YAHA_DATA. */
 
-window.QIAQIA_DATA = {
+window.YAHA_DATA = {
 
 vocab: [
   { hanzi: "我", pinyin: "wǒ", en: "I, me", pos: "pron", cat: "people" },
@@ -356,7 +356,7 @@ dialogues: [
 
 };
 
-window.QIAQIA_DATA.tones = [
+window.YAHA_DATA.tones = [
   { tone: 1, mark: "ā", desc: "high and flat, held steady", example: { hanzi: "妈", pinyin: "mā", en: "mom" } },
   { tone: 2, mark: "á", desc: "rising, like asking \"what?\"", example: { hanzi: "麻", pinyin: "má", en: "hemp, numb" } },
   { tone: 3, mark: "ǎ", desc: "dips down then rises", example: { hanzi: "马", pinyin: "mǎ", en: "horse" } },

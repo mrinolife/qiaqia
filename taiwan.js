@@ -1,8 +1,8 @@
-// QiaQia — Taiwan Reality Pack
+// YaHa — Taiwan Reality Pack
 // Simplified characters + pinyin tone marks, HSK1-level content for a learner visiting Taiwan.
 // Plain script, no modules.
 
-window.QIAQIA_TAIWAN = {
+window.YAHA_TAIWAN = {
 
   grammar: [
     {

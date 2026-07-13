@@ -1,7 +1,7 @@
-/* qiaqia sw — stale-while-revalidate: instant load from cache (works offline in
+/* yaha sw — stale-while-revalidate: instant load from cache (works offline in
    Taiwan), silently refetches in the background so the next open gets updates.
    No version bumps or reinstalls needed when files change on the server. */
-const CACHE = "qiaqia-v17";
+const CACHE = "yaha-v1";
 const ASSETS = ["./", "index.html", "style.css", "app.js", "engine.js", "path.js",
                 "data.js", "hsk2.js", "taiwan.js", "chats.js",
                 "trad.js", "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest",
