@@ -413,6 +413,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .buildline {
   min-height: 62px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
   padding: 10px; margin: 4px 0 12px; background: var(--paper2);
+  border: 2px dashed rgba(74, 63, 53, .3); border-radius: 18px;
 }
 .build-hint { color: var(--ink-soft); font-size: .84rem; }
 .bank { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 12px; }

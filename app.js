@@ -1181,7 +1181,7 @@ function runChat(c) {
   );
   const wrap = el(`<div class="bubblewrap chatwrap"></div>`);
   const tray = el(`<div class="chattray"></div>`);
-  view.append(wrap, tray);
+  view.append(el(`<div class="sess-ambient"><span class="amb a2">✨</span><span class="amb a4">🌸</span><span class="amb a7">⭐</span></div>`), wrap, tray);
   document.getElementById("bk").onclick = renderTalk;
   document.getElementById("zen").onclick = e => {
     immersion = !immersion;
