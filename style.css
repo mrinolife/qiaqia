@@ -285,7 +285,27 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .path-node.done { background: var(--pink); }
 .path-node.done.exam { background: var(--yellow); }
 .path-node.locked { background: var(--paper2); box-shadow: 0 3px 0 rgba(74, 63, 53, .35); border-color: rgba(74, 63, 53, .45); }
-.path-node.locked .node-face { opacity: .6; font-size: 1.2rem; }
+.path-node.locked .node-face { opacity: .35; }
+.path-node.locked .node-peek { filter: grayscale(1) opacity(.5); }
+/* candy-button sheen on every node */
+.path-node::after {
+  content: ""; position: absolute; top: 8%; left: 16%;
+  width: 34%; height: 22%; border-radius: 50%;
+  background: rgba(255, 255, 255, .55); pointer-events: none;
+}
+.path-node.locked::after { background: rgba(255, 255, 255, .3); }
+/* the node's host character peeking over the bubble rim */
+.node-peek {
+  position: absolute; top: -16px; right: -12px; line-height: 0;
+  filter: drop-shadow(0 2px 1px rgba(74, 63, 53, .25));
+  pointer-events: none;
+}
+.node-peek img { border-radius: 50%; background: #fff; border: 2px solid var(--ink); object-fit: cover; }
+.node-lock {
+  position: absolute; bottom: -6px; right: -4px; font-size: .95rem; line-height: 1;
+  background: var(--card); border: 2px solid var(--ink); border-radius: 50%;
+  padding: 3px; pointer-events: none;
+}
 .path-node.cur {
   animation: nodepulse 1.6s ease-in-out infinite;
   background: var(--card);

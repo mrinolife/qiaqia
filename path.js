@@ -223,7 +223,9 @@ function renderPath() {
       const off = OFFS[idx % 4];
       const row = el(`<div class="path-row" style="--off:${off}">
           <button class="path-node ${n.kind} ${stars ? "done" : ""} ${!unlocked ? "locked" : ""} ${isCur ? "cur" : ""}" data-i="${idx}">
-            <span class="node-face">${!unlocked ? "🔒" : n.kind === "exam" ? "试" : esc(n.label)}</span>
+            <span class="node-face">${n.kind === "exam" ? "试" : esc(n.label)}</span>
+            <span class="node-peek">${art(n.kind === "exam" ? "yoroi" : n.host, "idle", 34)}</span>
+            ${!unlocked ? `<span class="node-lock">🔒</span>` : ""}
             ${stars ? `<span class="node-stars">${"★".repeat(stars)}</span>` : ""}
           </button>
           ${isCur ? `<span class="node-buddy bob">${art(n.host, "idle", 52)}</span><span class="node-start">开始!</span>` : sideDecor(idx, biome)}
