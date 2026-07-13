@@ -491,25 +491,32 @@ function renderProfile() {
   view.querySelectorAll("[data-switch]").forEach(b => b.onclick = () => switchProfile(b.dataset.switch));
   view.append(el(`<h2 class="page-title">🌸 ${esc(activeProfileName())}'s page</h2>`));
   const li = levelInfo(S.xp);
-  const usagiLines = activeCastSpeak().usagi || [];
+  // Doraemon world: the license itself headlines Doraemon (not Gian) and reskins
+  // into his in-universe gadget-order slip from the 22nd-century Future Department Store.
+  const isDoraemon = S.theme === "doraemon";
+  const heroId = isDoraemon ? "hachiware" : "usagi";
+  const heroLines = activeCastSpeak()[heroId] || [];
+  const licCopy = isDoraemon
+    ? { title: "ひみつ道具 使用許可証 · GADGET LICENSE", stamp: "認<br>可", foot: "22世紀 未来デパート · ひみつ道具センター" }
+    : { title: "討伐ライセンス · HUNTER LICENSE", stamp: "合<br>格", foot: "呀哈学院 YAHA ACADEMY" };
   const lic = el(`<div class="license wob">
-      <div class="lic-head"><span class="lic-title">討伐ライセンス · HUNTER LICENSE</span><span class="lic-yaha">ヤハ!</span></div>
+      <div class="lic-head"><span class="lic-title">${licCopy.title}</span><span class="lic-yaha">ヤハ!</span></div>
       <div class="lic-body">
-        <div class="lic-photo bob">${art("usagi", "cheer", 100)}</div>
+        <div class="lic-photo bob">${art(heroId, "cheer", 100)}</div>
         <div class="lic-fields">
           <div class="lic-name">${esc(activeProfileName().toUpperCase())} <span class="lic-lv">LV${li.lv}</span></div>
           <div class="lic-rank">${esc(li.title)}<br><span class="muted">${esc(li.titleEn)}</span></div>
           <div class="lic-xpbar"><div class="lic-xpfill" style="width:${li.pct}%"></div></div>
           <div class="lic-xptext">✨ ${S.xp} xp${li.need ? ` · ${li.need} to LV${li.lv + 1}` : " · MAX RANK"}</div>
         </div>
-        <div class="lic-stamp">合<br>格</div>
+        <div class="lic-stamp">${licCopy.stamp}</div>
       </div>
-      <div class="lic-foot"><span>呀哈学院 YAHA ACADEMY</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
+      <div class="lic-foot"><span>${licCopy.foot}</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
     </div>`);
-  lic.onclick = () => { const l = usagiLines[Math.floor(Math.random() * usagiLines.length)]; if (l) speakAs(l, "usagi"); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
+  lic.onclick = () => { const l = heroLines[Math.floor(Math.random() * heroLines.length)]; if (l) speakAs(l, heroId); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
   view.append(lic);
-  // usagi welcomes on profile — random scream
-  setTimeout(() => { const l = usagiLines[Math.floor(Math.random() * usagiLines.length)]; if (l) speakAs(l, "usagi"); }, 400);
+  // hero mascot welcomes on profile — random scream
+  setTimeout(() => { const l = heroLines[Math.floor(Math.random() * heroLines.length)]; if (l) speakAs(l, heroId); }, 400);
   view.append(el(`<div class="card wob">
       <div class="cardrow" style="justify-content:space-around;text-align:center">
         <span>🔥<br><b>${S.streak.count}</b><br><span class="muted">streak</span></span>
@@ -521,11 +528,23 @@ function renderProfile() {
       <div class="muted center">${Math.round(learned / D.vocab.length * 100)}% of HSK 1</div></div>`));
   const tripDate = new Date((S.tripDate || DEFAULT_TRIP) + "T00:00:00");
   const tripFmt = tripDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-  const trip = el(`<div class="card yellow wob"><h3>✈️ Taiwan trip</h3>
+  const tripTitle = isDoraemon ? "🚪 Anywhere Door to Taiwan" : "✈️ Taiwan trip";
+  const trip = el(`<div class="card yellow wob"><h3>${tripTitle}</h3>
       <div class="cardrow" style="align-items:center"><b style="font-size:1.6rem">${tripDays()}</b> days to go ·
       <span style="font-weight:800">${esc(tripFmt)}</span></div></div>`);
-  trip.onclick = () => { const l = usagiLines[Math.floor(Math.random() * usagiLines.length)]; if (l) speakAs(l, "usagi"); trip.classList.remove("bounce"); void trip.offsetWidth; trip.classList.add("bounce"); };
+  trip.onclick = () => { const l = heroLines[Math.floor(Math.random() * heroLines.length)]; if (l) speakAs(l, heroId); trip.classList.remove("bounce"); void trip.offsetWidth; trip.classList.add("bounce"); };
   view.append(trip);
+  if (isDoraemon) {
+    // 4D Pocket "gadgets deployed today" flavor readout — reuses existing stats,
+    // no new mechanic or persisted state, just Doraemon-flavored copy on real numbers.
+    const gadgets = el(`<div class="card wob"><h3>🎒 4D Pocket — today's gadget log</h3>
+        <div class="muted" style="font-size:.82rem;line-height:1.9">
+          🌀 <b>Time Furoshiki</b> (タイムふろしき) wrapped <b>${S.streak.count}</b> day${S.streak.count === 1 ? "" : "s"} into today's streak<br>
+          📺 <b>Dream TV</b> (ゆめテレビ) has catalogued <b>${starSum}</b> star${starSum === 1 ? "" : "s"} of gadgets so far<br>
+          🥞 <b>If-Phone Booth</b> (もしもボックス) wished up <b>${learned}</b> dorayaki-worth of words learned
+        </div></div>`);
+    view.append(gadgets);
+  }
   const fg = el(`<button class="btn big yellow" style="margin:10px auto;display:block">🍜 Food Gallery — see the real show art</button>`);
   fg.onclick = renderFoodGallery;
   view.append(fg);

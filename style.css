@@ -910,6 +910,36 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 .lic-barcode { letter-spacing: -1px; font-size: .8rem; color: var(--ink); }
 .chip-done { background: var(--mint); }
 
+/* medium phones/tablets: fill the gutters instead of just widening the empty
+   column — scale key path/chat/button/tab elements ~1.25x. body/#tabs padding
+   for this range live in a second block below the 700px block (see there) so
+   they aren't clobbered by it. */
+@media (min-width: 560px) and (max-width: 899px) {
+  #topbarInner, #view { max-width: 700px; }
+  .path-row { --wind: 92px; }
+  .path-node { width: 98px; height: 98px; }
+  .path-node .node-face { font-size: 2.06rem; }
+  .path-node .node-face.small { font-size: 1.3rem; }
+  .path-node.exam .node-face { font-size: 2.4rem; }
+  .node-buddy { left: calc(50% + 60px); }
+  .node-start { right: calc(50% + 60px); font-size: 1.02rem; padding: 5px 12px; }
+  .node-stars { font-size: 1rem; }
+  .hero-bubble { font-size: 1.12rem; padding: 10px 17px; }
+  .btn { padding: 15px 25px; font-size: 1.25rem; }
+  .btn.big { padding: 18px 25px; font-size: 1.35rem; }
+  .btn.small { padding: 10px 17px; font-size: 1.08rem; }
+  .iconbtn { width: 55px; height: 55px; font-size: 1.44rem; }
+  .iconbtn.xl { width: 90px; height: 90px; font-size: 2.37rem; }
+  .chip { padding: 4px 13px; font-size: 1rem; }
+  #tabs .tab { max-width: 120px; font-size: .85rem; }
+  #tabs .tab span { font-size: 1.69rem; }
+  .lesson { padding: 13px 18px; }
+  .lemoji { width: 58px; height: 58px; font-size: 1.63rem; }
+  .lic-photo { width: 140px; height: 140px; }
+  .lic-name { font-size: 1.56rem; }
+  .lic-xpbar { height: 15px; }
+}
+
 /* ---------- desktop / wide-screen adjustments ---------- */
 @media (min-width: 700px) {
   #tabs {
@@ -934,6 +964,14 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
     filter: brightness(1.03);
   }
   .path-node:hover:not(.locked) { transform: translateY(-2px); }
+}
+
+/* re-assert the medium-phone/tablet padding bump AFTER the 700px block above,
+   since that block also sets body/#tabs padding for this same width range and
+   would otherwise silently win from 700-899px and drop the safe-area inset */
+@media (min-width: 560px) and (max-width: 899px) {
+  body { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  #tabs { padding: 8px 5px calc(8px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- real desktop shell: sidebar nav + main + stats rail ---------- */
