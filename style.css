@@ -202,7 +202,7 @@ h2 { font-size: 1.25rem; }
   padding: 3px 10px; font-size: .8rem; font-weight: 700;
   box-shadow: var(--shadow);
 }
-button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out infinite; }
+button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out 3; }
 
 /* ---------- main column ---------- */
 #view { max-width: 560px; margin: 0 auto; padding: 12px 12px 24px; }
@@ -504,7 +504,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   background: var(--rose); color: #fff; font-weight: 800; font-size: .82rem;
   border: 2.5px solid var(--ink); border-radius: 14px;
   padding: 4px 10px; box-shadow: var(--shadow);
-  animation: nudge 1.6s ease-in-out infinite;
+  animation: nudge 1.6s ease-in-out 3;
 }
 .path-end { text-align: center; margin: 24px 0 12px; position: relative; z-index: 1; }
 /* polaroid closing scene: thick "print" frame around the mascot trio, classic
@@ -516,7 +516,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   padding: 14px 14px 32px; max-width: 320px;
 }
 .path-end .bob { display: flex; justify-content: center; gap: 4px; animation: none; }
-.path-end .bob > img { animation: polaroidBob 2.4s ease-in-out infinite; }
+.path-end .bob > img { animation: polaroidBob 2.4s ease-in-out 2; }
 .path-end .bob > img:nth-child(1) { animation-delay: 0ms; }
 .path-end .bob > img:nth-child(2) { animation-delay: 180ms; }
 .path-end .bob > img:nth-child(3) { animation-delay: 360ms; }
@@ -814,7 +814,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
 @keyframes peekin { from { transform: translateX(80px) rotate(20deg); } to { transform: none; } }
 
 /* ---------- motion vocabulary ---------- */
-.bob { animation: bob 2.4s ease-in-out infinite; }
+.bob { animation: bob 2.4s ease-in-out 3; }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .bounce { animation: bounce .7s cubic-bezier(.3, .9, .4, 1.4); }
 @keyframes bounce { 0% { transform: scale(.6) translateY(20px); } 55% { transform: scale(1.12) translateY(-6px); } 100% { transform: scale(1); } }
