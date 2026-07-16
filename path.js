@@ -145,6 +145,7 @@ function tripDays() {
 }
 
 /* ---------- the path screen ---------- */
+let decorObserver = null;
 function renderPath(autoScroll = true) {
   view.innerHTML = "";
   const NODES = allNodes();
@@ -323,6 +324,14 @@ function renderPath(autoScroll = true) {
       if (solids.some(s => r.left < s.right + pad && r.right > s.left - pad && r.top < s.bottom + pad && r.bottom > s.top - pad))
         g.style.display = "none";
     });
+    // ambient decor (gdeco stickers + drifting sparkles) only animates while on
+    // screen — a 75-node path renders dozens of these at once, and animating all
+    // of them regardless of scroll position was the "fidgeting"/lag complaint
+    if (decorObserver) decorObserver.disconnect();
+    decorObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => e.target.classList.toggle("anim-paused", !e.isIntersecting));
+    }, { rootMargin: "80px" });
+    map.querySelectorAll(".gdeco:not([style*='display: none']), .amb").forEach(el => decorObserver.observe(el));
     if (!autoScroll) return;
     const c = map.querySelector(".path-node.cur");
     if (c && curIdx > 2) c.scrollIntoView({ block: "center" });

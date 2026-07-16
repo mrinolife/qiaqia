@@ -431,6 +431,7 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out inf
   border: 2px solid var(--ink); box-shadow: 0 3px 0 rgba(74, 63, 53, .18);
   transform: rotate(var(--tilt, -4deg));
 }
+.anim-paused, .anim-paused * { animation-play-state: paused !important; }
 .gfloat { display: inline-block; animation: gfloat 6s ease-in-out infinite; }
 @keyframes gfloat {
   0%, 100% { transform: translateY(0) rotate(-3deg); }
