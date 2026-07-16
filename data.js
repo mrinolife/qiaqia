@@ -229,6 +229,15 @@ phrases: [
   { hanzi: "太贵了，便宜点儿吧", pinyin: "tài guì le, piányi diǎnr ba", en: "Too expensive, cheaper please", scenario: "money", note: "吧 softens it into a friendly suggestion" },
   { hanzi: "给你钱", pinyin: "gěi nǐ qián", en: "Here's your money", scenario: "money", note: "said while handing over payment" },
 
+  // numbers — short, actually uses the digits she just learned
+  { hanzi: "我十岁。", pinyin: "wǒ shí suì.", en: "I'm ten years old.", scenario: "numbers", note: "岁 goes right after your age" },
+  { hanzi: "你几岁？", pinyin: "nǐ jǐ suì?", en: "How old are you?", scenario: "numbers", note: "几 asks 'how many' for small numbers" },
+  { hanzi: "我要三个。", pinyin: "wǒ yào sān gè.", en: "I want three.", scenario: "numbers", note: "个 is the everyday counting word" },
+  { hanzi: "现在五点。", pinyin: "xiànzài wǔ diǎn.", en: "It's five o'clock now.", scenario: "numbers", note: "" },
+  { hanzi: "我有五个朋友。", pinyin: "wǒ yǒu wǔ gè péngyou.", en: "I have five friends.", scenario: "numbers", note: "" },
+  { hanzi: "一二三四五！", pinyin: "yī èr sān sì wǔ!", en: "One two three four five!", scenario: "numbers", note: "just for fun — count them out loud!" },
+  { hanzi: "五加三是八。", pinyin: "wǔ jiā sān shì bā.", en: "Five plus three is eight.", scenario: "numbers", note: "加 (jiā) means 'plus' — quick math practice" },
+
   // airport
   { hanzi: "护照在这儿", pinyin: "hùzhào zài zhèr", en: "Here's my passport", scenario: "airport", note: "" },
   { hanzi: "我的行李在哪儿？", pinyin: "wǒ de xíngli zài nǎr?", en: "Where's my luggage?", scenario: "airport", note: "" },
