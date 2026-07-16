@@ -53,19 +53,29 @@ const DORAEMON_ANIM_MOOD = {
   celebrate: "doraemon_hachiware", cry: "doraemon_nobita", eat: "doraemon_hachiware",
   study: "doraemon_nobita", cheer: "doraemon_dorami", sleep: "doraemon_nobita",
   hunt: "doraemon_hachiware", market: "doraemon_suneo", group: "doraemon_hachiware",
-  usagi: "doraemon_gian",
+  usagi: "doraemon_gian", ramen: "doraemon_hachiware",
 };
 const DORAEMON_ANIM_CLASS = {
   celebrate: "clip-celebrate", cry: "clip-cry", eat: "clip-eat", study: "clip-study",
   cheer: "clip-cheer", sleep: "clip-sleep", hunt: "clip-gadget", market: "clip-shopping",
-  group: "clip-group", usagi: "clip-yell",
+  group: "clip-group", usagi: "clip-yell", ramen: "clip-eat",
 };
 function animGIF(mood, h) {
   if (typeof S !== "undefined" && S.theme === "doraemon") {
     const id = DORAEMON_ANIM_MOOD[mood];
     const cls = DORAEMON_ANIM_CLASS[mood];
-    if (!id || !cls || typeof LOCAL_ART === "undefined" || !LOCAL_ART[id]) return "";
-    return `<div class="animclip-static"><img src="${LOCAL_ART[id]}" class="${cls}" style="max-height:${h || 150}px" alt=""></div>`;
+    // the mood class lives on the wrapping div (not the <img>) so its ::before/
+    // ::after decorations (confetti, tears, zzz, etc — style.css) actually render;
+    // ::after is not generated on replaced elements like <img> in any browser.
+    if (id && cls && typeof LOCAL_ART !== "undefined" && LOCAL_ART[id])
+      return `<div class="animclip-static ${cls}"><img src="${LOCAL_ART[id]}" style="max-height:${h || 150}px" alt=""></div>`;
+    // no art/class mapped for this mood (or the mapped art is missing) — never
+    // render a dead/blank moment in doraemon theme: fall back to the flagship
+    // mascot with a generic cheer clip, and only give up (return "") if even
+    // that art is missing from LOCAL_ART.
+    if (typeof LOCAL_ART !== "undefined" && LOCAL_ART["doraemon_hachiware"])
+      return `<div class="animclip-static clip-cheer"><img src="${LOCAL_ART["doraemon_hachiware"]}" style="max-height:${h || 150}px" alt=""></div>`;
+    return "";
   }
   const list = QQ_ANIM && QQ_ANIM[mood];
   if (!list || !list.length) return "";
@@ -163,7 +173,7 @@ function runSession(opts) {
   const total0 = Q.length;
   let done = 0, firstTryRight = 0, firstTryTotal = 0, combo = 0, bestCombo = 0;
   const requeued = new Set();
-  const host = opts.host || "usagi";
+  const host = opts.host || (typeof S !== "undefined" && S.theme === "doraemon" ? "hachiware" : "usagi");
   let alive = true;  // killed on quit so pending timeouts can't render into a dead screen
   speechSynthesis && speechSynthesis.cancel();
 
@@ -230,7 +240,7 @@ function runSession(opts) {
     body.innerHTML = "";
     const miss = correctHtml => feedback(false, correctHtml, task.w || (task.p ? null : null), () => {
       // requeue a fresh copy once so she retries it before the end
-      const key = JSON.stringify([task.t, (task.w || task.p || {}).hanzi, task.sub]);
+      const key = JSON.stringify([task.t, (task.w || task.p || {}).hanzi, task.x && task.x.answer, task.sub]);
       if (!requeued.has(key) && opts.kind !== "exam") { requeued.add(key); Q.push({ ...task, retry: true }); }
       next();
     });
@@ -505,14 +515,19 @@ const TASK_UI = {
         catch { toast("🎤 mic is blocked — tap the icon in the address bar and allow it"); return; }
         const r = new SR(); r.lang = "zh-CN"; r.maxAlternatives = 3;
         let got = false;
-        mic.classList.add("listening"); heard.textContent = "listening — say it now!";
+        SFX.tap(); mic.classList.add("listening"); heard.textContent = "listening — say it now!";
+        const missCue = msg => {
+          SFX.wrong();
+          mic.classList.remove("listening"); mic.classList.add("shake");
+          setTimeout(() => mic.classList.remove("shake"), 400);
+          heard.textContent = ""; toast(msg);
+        };
         const watchdog = setTimeout(() => {
           if (got) return;
           got = true;
           try { r.abort(); } catch {}
-          mic.classList.remove("listening"); heard.textContent = "";
-          toast("mic check timed out — try again, or skip this one");
-        }, 8000);
+          missCue("mic check timed out — try again, or skip this one");
+        }, 6000);
         r.onresult = e => {
           if (got) return;
           got = true; clearTimeout(watchdog);
@@ -521,11 +536,27 @@ const TASK_UI = {
           const hit = alts.some(a => a === target || a.includes(target) || (target.includes(a) && a.length >= Math.ceil(target.length * 0.6)));
           heard.textContent = "heard: " + alts[0];
           S.stats.spoken++; save();
-          hit ? s.hit(null) : s.feedback(false, `listen 🐢 and try once more — or skip, no pressure!`, null, () => {});
+          mic.classList.remove("listening");
+          hit ? s.hit(null) : s.miss(`listen 🐢 and try once more — or skip, no pressure!`);
         };
-        r.onerror = () => { if (got) return; got = true; clearTimeout(watchdog); heard.textContent = ""; toast("mic hiccup — 🐢 shadow it out loud and tap 'said it'"); shadowFallback(); };
-        r.onend = () => { clearTimeout(watchdog); mic.classList.remove("listening"); if (!got) { got = true; toast("didn't catch that — try again or skip"); } };
-        try { r.start(); } catch { toast("mic is busy — try again in a second"); }
+        r.onerror = e => {
+          if (got) return;
+          got = true; clearTimeout(watchdog);
+          // most errors (no-speech, network, us calling abort()) are transient —
+          // the mic itself still works, so let her just tap and try again. Only
+          // give up on real mic checking when the mic access itself is broken.
+          const fatal = e && (e.error === "not-allowed" || e.error === "service-not-allowed" || e.error === "audio-capture");
+          if (fatal) {
+            missCue("mic access isn't working here — 🐢 shadow it out loud and tap 'said it'");
+            setTimeout(shadowFallback, 350); // let the shake/sound land before the UI swaps
+          } else if (e && e.error === "no-speech") {
+            missCue("didn't hear anything — tap the mic and try again!");
+          } else {
+            missCue("mic hiccup — tap the mic to try again");
+          }
+        };
+        r.onend = () => { clearTimeout(watchdog); mic.classList.remove("listening"); if (!got) { got = true; missCue("didn't catch that — try again or skip"); } };
+        try { r.start(); } catch { missCue("mic is busy — try again in a second"); }
       };
     } else shadowFallback();
     function shadowFallback() {
@@ -594,12 +625,12 @@ const TASK_UI = {
 };
 
 /* ---------- session entry points ---------- */
-function startNode(node, backTo) {
-  const host = node.host || "chiikawa";
+function startNode(node, backTo, extra) {
+  const host = node.host || (S.theme === "doraemon" ? "hachiware" : "chiikawa");
   if (node.kind === "words") {
-    runSession({ title: node.title, tasks: wordTasks(node.words, node.unitWords || node.words), nodeId: node.id, kind: "lesson", host, backTo });
+    runSession({ title: node.title, tasks: wordTasks(node.words, node.unitWords || node.words), nodeId: node.id, kind: "lesson", host, backTo, ...extra });
   } else if (node.kind === "phrases") {
-    runSession({ title: node.title, tasks: phraseTasks(node.phrases), nodeId: node.id, kind: "lesson", host, backTo });
+    runSession({ title: node.title, tasks: phraseTasks(node.phrases), nodeId: node.id, kind: "lesson", host, backTo, ...extra });
   } else if (node.kind === "story") {
     runStory(node, backTo);
   } else if (node.kind === "grammar") {
@@ -608,12 +639,12 @@ function startNode(node, backTo) {
       tasks.push({ t: "gintro", g });
       shuffle(g.exercises || []).slice(0, 2).forEach(x => tasks.push({ t: "gbuild", x, hint: g.title }));
     });
-    runSession({ title: node.title, tasks, nodeId: node.id, kind: "lesson", host, backTo });
+    runSession({ title: node.title, tasks, nodeId: node.id, kind: "lesson", host, backTo, ...extra });
   } else if (node.kind === "exam") {
     const tasks = node.unit.grammar
       ? shuffle(node.unit.grammar.flatMap(g => (g.exercises || []).map(x => ({ t: "gbuild", x })))).slice(0, 12)
       : examTasks(node.unit);
-    runSession({ title: node.title, tasks, nodeId: node.id, kind: "exam", host, backTo });
+    runSession({ title: node.title, tasks, nodeId: node.id, kind: "exam", host, backTo, ...extra });
   }
 }
 

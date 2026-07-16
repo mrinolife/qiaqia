@@ -456,7 +456,7 @@ fetch("chars/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
   // wallpaper override removed — the path map needs the clean meadow background
   const brand = document.getElementById("brandMascot");
   if (brand) brand.innerHTML = mascotSVG(S.theme === "doraemon" ? "hachiware" : "usagi", 38);
-  if (document.querySelector(".path-hero")) renderPath();
+  if (document.querySelector(".path-hero")) renderPath(false);
 }).catch(() => {});
 
 // real show-art snack overrides: chars/food/<id>.png + manifest, shipped publicly —
@@ -469,7 +469,9 @@ fetch("chars/food/manifest.json").then(r => r.ok ? r.json() : null).then(m => {
 function snackArt(sn, size) {
   const s = size || 40;
   if (LOCAL_FOOD[sn.id]) return `<img src="${LOCAL_FOOD[sn.id]}" width="${s}" height="${s}" style="object-fit:cover;border-radius:10px" alt="">`;
-  return null;
+  // designed "sticker snack" fallback for entries with no real show-art PNG
+  // (never a bare unstyled emoji) — see .snack-emoji in style.css
+  return `<div class="snack-emoji" style="width:${s}px;height:${s}px;font-size:${Math.round(s * 0.55)}px">${sn.emoji}</div>`;
 }
 
 function mascotSVG(kind, size) {

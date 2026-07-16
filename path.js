@@ -15,7 +15,7 @@ const UNITS = (() => {
   const dlg = title => D.dialogues.find(d => d.title.toLowerCase().includes(title));
   const spec = [
     { id: "u1",  title: "打招呼 Greetings",   emoji: "👋", host: "usagi",     cats: ["greetings"], scen: ["greetings"] },
-    { id: "u2",  title: "数字 Numbers",       emoji: "🔢", host: "hachiware", cats: ["numbers"],   scen: ["money"] },
+    { id: "u2",  title: "数字 Numbers",       emoji: "🔢", host: "hachiware", cats: ["numbers"],   scen: ["numbers"] },
     { id: "u3",  title: "你和我 People",      emoji: "👪", host: "usagi",     cats: ["people"],    scen: ["smalltalk"], dlg: dlg("introduc") || dlg("meeting") },
     { id: "u4",  title: "问问题 Questions",   emoji: "❓", host: "usagi",     cats: ["question"] },
     { id: "u5",  title: "时间 Time",          emoji: "🕐", host: "kani",      cats: ["time"] },
@@ -25,8 +25,8 @@ const UNITS = (() => {
     { id: "u9",  title: "动词 Doing Words I",  emoji: "🏃", host: "rakko",    catsSlice: ["verbs", 0, 15] },
     { id: "u10", title: "动词 Doing Words II", emoji: "💪", host: "rakko",    catsSlice: ["verbs", 15, 99] },
     { id: "u11", title: "形容 Describing",    emoji: "✨", host: "usagi",     cats: ["adjectives"] },
-    { id: "u12", title: "语法胶水 Glue Words", emoji: "🧩", host: "yoroi",     cats: ["grammar"],   scen: ["transport"] },
-    { id: "u13", title: "旅行 Getting Around", emoji: "✈️", host: "hachiware", cats: ["travel"],   scen: ["airport", "hotel", "emergency"] },
+    { id: "u12", title: "语法胶水 Glue Words", emoji: "🧩", host: "yoroi",     cats: ["grammar"] },
+    { id: "u13", title: "旅行 Getting Around", emoji: "✈️", host: "hachiware", cats: ["travel"],   scen: ["airport", "hotel", "emergency", "money", "transport"] },
   ];
   const units = spec.map(u => {
     let words = [];
@@ -145,13 +145,14 @@ function tripDays() {
 }
 
 /* ---------- the path screen ---------- */
-function renderPath() {
+function renderPath(autoScroll = true) {
   view.innerHTML = "";
   const NODES = allNodes();
   const curIdx = currentNodeIdx(NODES);
   const cur = NODES[curIdx];
-  // usagi is the namesake mascot — she headlines the path most of the time
-  const hero = (Math.random() < 0.62 ? activeCast().find(c => c.id === "usagi") : shuffle(unlockedCast())[0]) || activeCast()[0];
+  // usagi (chiikawa world) / hachiware→Doraemon (doraemon world) headlines the path most of the time
+  const namesakeId = S.theme === "doraemon" ? "hachiware" : "usagi";
+  const hero = (Math.random() < 0.62 ? activeCast().find(c => c.id === namesakeId) : shuffle(unlockedCast())[0]) || activeCast()[0];
   const line = hero.lines[Math.floor(Math.random() * hero.lines.length)];
   const learned = learnedWordCount();
   const due = dueCards().length;
@@ -164,6 +165,8 @@ function renderPath() {
   const copter = isDoraemon && hero.id === "hachiware" ? " copter" : "";
   const startIcon = isDoraemon ? "🚪" : "🐾";
   view.append(el(`<div class="path-hero wob">
+      <span class="washi-tape" style="--rot:-6deg;top:-8px;left:14px"></span>
+      <span class="washi-tape" style="--rot:5deg;top:-8px;right:14px"></span>
       <div class="hero-mascot bob${copter}">${art(hero.id, "happy", 74)}</div>
       <div class="hero-bubble wob">${esc(line)}</div>
       <div class="hero-chips">
@@ -197,12 +200,21 @@ function renderPath() {
   // trailside decor: REAL art only (official character/food PNGs) + emoji nature bits
   const SIDE_CAST = ["chiikawa", "hachiware", "usagi", "momonga", "kani", "shisa", "rakko", "kurimanju", "yoroi", "chimera"];
   const SIDE_FOOD = ["ramen", "hamburg", "parfait", "pancake", "mangoice", "jipai", "beer"];
-  const BIOME_BITS = {
-    meadow: ["🌸", "🌼", "🍀", "🌷", "✨"],
-    forest: ["🍄", "🍃", "🌰", "🐿️", "✨"],
-    town:   ["🏮", "⭐", "🎏", "🧋", "✨"],
-    market: ["🍡", "🧋", "🍜", "🛍️", "✨"],
+  // biome ambient bits, theme-aware: chiikawa nature/festival flavor vs a
+  // doraemon-world gadget/future-city variant of the same 4 zones
+  const BIOME_BITS_CHIIKAWA = {
+    meadow: ["🌸", "🐝", "🍀", "🦋", "🌼", "🐞", "🌿", "🍄"],
+    forest: ["🌲", "🍂", "🦔", "🍁", "🌰", "🦉", "🪵", "🍃"],
+    town:   ["🏮", "🎋", "🧧", "🏯", "🎐", "🪁", "🥮", "🏵️"],
+    market: ["🍡", "🧋", "🥟", "🏮", "🛍️", "🎏", "🍥", "🧨"],
   };
+  const BIOME_BITS_DORAEMON = {
+    meadow: ["🌸", "🔧", "🛸", "🌼", "✨", "🔩", "🎈", "☁️"],
+    forest: ["🌲", "⚙️", "🚁", "🍃", "💫", "🔋", "🌰", "📡"],
+    town:   ["🏙️", "🚪", "✨", "🔔", "💠", "🛗", "🎡", "🌟"],
+    market: ["🍜", "🎏", "🛎️", "💰", "🔧", "🏪", "✨", "🎐"],
+  };
+  const BIOME_BITS = S.theme === "doraemon" ? BIOME_BITS_DORAEMON : BIOME_BITS_CHIIKAWA;
   // curated per-unit decor: fixed %-based spots inside the meadow (never clipped,
   // never on the footpath), one character + one snack + nature bits per unit
   const DECO_SPOTS = [
@@ -210,30 +222,53 @@ function renderPath() {
     [{ x: 94, y: 40 }, { x: 6, y: 30 }, { x: 93, y: 78 }, { x: 7, y: 62 }],
     [{ x: 6, y: 44 }, { x: 94, y: 34 }, { x: 7, y: 68 }, { x: 93, y: 82 }],
   ];
+  // tiny deterministic PRNG (mulberry32) so the trailside cast/snack pick is
+  // stable across re-renders of the same unit — no Math.random()
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const seededPick = (arr, seed) => arr[Math.floor(mulberry32(seed)() * arr.length)];
   const groupDecor = (uidx, biome) => {
     const spots = DECO_SPOTS[uidx % DECO_SPOTS.length];
     const bits = BIOME_BITS[biome];
-    const who = SIDE_CAST[(uidx * 7 + 3) % SIDE_CAST.length];
-    const food = SIDE_FOOD[(uidx * 5 + 1) % SIDE_FOOD.length];
-    const mk = (s, inner) => `<span class="gdeco" style="--gx:${s.x}%;--gy:${s.y}%"><span class="gfloat">${inner}</span></span>`;
-    return mk(spots[0], art(who, "idle", 44))
+    const who = seededPick(SIDE_CAST, uidx * 1000 + 1);
+    const food = seededPick(SIDE_FOOD, uidx * 1000 + 2);
+    // character-portrait + food-PNG spots get a sticker-card backing + a small
+    // deterministic tilt; bare biome-emoji-bit spots stay glyph-only
+    const mk = (s, inner, spotIdx) => {
+      const sticker = spotIdx !== undefined;
+      const tilt = sticker ? `${((uidx * 4 + spotIdx) * 53) % 12 - 6}deg` : "";
+      return `<span class="gdeco${sticker ? " sticker" : ""}" style="--gx:${s.x}%;--gy:${s.y}%${sticker ? `;--tilt:${tilt}` : ""}"><span class="gfloat">${inner}</span></span>`;
+    };
+    return mk(spots[0], art(who, "idle", 44), 0)
       + mk(spots[1], `<span class="gbit">${bits[uidx % bits.length]}</span>`)
-      + mk(spots[2], `<img src="chars/food/${food}.png" width="36" height="36" style="object-fit:contain" alt="">`)
+      + mk(spots[2], `<img src="chars/food/${food}.png" width="36" height="36" style="object-fit:contain" alt="">`, 2)
       + mk(spots[3], `<span class="gbit">${bits[(uidx + 2) % bits.length]}</span>`);
   };
   activeUnits().forEach((u, uidx) => {
     const biome = BIOMES[uidx % BIOMES.length];
     const uStars = u.nodes.reduce((a, n) => a + nodeStars(n.id), 0);
     const uDone = u.nodes.filter(n => nodeStars(n.id)).length;
+    const examNode = u.nodes[u.nodes.length - 1];
+    const canTestOut = uDone < u.nodes.length && examNode && examNode.kind === "exam";
     const group = el(`<div class="unit-group biome-${biome}"></div>`);
     group.insertAdjacentHTML("beforeend", groupDecor(uidx, biome));
     group.append(el(`<div class="unit-banner card">
+        <span class="washi-tape" style="--rot:-4deg;top:-8px;left:16px"></span>
         <div class="unit-overlay">
           <span class="unit-host">${art(u.host, uDone === u.nodes.length ? "cheer" : "idle", 46)}</span>
           <span class="unit-name">${u.emoji} <b>${esc(u.title)}</b><br>
           <span class="muted">${uDone}/${u.nodes.length} · ${"★".repeat(Math.min(3, Math.round(uStars / Math.max(1, u.nodes.length))))||"☆"}</span></span>
+          ${canTestOut ? `<button class="btn small yellow testout-btn">📝 test out</button>` : ""}
         </div>
       </div>`));
+    if (canTestOut) group.querySelector(".testout-btn").onclick = () => testOutSheet(u);
     u.nodes.forEach(n => {
       const idx = gIdx++;
       const stars = nodeStars(n.id);
@@ -244,6 +279,7 @@ function renderPath() {
           <button class="path-node ${n.kind} ${stars ? "done" : ""} ${!unlocked ? "locked" : ""} ${isCur ? "cur" : ""}" data-i="${idx}">
             <span class="node-face${[...(n.label || "")].length > 1 && n.kind !== "exam" ? " small" : ""}">${n.kind === "exam" ? "试" : esc(n.label)}</span>
             ${!unlocked ? `<span class="node-lock">🔒</span>` : ""}
+            ${stars ? `<span class="stamp-ring" style="--rot:${(idx * 37) % 24 - 12}deg"></span>` : ""}
             ${stars ? `<span class="node-stars">${"★".repeat(stars)}</span>` : ""}
           </button>
           ${isCur ? `<span class="node-buddy bob">${art(n.host, "idle", 52)}</span><span class="node-start">开始!</span>` : ""}
@@ -264,16 +300,18 @@ function renderPath() {
         <span class="unit-name">🔓 <b>HSK 2 · the next level</b><br>
         <span class="muted">${(window.YAHA_HSK2 || []).length} more words, whole new units — open it when you're ready!</span></span>
         <button class="btn small pink" id="hsk2Go">open</button></div>`);
-    gate.querySelector("#hsk2Go").onclick = () => { S.hsk2Open = true; save(); confetti(); SFX.fanfare(); toast("HSK 2 unlocked!! 加油!! 🎉"); renderPath(); };
+    gate.querySelector("#hsk2Go").onclick = () => { S.hsk2Open = true; save(); confetti(); SFX.fanfare(); toast("HSK 2 unlocked!! 加油!! 🎉"); renderPath(false); };
     map.append(gate);
   } else if (S.hsk2Open) {
     const off = el(`<button class="btn small ghost" style="margin:6px auto;display:block;position:relative;z-index:1">fold HSK 2 away for now</button>`);
-    off.onclick = () => { S.hsk2Open = false; save(); renderPath(); };
+    off.onclick = () => { S.hsk2Open = false; save(); renderPath(false); };
     map.append(off);
   }
   map.append(el(`<div class="path-end">
-      <div class="bob">${art("chiikawa", "cheer", 54)}${art("usagi", "cheer", 76)}${art("hachiware", "cheer", 54)}</div>
-      <div class="muted">台湾见! see you in Taiwan! 🇹🇼</div></div>`));
+      <div class="polaroid">
+        <div class="bob">${art("chiikawa", "cheer", 54)}${isDoraemon ? art("hachiware", "cheer", 76) + art("usagi", "cheer", 54) : art("usagi", "cheer", 76) + art("hachiware", "cheer", 54)}</div>
+      </div>
+      <div class="polaroid-caption muted">台湾见! see you in Taiwan! 🇹🇼</div></div>`));
   view.append(map);
 
   // scroll the current node into view (below the hero card)
@@ -285,6 +323,7 @@ function renderPath() {
       if (solids.some(s => r.left < s.right + pad && r.right > s.left - pad && r.top < s.bottom + pad && r.bottom > s.top - pad))
         g.style.display = "none";
     });
+    if (!autoScroll) return;
     const c = map.querySelector(".path-node.cur");
     if (c && curIdx > 2) c.scrollIntoView({ block: "center" });
   });
@@ -319,6 +358,60 @@ function nodeSheet(node) {
   ov.querySelector("#shX").onclick = () => ov.remove();
   ov.querySelector("#shGo").onclick = () => { ov.remove(); startNode(node, renderPath); };
   document.body.appendChild(ov);
+}
+
+/* ---------- test out (skip a unit you already know) ---------- */
+/* Rachel already knows a lot of HSK1 — this lets her jump straight to a
+   unit's exam instead of playing every lesson. If she passes, every other
+   node in the unit (words/phrases/story) is marked done at the SAME star
+   level she just earned on the exam, and pays out the XP + snack rewards
+   she'd have collected doing them for real, so skipping never costs her
+   collectibles. Nodes already at or above that star level are left alone. */
+function testOutSheet(u) {
+  const examNode = u.nodes[u.nodes.length - 1];
+  if (!examNode || examNode.kind !== "exam") return;
+  const toGo = u.nodes.slice(0, -1).filter(n => nodeStars(n.id) < 3).length;
+  const ov = el(`<div class="unlock-pop sheet-pop"><div class="sheet wob">
+      <div class="sheet-mascot">${art(examNode.host, "think", 84)}</div>
+      <div class="task-ask">test out 📝</div>
+      <h3>${esc(u.title)}</h3>
+      <div class="muted small">already know this one? take the unit exam right now —
+        pass it and every lesson in this unit gets marked done (stars, xp, and snacks
+        included) so you don't lose out just because you skipped ahead.</div>
+      <div class="muted" style="margin-top:8px">${toGo} part${toGo === 1 ? "" : "s"} would be skipped · pass 60%+ to clear them all</div>
+      <button class="btn big pink" id="toGo">⚔️ take the test!</button>
+      <button class="btn small ghost" id="toX">not now</button>
+    </div></div>`);
+  ov.addEventListener("click", e => { if (e.target === ov) ov.remove(); });
+  ov.querySelector("#toX").onclick = () => ov.remove();
+  ov.querySelector("#toGo").onclick = () => { ov.remove(); testOutUnit(u); };
+  document.body.appendChild(ov);
+}
+function testOutUnit(u) {
+  const examNode = u.nodes[u.nodes.length - 1];
+  const rest = u.nodes.slice(0, -1);
+  startNode(examNode, renderPath, {
+    onDone: stars => {
+      if (!stars) return; // exam not passed — nothing to skip, nothing lost
+      S.stars = S.stars || {};
+      let xpGained = 0, snacksGained = 0;
+      rest.forEach(n => {
+        if (stars > (S.stars[n.id] || 0)) {
+          S.stars[n.id] = stars;
+          xpGained += 10;
+          if (stars === 3) { xpGained += 5; snacksGained++; }
+        }
+      });
+      if (xpGained) addXP(xpGained);
+      save();
+      if (xpGained || snacksGained) {
+        setTimeout(() => {
+          toast(`📝 tested out! +${xpGained}✨xp${snacksGained ? ` · 🍡 ${snacksGained} snack${snacksGained > 1 ? "s" : ""} on the way` : ""}`);
+        }, 1700);
+        for (let i = 0; i < snacksGained; i++) awardSnack();
+      }
+    },
+  });
 }
 
 /* ---------- review tab ---------- */
@@ -487,17 +580,16 @@ function renderFoodGallery() {
   view.innerHTML = "";
   view.append(el(`<div class="backrow"><button class="iconbtn" id="fgBk">←</button>
     <h3 style="margin:0">🍜 Food Gallery <span class="muted">real art from the show</span></h3></div>`));
-  view.append(el(`<div class="muted" style="margin:0 4px 12px">every real Chiikawa food image we've tracked down, all in one place —
+  view.append(el(`<div class="muted" style="margin:0 4px 12px">every dish, real show art when we have it — a designed sticker card fills in the rest —
     tap any dish to hear it said out loud. 🔒 just means you haven't won it from a quiz yet, but it's still yours to enjoy!</div>`));
-  const items = SNACKS.filter(sn => LOCAL_FOOD[sn.id]);
-  if (!items.length) {
-    view.append(el(`<div class="card wob center muted">no real food art installed yet — check back later!</div>`));
-  } else {
+  const items = SNACKS;
+  {
     const grid = el(`<div class="foodgrid"></div>`);
     items.forEach(sn => {
       const n = (S.snacks || {})[sn.id] || 0;
+      const art = LOCAL_FOOD[sn.id] ? `<img src="${LOCAL_FOOD[sn.id]}" alt="${esc(sn.en)}">` : snackArt(sn, 150);
       const cell = el(`<button class="card foodcell ${n ? "" : "locked"}">
-          <img src="${LOCAL_FOOD[sn.id]}" alt="${esc(sn.en)}">
+          ${art}
           ${n ? "" : `<span class="lockbadge">🔒 unlock via quizzes</span>`}
           <div class="fname">${esc(sn.hanzi)}</div>
           <div class="pinyin">${esc(sn.pinyin)}</div>
@@ -659,6 +751,28 @@ function renderProfile() {
   vc.onclick = voiceCheck;
   view.append(vc);
 }
+
+/* ---------- one-time migrations ---------- */
+/* Units 1 (Greetings) + 2 (Numbers) marked fully 3-starred for Rachel — she'd
+   basically already aced both in real play. u3 People (Usagi, her actual next
+   unit) and HSK2 are deliberately left untouched so it naturally becomes her
+   current step. Runs once per profile, gated so replays never re-fire it. */
+(function migrateUnit1and2MaxStars() {
+  if (activeProfileName() !== "Rachel") return;
+  if (S._migPeopleMaxStars) {
+    // undo the earlier wrong pass — HSK2 + u3 People should never have been touched
+    UNITS.filter(u => u.id === "u3" || u.id === "h-people")
+      .forEach(u => u.nodes.forEach(n => { delete S.stars[n.id]; }));
+    delete S.hsk2Open;
+    delete S._migPeopleMaxStars;
+  }
+  if (S._migUnit12MaxStars) return;
+  S.stars = S.stars || {};
+  UNITS.filter(u => u.id === "u1" || u.id === "u2")
+    .forEach(u => u.nodes.forEach(n => { S.stars[n.id] = 3; }));
+  S._migUnit12MaxStars = true;
+  save();
+})();
 
 /* ---------- boot ---------- */
 if (!D.vocab.length) {
