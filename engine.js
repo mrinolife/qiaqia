@@ -108,6 +108,7 @@ function tokenize(hanzi) {
   const dict = window.__tokDict || (window.__tokDict = (() => {
     const set = new Set();
     D.vocab.forEach(v => set.add(v.hanzi));
+    (window.YAHA_HSK2 || []).forEach(v => set.add(v.hanzi)); // HSK2 words tokenize whole
     return set;
   })());
   const toks = [];

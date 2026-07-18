@@ -1281,6 +1281,47 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out 3; 
 .biome-forest { background: linear-gradient(180deg, rgba(143,202,111,.28), transparent 65%); }
 .biome-town   { background: linear-gradient(180deg, rgba(255,234,169,.4), transparent 65%); }
 .biome-market { background: linear-gradient(180deg, rgba(224,82,110,.16), transparent 65%); }
+/* HSK2 world biomes — evening-festival zones so level 2 reads as new land */
+.biome-lantern { background: linear-gradient(180deg, rgba(255,183,94,.32), transparent 65%); }
+.biome-river   { background: linear-gradient(180deg, rgba(126,200,227,.32), transparent 65%); }
+.biome-temple  { background: linear-gradient(180deg, rgba(233,120,86,.22), transparent 65%); }
+.biome-star    { background: linear-gradient(180deg, rgba(167,139,250,.26), transparent 65%); }
+
+/* LEVEL 2 world gate — one-time divider where the HSK2 lands begin */
+.l2-gate {
+  position: relative; z-index: 1; text-align: center; margin: 26px 4px 10px;
+  padding: 16px 14px 14px; border-radius: 24px; border: 3px solid var(--ink);
+  background: linear-gradient(160deg, rgba(255,183,94,.35), rgba(255,234,169,.45) 55%, rgba(224,82,110,.18));
+  box-shadow: 0 4px 0 rgba(74,63,53,.22);
+}
+.l2-gate.doraemon {
+  background: linear-gradient(160deg, rgba(126,200,227,.4), rgba(167,139,250,.28) 55%, rgba(255,234,169,.35));
+}
+.l2-gate-glyphs { font-size: 1.5rem; letter-spacing: 10px; line-height: 1; }
+.l2-gate-glyphs .big { font-size: 2.4rem; vertical-align: -6px; display: inline-block; animation: gatepulse 2.8s ease-in-out infinite; }
+.l2-gate-cast { margin: 2px 0; line-height: 0; }
+.l2-gate-cast > * { vertical-align: bottom; }
+.l2-gate-title {
+  font-weight: 900; font-size: 1.05rem; letter-spacing: 2px; margin-top: 2px;
+  background: linear-gradient(90deg, var(--pink-deep, #e0526e), #a97ffa, var(--pink-deep, #e0526e));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+@keyframes gatepulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+/* completed-unit trophy state — banner shimmers gold + corner trophy stamp */
+.unit-banner.complete {
+  border-color: var(--yellow-deep, #d9a514);
+  background-image: linear-gradient(120deg, transparent 30%, rgba(255,221,120,.35) 45%, transparent 60%);
+  background-size: 240% 100%;
+  animation: bannershine 3.5s ease-in-out infinite;
+}
+.unit-trophy {
+  position: absolute; top: -12px; right: 10px; font-size: 1.35rem; z-index: 2;
+  filter: drop-shadow(0 2px 2px rgba(74,63,53,.3));
+  animation: trophybob 2.6s ease-in-out infinite;
+}
+@keyframes bannershine { 0%, 60%, 100% { background-position: 120% 0; } 30% { background-position: -60% 0; } }
+@keyframes trophybob { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg) translateY(-2px); } }
 
 .unit-overlay .unit-host { flex: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,.1)); }
 .unit-overlay .unit-name { font-size: .95rem; }

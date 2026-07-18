@@ -72,8 +72,9 @@ const UNITS = (() => {
     nodes.push({ id: `${u.id}-exam`, kind: "exam", unit: { words: [], phrases: allP.slice(0, 14) }, host: u.host, title: u.title + " · exam", label: "试" });
     units.push({ ...u, words: [], phrases: allP, nodes });
   });
-  // HSK 2 expansion units (hsk2.js)
+  // HSK 2 expansion units (hsk2.js words + hsk2x.js phrases/dialogues/grammar)
   const H2 = window.YAHA_HSK2 || [];
+  const X = window.YAHA_HSK2X || { phrases: {}, dialogues: {}, grammar: [] };
   if (H2.length) {
     H2.forEach((v, i) => v.id = "h" + i);
     const by2 = {};
@@ -99,8 +100,13 @@ const UNITS = (() => {
         id: `${id}-w${i}`, kind: "words", words: chunk, unitWords: words, host,
         title, label: chunk[0].hanzi,
       }));
-      nodes.push({ id: `${id}-exam`, kind: "exam", unit: { words, phrases: [] }, host, title: title + " · exam", label: "试" });
-      units.push({ id, title: "HSK2 · " + title, emoji, host, words, phrases: [], nodes, lvl: 2 });
+      // HSK1-parity: phrase + story nodes per unit (hsk2x.js), folded into the exam
+      const phrases = (X.phrases || {})[id] || [];
+      if (phrases.length) nodes.push({ id: `${id}-p0`, kind: "phrases", phrases, host, title, label: "💬" });
+      const d = (X.dialogues || {})[id];
+      if (d) nodes.push({ id: `${id}-story`, kind: "story", dialogue: d, host, title: d.title, label: "📖" });
+      nodes.push({ id: `${id}-exam`, kind: "exam", unit: { words, phrases }, host, title: title + " · exam", label: "试" });
+      units.push({ id, title: "HSK2 · " + title, emoji, host, words, phrases, nodes, lvl: 2 });
     });
     const leftovers = H2.filter(w => !used2.has(w.id));
     if (leftovers.length) {
@@ -109,6 +115,17 @@ const UNITS = (() => {
       }));
       nodes.push({ id: "h-misc-exam", kind: "exam", unit: { words: leftovers, phrases: [] }, host: "momonga", title: "杂货 · exam", label: "试" });
       units.push({ id: "h-misc", title: "HSK2 · 杂货 Odds & Ends", emoji: "🎁", host: "momonga", words: leftovers, phrases: [], nodes, lvl: 2 });
+    }
+    // HSK2 Grammar Gym II — 比/得/过/正在/要…了/因为/虽然/离 (hsk2x.js)
+    const g2 = X.grammar || [];
+    if (g2.length) {
+      const gu = { id: "h-gram", title: "HSK2 · 语法 Grammar Gym II", emoji: "🏋️", host: "yoroi" };
+      const gnodes = chunkBalanced(g2, 2).map((pts, i) => ({
+        id: `h-gram-g${i}`, kind: "grammar", points: pts, host: gu.host,
+        title: pts.map(x => x.title.split(" ")[0]).join(" · "), label: "语",
+      }));
+      gnodes.push({ id: "h-gram-exam", kind: "exam", unit: { grammar: g2, words: [], phrases: [] }, host: gu.host, title: gu.title + " · exam", label: "试" });
+      units.push({ ...gu, words: [], phrases: [], nodes: gnodes, grammar: g2, lvl: 2 });
     }
   }
 
@@ -215,6 +232,22 @@ function renderPath(autoScroll = true) {
     town:   ["🏙️", "🚪", "✨", "🔔", "💠", "🛗", "🎡", "🌟"],
     market: ["🍜", "🎏", "🛎️", "💰", "🔧", "🏪", "✨", "🎐"],
   };
+  // HSK2 world gets its own biome cycle — evening-festival flavor in Chiikawa
+  // world, 22nd-century flavor in Doraemon world — so level 2 FEELS like new land
+  const BIOMES2 = ["lantern", "river", "temple", "star"];
+  const BIOME_BITS2_CHIIKAWA = {
+    lantern: ["🏮", "🌙", "✨", "🎋", "🥠", "🍢", "🎐", "⭐"],
+    river:   ["⛵", "🌊", "🐟", "🦀", "🌉", "🪷", "🐚", "🎣"],
+    temple:  ["⛩️", "🪭", "🏮", "🧧", "🍵", "🌸", "🪷", "🔔"],
+    star:    ["🌙", "⭐", "🦉", "🌌", "💫", "🌠", "🏕️", "✨"],
+  };
+  const BIOME_BITS2_DORAEMON = {
+    lantern: ["🌃", "💡", "🤖", "🔔", "✨", "🛸", "🎆", "💠"],
+    river:   ["🛥️", "🌊", "🐋", "🧭", "🌉", "⚓", "💫", "🔭"],
+    temple:  ["🏯", "🚪", "🔧", "🧲", "⏰", "🌸", "💠", "🔔"],
+    star:    ["🌙", "🚀", "🛰️", "🌌", "💫", "🌠", "👾", "✨"],
+  };
+  const BIOME_BITS_L2 = S.theme === "doraemon" ? BIOME_BITS2_DORAEMON : BIOME_BITS2_CHIIKAWA;
   const BIOME_BITS = S.theme === "doraemon" ? BIOME_BITS_DORAEMON : BIOME_BITS_CHIIKAWA;
   // curated per-unit decor: fixed %-based spots inside the meadow (never clipped,
   // never on the footpath), one character + one snack + nature bits per unit
@@ -235,9 +268,9 @@ function renderPath(autoScroll = true) {
     };
   }
   const seededPick = (arr, seed) => arr[Math.floor(mulberry32(seed)() * arr.length)];
-  const groupDecor = (uidx, biome) => {
+  const groupDecor = (uidx, biome, lvl2) => {
     const spots = DECO_SPOTS[uidx % DECO_SPOTS.length];
-    const bits = BIOME_BITS[biome];
+    const bits = (lvl2 ? BIOME_BITS_L2 : BIOME_BITS)[biome];
     const who = seededPick(SIDE_CAST, uidx * 1000 + 1);
     const food = seededPick(SIDE_FOOD, uidx * 1000 + 2);
     // character-portrait + food-PNG spots get a sticker-card backing + a small
@@ -252,18 +285,38 @@ function renderPath(autoScroll = true) {
       + mk(spots[2], `<img src="chars/food/${food}.png" width="36" height="36" style="object-fit:contain" alt="">`, 2)
       + mk(spots[3], `<span class="gbit">${bits[(uidx + 2) % bits.length]}</span>`);
   };
+  let l2idx = 0, l2GateDrawn = false;
   activeUnits().forEach((u, uidx) => {
-    const biome = BIOMES[uidx % BIOMES.length];
+    const isL2 = u.lvl === 2;
+    const biome = isL2 ? BIOMES2[l2idx++ % BIOMES2.length] : BIOMES[uidx % BIOMES.length];
+    // the LEVEL 2 world gate — a one-time divider where the HSK2 lands begin,
+    // theme-aware: torii festival gate (chiikawa) vs Time Machine port (doraemon)
+    if (isL2 && !l2GateDrawn) {
+      l2GateDrawn = true;
+      map.append(el(isDoraemon ? `<div class="l2-gate doraemon wob">
+          <div class="l2-gate-glyphs"><span>🚀</span><span class="big">🌀</span><span>🛸</span></div>
+          <div class="l2-gate-cast">${art("hachiware", "cheer", 56)}${art("chiikawa", "happy", 44)}</div>
+          <div class="l2-gate-title">LEVEL 2 · 未来世界</div>
+          <div class="muted small">the Time Machine drops you in HSK2 land — new words, new powers!</div>
+        </div>` : `<div class="l2-gate wob">
+          <div class="l2-gate-glyphs"><span>🏮</span><span class="big">⛩️</span><span>🏮</span></div>
+          <div class="l2-gate-cast">${art("usagi", "cheer", 56)}${art("chiikawa", "happy", 44)}</div>
+          <div class="l2-gate-title">LEVEL 2 · 新世界</div>
+          <div class="muted small">through the gate: the HSK2 festival lands — new words, new powers!</div>
+        </div>`));
+    }
     const uStars = u.nodes.reduce((a, n) => a + nodeStars(n.id), 0);
     const uDone = u.nodes.filter(n => nodeStars(n.id)).length;
+    const uComplete = uDone === u.nodes.length;
     const examNode = u.nodes[u.nodes.length - 1];
     const canTestOut = uDone < u.nodes.length && examNode && examNode.kind === "exam";
     const group = el(`<div class="unit-group biome-${biome}"></div>`);
-    group.insertAdjacentHTML("beforeend", groupDecor(uidx, biome));
-    group.append(el(`<div class="unit-banner card">
+    group.insertAdjacentHTML("beforeend", groupDecor(uidx, biome, isL2));
+    group.append(el(`<div class="unit-banner card${uComplete ? " complete" : ""}">
         <span class="washi-tape" style="--rot:-4deg;top:-8px;left:16px"></span>
+        ${uComplete ? `<span class="unit-trophy" title="unit complete!">🏆</span>` : ""}
         <div class="unit-overlay">
-          <span class="unit-host">${art(u.host, uDone === u.nodes.length ? "cheer" : "idle", 46)}</span>
+          <span class="unit-host">${art(u.host, uComplete ? "cheer" : "idle", 46)}</span>
           <span class="unit-name">${u.emoji} <b>${esc(u.title)}</b><br>
           <span class="muted">${uDone}/${u.nodes.length} · ${"★".repeat(Math.min(3, Math.round(uStars / Math.max(1, u.nodes.length))))||"☆"}</span></span>
           ${canTestOut ? `<button class="btn small yellow testout-btn">📝 test out</button>` : ""}

@@ -1,9 +1,9 @@
 /* yaha sw — stale-while-revalidate: instant load from cache (works offline in
    Taiwan), silently refetches in the background so the next open gets updates.
    No version bumps or reinstalls needed when files change on the server. */
-const CACHE = "yaha-v10";
+const CACHE = "yaha-v11";
 const ASSETS = ["./", "index.html", "style.css", "app.js", "engine.js", "path.js",
-                "data.js", "hsk2.js", "taiwan.js", "chats.js",
+                "data.js", "hsk2.js", "hsk2x.js", "taiwan.js", "chats.js",
                 "trad.js", "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest",
                 "icon-180.png", "icon-512.png", "icon-512-maskable.png", "audio/cast/index.json",
                 "chars/manifest.json", "chars/chiikawa.png", "chars/hachiware.png", "chars/usagi.png", "chars/momonga.png", "chars/rakko.png", "chars/kurimanju.png", "chars/shisa.png", "chars/yoroi.png", "chars/kani.png", "chars/chimera.png",
