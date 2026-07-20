@@ -240,6 +240,8 @@ button.chip-due { background: var(--pink); animation: nudge 2.4s ease-in-out 3; 
 }
 .iconbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(123, 95, 75, .45), inset 0 0 0 2px rgba(255, 255, 255, .75); }
 .iconbtn.xl { width: 72px; height: 72px; font-size: 1.9rem; background: var(--blue); }
+.iconbtn.spin-refresh { animation: refresh-spin .6s linear infinite; }
+@keyframes refresh-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* ---------- cards & text ---------- */
 .card { padding: 14px; margin: 8px 0; }

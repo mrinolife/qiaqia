@@ -700,7 +700,12 @@ function renderProfile() {
       </div>
       <div class="lic-foot"><span>${licCopy.foot}</span><span class="lic-barcode">${"▮▯▮▮▯▮▯▮▮▯▮▮▮▯▮▯▮▮▯▮▮▯▮▯▮"}</span><span>🇹🇼 valid: TAIWAN 2026</span></div>
     </div>`);
-  lic.onclick = () => { const l = heroLines[Math.floor(Math.random() * heroLines.length)]; if (l) speakAs(l, heroId); lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce"); };
+  lic.onclick = () => {
+    if (lic._cooldown) return;
+    lic._cooldown = true; setTimeout(() => { lic._cooldown = false; }, 1400);
+    const l = heroLines[Math.floor(Math.random() * heroLines.length)]; if (l) speakAs(l, heroId);
+    lic.classList.remove("bounce"); void lic.offsetWidth; lic.classList.add("bounce");
+  };
   view.append(lic);
   // hero mascot welcomes on profile — random scream
   setTimeout(() => { const l = heroLines[Math.floor(Math.random() * heroLines.length)]; if (l) speakAs(l, heroId); }, 400);

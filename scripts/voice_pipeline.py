@@ -88,15 +88,15 @@ CHARACTERS = {
         ],
     },
     "kurimanju": {
-        "tts_voice": "zh-CN-YunyangNeural",  # male, relaxed
-        "pitch": -1,      # slightly lower — sleepy elder
-        "tempo": 0.92,    # slower, lazy
+        "tts_voice": "zh-CN-YunxiNeural",  # male, warm — chill not elderly
+        "pitch": 1,       # neutral ratio (1.0 = no shift) — relaxed, not old-man raspy
+        "tempo": 0.96,    # slower, lazy, but not draggy
         "lines": [
             "哈~ 学完喝一杯奶茶吧",
             "慢慢学, 慢慢吃~",
             "唔…慢慢来, 急什么呢",
             "学完了? 那就休息一下吧~",
-            "哈~ 老夫这把年纪也在学呢",
+            "哈~ 大家都要慢慢来哦",
             "慢工出细活儿, 慢慢学~",
         ],
     },

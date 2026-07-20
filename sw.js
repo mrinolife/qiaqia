@@ -1,7 +1,7 @@
 /* yaha sw — stale-while-revalidate: instant load from cache (works offline in
    Taiwan), silently refetches in the background so the next open gets updates.
    No version bumps or reinstalls needed when files change on the server. */
-const CACHE = "yaha-v11";
+const CACHE = "yaha-v12";
 const ASSETS = ["./", "index.html", "style.css", "app.js", "engine.js", "path.js",
                 "data.js", "hsk2.js", "hsk2x.js", "taiwan.js", "chats.js",
                 "trad.js", "strokes.js", "vendor-hanzi-writer.js", "manifest.webmanifest",
@@ -13,6 +13,20 @@ self.addEventListener("install", e => {
 });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener("message", e => {
+  if (!e.data || e.data.type !== "FORCE_REFRESH") return;
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    await Promise.all(ASSETS.map(async url => {
+      try {
+        const res = await fetch(url, { cache: "no-cache" });
+        if (res && res.ok) await c.put(new Request(url, { cache: "no-cache" }), res);
+      } catch (err) { /* offline: keep whatever's cached */ }
+    }));
+    const client = await self.clients.get(e.source.id);
+    if (client) client.postMessage({ type: "REFRESH_DONE" });
+  })());
 });
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;

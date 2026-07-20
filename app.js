@@ -320,7 +320,7 @@ const CAST_SPEAK = {
   usagi:     ["呀哈——!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈!", "呀哈!! 好耶!!", "呜哇哇哇!!", "乌拉!!", "呀哈呀哈呀哈!!", "好耶好耶好耶!!", "乌拉乌拉!!", "呜哇啊啊啊!!"],
   momonga:   ["夸我!!", "看我看我!", "我是不是很厉害!!", "再夸一次!! 嘿嘿", "看! 我的分数!! 快看!!", "全世界都该看到这个!!"],
   kani:      ["加油加油!", "好耶!", "✂️ 咔嚓! 学完一课!", "学弟学妹们, 冲啊!", "好耶好耶! 干得漂亮!", "下一课, 出发!"],
-  kurimanju: ["哈~ 学完喝一杯奶茶吧", "慢慢学, 慢慢吃~", "唔…慢慢来, 急什么呢", "学完了? 那就休息一下吧~", "哈~ 老夫这把年纪也在学呢", "慢工出细活儿, 慢慢学~"],
+  kurimanju: ["哈~ 学完喝一杯奶茶吧", "慢慢学, 慢慢吃~", "唔…慢慢来, 急什么呢", "学完了? 那就休息一下吧~", "哈~ 大家都要慢慢来哦", "慢工出细活儿, 慢慢学~"],
   chimera:   ["一起玩吧~", "嘿嘿, 你进步好快!", "咦? 你藏了什么秘密武器?", "飞呀飞~ 一起去下一关!", "嘿嘿嘿, 猜猜下一题是什么~", "你好厉害, 我都想鼓掌!"],
   rakko:     ["不错。", "台湾之前, 每天一课。", "继续。", "还行。 下一个。", "别停。 你在进步。", "台湾等着你呢。"],
   yoroi:     ["你很努力, 真棒!", "劳动辛苦了!", "每一步都算数, 别灰心!", "你已经做得很好了!", "慢慢来, 我陪着你!", "今天的你, 也很了不起!"],
@@ -367,7 +367,7 @@ const CAST = [
   { id: "usagi",     unlock: 0,    blurb: "pure chaos. pure joy. 呀哈!!", lines: ["呀哈——!! LESSON TIME!!", "乌拉!! 台湾!! 珍珠奶茶!!", "呀哈! quiz? QUIZ!!", "呀哈!! 好耶!!", "呜哇哇哇!! chaos mode!!", "乌拉!!", "呀哈呀哈呀哈!! let's gooo!!", "好耶好耶好耶!! nailed it!!", "乌拉乌拉!! full send!!", "呜哇啊啊啊!! too much fun!!"] },
   { id: "momonga",   unlock: 100,  blurb: "wants ALL the praise", lines: ["夸我!! praise me!! …and yourself too!", "看我看我! now look at your streak!!", "我是不是很厉害!! (wǒ shì bú shì hěn lìhài — aren't I amazing!)", "再夸一次!! 嘿嘿 (zài kuā yí cì — praise me once more!)", "看! 我的分数!! 快看!! (kuài kàn — look, quick, look!)", "全世界都该看到这个!! the whole world should see this!!"] },
   { id: "kani",      unlock: 220,  blurb: "snip snip! your cheeriest senpai", lines: ["加油加油! ✂️ snip those flashcards!", "好耶! another lesson down!", "✂️ 咔嚓! 学完一课! (kāchā — snip, one lesson done!)", "学弟学妹们, 冲啊! (chōng a — go for it, juniors!)", "好耶好耶! 干得漂亮! (gàn de piàoliang — nicely done!)", "下一课, 出发! (chūfā — next lesson, let's launch!)"] },
-  { id: "kurimanju", unlock: 360,  blurb: "sleepy gourmet elder. 哈~", lines: ["哈~ 学完喝一杯奶茶吧 (milk tea after this)", "慢慢学, 慢慢吃~ learn slow, eat slow", "唔…慢慢来, 急什么呢 (bié zháojí — no need to rush)", "学完了? 那就休息一下吧~ (xiūxi yíxià — take a little rest)", "哈~ 老夫这把年纪也在学呢 (this old fella's still learning too)", "慢工出细活儿, 慢慢学~ good things take time"] },
+  { id: "kurimanju", unlock: 360,  blurb: "sleepy gourmet, chill vibes. 哈~", lines: ["哈~ 学完喝一杯奶茶吧 (milk tea after this)", "慢慢学, 慢慢吃~ learn slow, eat slow", "唔…慢慢来, 急什么呢 (bié zháojí — no need to rush)", "学完了? 那就休息一下吧~ (xiūxi yíxià — take a little rest)", "哈~ 大家都要慢慢来哦 (everyone should take it slow)", "慢工出细活儿, 慢慢学~ good things take time"] },
   { id: "chimera",   unlock: 520,  blurb: "mysterious lil winged friend", lines: ["一起玩吧~ let's play a round!", "嘿嘿, 你进步好快! you're getting fast!", "咦? 你藏了什么秘密武器? (mìmì wǔqì — got a secret weapon?)", "飞呀飞~ 一起去下一关! (fēi ya fēi — flying off to the next round!)", "嘿嘿嘿, 猜猜下一题是什么~ guess what's next~", "你好厉害, 我都想鼓掌! (gǔzhǎng — makes me want to clap!)"] },
   { id: "rakko",     unlock: 700,  blurb: "the cool 討伐 pro senpai", lines: ["不错。 keep training.", "台湾之前, 每天一课。 one lesson a day.", "继续。 (jìxù — continue.)", "还行。 下一个。 (hái xíng — not bad. next.)", "别停。 你在进步。 (bié tíng — don't stop. you're improving.)", "台湾等着你呢。 (Táiwān děngzhe nǐ ne — Taiwan's waiting for you.)"] },
   { id: "yoroi",     unlock: 900,  blurb: "kindest knight, biggest fan of effort", lines: ["你很努力, 真棒! so diligent!", "劳动辛苦了! good work today!", "每一步都算数, 别灰心! (měi yí bù dōu suànshù — every step counts, don't lose heart!)", "你已经做得很好了! (yǐjīng zuò de hěn hǎo le — you're already doing so well!)", "慢慢来, 我陪着你! (wǒ péizhe nǐ — take your time, I'm with you!)", "今天的你, 也很了不起! (hěn liǎobùqǐ — today's you is amazing too!)"] },
@@ -1547,3 +1547,32 @@ function chaosMode() {
 })();
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+/* cute manual "get the latest update" button — force the SW to refetch every
+   asset (bypassing its normal stale-while-revalidate lag), then reload */
+(() => {
+  const btn = document.getElementById("refreshBtn");
+  if (!btn) return;
+  let busy = false;
+  btn.onclick = async () => {
+    if (busy || !("serviceWorker" in navigator)) return;
+    busy = true;
+    btn.classList.add("spin-refresh");
+    toast("syncing the latest~ 🔄");
+    const done = () => { location.reload(); };
+    const timeout = setTimeout(done, 6000); // never leave her stuck waiting
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const worker = reg.active;
+      if (!worker) { clearTimeout(timeout); done(); return; }
+      navigator.serviceWorker.addEventListener("message", function onMsg(e) {
+        if (e.data && e.data.type === "REFRESH_DONE") {
+          navigator.serviceWorker.removeEventListener("message", onMsg);
+          clearTimeout(timeout);
+          done();
+        }
+      });
+      worker.postMessage({ type: "FORCE_REFRESH" });
+    } catch (e) { clearTimeout(timeout); done(); }
+  };
+})();
